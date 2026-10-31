@@ -25,12 +25,36 @@ function preview(p) {
     h('span', { class: 'frame-dots' }, h('i'), h('i'), h('i')),
     h('span', { class: 'frame-url' }, p.url ? `billywall732.github.io${p.url}` : 'coming soon'));
   const body = p.image
-    ? h('img', { src: p.image, alt: `Screenshot of ${p.name}`, width: '1280', height: '800', loading: 'lazy', decoding: 'async' })
-    : h('div', { class: 'frame-placeholder', 'aria-hidden': 'true' },
-      h('div', { class: 'ph-bars' }, [38, 62, 48, 80, 66, 92, 74].map((v) => h('i', { style: `height:${v}%` }))),
-      h('span', { class: 'ph-label' }, 'Under construction'));
+    ? h('img', { src: p.image, alt: `The ${p.name} cover page`, width: '1280', height: '800', loading: 'lazy', decoding: 'async' })
+    : placeholder(p.art);
   const frame = h('div', { class: 'frame' }, bar, body);
   return p.url ? h('a', { class: 'frame-link', href: p.url, tabindex: '-1', 'aria-hidden': 'true' }, frame) : frame;
+}
+
+// Line drawings for projects that are still being built, in the card's color.
+// (Fixed strings written here, never visitor input, so innerHTML is safe.)
+const ART = {
+  chart: `<path class="a-line" d="M30 150 L80 118 L120 130 L170 82 L210 96 L270 44"/>
+    <g class="a-fill">${[[40, 70], [80, 95], [120, 80], [160, 120], [200, 105], [240, 140]].map(([x, hgt]) => `<rect x="${x - 14}" y="${170 - hgt}" width="28" height="${hgt}" rx="4"/>`).join('')}</g>`,
+  trivia: `<rect class="a-fill" x="70" y="18" width="160" height="62" rx="12"/>
+    <text class="a-q" x="150" y="62" text-anchor="middle">?</text>
+    ${[0, 1, 2, 3].map((i) => `<rect class="${i === 2 ? 'a-solid' : 'a-line'}" x="${i % 2 ? 158 : 50}" y="${96 + Math.floor(i / 2) * 38}" width="92" height="28" rx="14"/>`).join('')}`,
+  snowboard: `<path class="a-line" d="M10 168 C90 140 170 120 290 70"/>
+    <g transform="rotate(-18 150 100)">
+      <rect class="a-fill" x="40" y="84" width="220" height="40" rx="20"/>
+      <rect class="a-solid" x="98" y="90" width="22" height="28" rx="5"/>
+      <rect class="a-solid" x="180" y="90" width="22" height="28" rx="5"/>
+    </g>
+    <circle class="a-dot" cx="60" cy="40" r="3"/><circle class="a-dot" cx="230" cy="150" r="3"/><circle class="a-dot" cx="250" cy="30" r="2"/>`,
+  wedding: `<circle class="a-ring" cx="125" cy="98" r="44"/><circle class="a-ring" cx="175" cy="98" r="44"/>
+    <path class="a-solid" d="M150 30 l9 -9 a6 6 0 0 1 9 9 l-18 18 l-18 -18 a6 6 0 0 1 9 -9 z"/>`,
+};
+
+function placeholder(art = 'chart') {
+  const box = h('div', { class: 'frame-placeholder', 'aria-hidden': 'true' });
+  box.innerHTML = `<svg viewBox="0 0 300 190" class="ph-art">${ART[art] ?? ART.chart}</svg>`;
+  box.append(h('span', { class: 'ph-label' }, 'Under construction'));
+  return box;
 }
 
 function card(p, i) {
@@ -64,18 +88,22 @@ $('.hobbies').replaceChildren(...hobbies.map(([icon, name], i) =>
 
 $('.year').textContent = new Date().getFullYear();
 
-// ---------- Light / dark ----------
+// ---------- Dark / light / blueprint ----------
+// Dark is the default; your choice is remembered on this device.
 
-const toggle = $('.theme-toggle');
-const isDark = () => (document.documentElement.dataset.theme ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
-const syncToggle = () => toggle.setAttribute('aria-label', isDark() ? 'Switch to light mode' : 'Switch to dark mode');
-toggle.addEventListener('click', () => {
-  const next = isDark() ? 'light' : 'dark';
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem('otw-theme', next); } catch { /* private mode: fine */ }
-  syncToggle();
-});
-syncToggle();
+const THEME_COLORS = { dark: '#121110', light: '#f3efe6', blueprint: '#123f7a' };
+function setTheme(name) {
+  document.documentElement.dataset.theme = name;
+  document.querySelector('meta[name="theme-color"]').content = THEME_COLORS[name];
+  for (const b of document.querySelectorAll('.theme-switch button')) b.setAttribute('aria-pressed', String(b.dataset.theme === name));
+}
+for (const b of document.querySelectorAll('.theme-switch button')) {
+  b.addEventListener('click', () => {
+    setTheme(b.dataset.theme);
+    try { localStorage.setItem('otw-theme', b.dataset.theme); } catch { /* private mode: fine */ }
+  });
+}
+setTheme(document.documentElement.dataset.theme);
 
 // ---------- Fade cards in as they scroll into view ----------
 

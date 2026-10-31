@@ -3,41 +3,40 @@
 // To add a project, copy one entry and change it:
 //   name        the title on the card
 //   kicker      a short label above the title ("Web App", "Game", ...)
-//   blurb       one or two sentences: what it is and why it exists
-//   highlights  up to 3 short points
+//   blurb       one or two sentences for a visitor: what it does for them
+//   highlights  up to 3 short points: what they can do with it
 //   tags        what it's built with
 //   status      'live' or 'workshop' (still being built)
-//   url         where the app lives ('/my-repo/' for another GitHub Pages repo), or null
+//   url         where it lives ('/my-repo/' for another GitHub Pages repo), or null
 //   code        its GitHub repo, or null
-//   image       a screenshot in img/ (1280 x 800 works best), or null for a placeholder
+//   image       a screenshot of its cover page in img/ (1280 x 800), or null
+//   art         when there's no image: 'chart', 'trivia', 'snowboard' or 'wedding'
 //   accent      the card's color
-//   live        optional: 'snow-surf' shows today's best bets from that app's data
 export const projects = [
   {
     name: 'Snow and Surf Report',
     kicker: 'Web App',
-    blurb: 'Morning conditions for 76 mountains and 52 beaches, rated for how I actually ride. Built so I stop opening six tabs before a dawn patrol.',
+    blurb: 'Find the best snow and surf every morning. Ratings for 76 mountains and 52 beaches, matched to your level, your board and your ski pass.',
     highlights: [
-      'Refreshes every hour from free NOAA, SNOTEL and Open-Meteo data',
-      'Picks and “fits you” ratings from your level, board and pass',
-      'Morning alerts by email or phone notification',
+      'Today’s best bets for snow and surf at a glance',
+      'Pin favorite spots to see snow, swell, tide and what to wear',
+      'Morning alerts by email or phone when conditions line up',
     ],
-    tags: ['JavaScript', 'GitHub Actions', 'Firebase', 'NOAA APIs'],
+    tags: ['JavaScript', 'GitHub Actions', 'Firebase', 'NOAA data'],
     status: 'live',
     url: '/snow-surf-report/',
     code: 'https://github.com/billywall732/snow-surf-report',
     image: 'img/snow-surf.webp',
     accent: '#0f8a7e',
-    live: 'snow-surf',
   },
   {
     name: 'Fantasy Feetpics',
     kicker: 'League Site',
-    blurb: 'The home of my ESPN fantasy football league: standings, live scores, awards, and a strict accounting of who owes a Smirnoff Ice.',
+    blurb: 'Everything about the Fantasy Feetpics league in one place: standings, live scores, awards, and who owes a Smirnoff Ice.',
     highlights: [
-      'Refreshes twice a day, and hourly on Sundays',
-      'Emails whoever owes an ice the moment it locks in',
-      'Stats baked into the page, so it opens instantly',
+      'Live scores, updated every hour on Sundays',
+      'An email the moment you owe an ice',
+      'Standings and season awards at a glance',
     ],
     tags: ['Node', 'ESPN API', 'GitHub Actions'],
     status: 'live',
@@ -49,13 +48,13 @@ export const projects = [
   {
     name: 'Budget Ledger',
     kicker: 'Money Tool',
-    blurb: 'Personal spending and wedding costs, tracked side by side. Your data lives in your own Google Drive, not on anyone’s server.',
+    blurb: 'Track everyday spending and a wedding budget side by side. Everything saves to your own Google Drive, so your numbers stay yours.',
     highlights: [
-      'Dashboards for budget vs. spending and cash flow',
-      'Excel bulk import with a preview before anything saves',
-      'Paycheck and net-pay breakdowns',
+      'Budget vs. spending and cash flow at a glance',
+      'Bring in months of expenses from Excel in one go',
+      'Plan paychecks and see your take-home pay',
     ],
-    tags: ['HTML', 'Google Drive API', 'Charts'],
+    tags: ['HTML', 'Google Drive', 'Charts'],
     status: 'live',
     url: '/my-budget-ledger/',
     code: 'https://github.com/billywall732/my-budget-ledger',
@@ -65,18 +64,70 @@ export const projects = [
   {
     name: 'Portfolio Ledger',
     kicker: 'Investing Tool',
-    blurb: 'Schwab and Robinhood accounts in one view, with live prices and allocation targets. For tracking and learning, not advice.',
+    blurb: 'See your Schwab and Robinhood accounts in one place, with live prices and how your mix compares to your targets.',
     highlights: [
-      'Imports broker exports, reconciled against their totals',
-      'Live prices through my own Cloudflare Worker',
-      'Synced to your Google Drive, offline copy in the browser',
+      'Import your broker statements in a couple of clicks',
+      'Live prices, daily change and total gain or loss',
+      'Saves privately to your own Google Drive',
     ],
-    tags: ['Cloudflare Workers', 'Finnhub', 'IndexedDB'],
+    tags: ['Cloudflare Workers', 'Live prices', 'Google Drive'],
     status: 'workshop',
     url: null,
     code: null,
     image: null,
+    art: 'chart',
     accent: '#4a6cf7',
+  },
+  {
+    name: 'Quizzical',
+    kicker: 'Daily Game',
+    blurb: 'A fresh round of trivia every day, the same questions for everyone. Keep your streak alive and see how you stack up against friends.',
+    highlights: [
+      'New questions every day at midnight',
+      'Streaks and stats that track your best runs',
+      'Share your score without spoiling the answers',
+    ],
+    tags: ['JavaScript', 'Daily puzzles'],
+    status: 'workshop',
+    url: null,
+    code: null,
+    image: null,
+    art: 'trivia',
+    accent: '#c04df9',
+  },
+  {
+    name: 'Shred Lab',
+    kicker: 'Video Game',
+    blurb: 'A snowboarding game where your setup matters. Build your board, bindings and stance, then feel the difference on every run.',
+    highlights: [
+      'Build and tune your own board setups',
+      'Every setup rides differently: carve, float or pop',
+      'Unlock new gear as you ride',
+    ],
+    tags: ['JavaScript', 'Game'],
+    status: 'workshop',
+    url: null,
+    code: null,
+    image: null,
+    art: 'snowboard',
+    accent: '#ff8a1f',
+  },
+  {
+    name: 'Happily Ever Wall',
+    kicker: 'Wedding Site',
+    blurb: 'Everything guests need for the big day: the schedule, travel and places to stay, the registry, and RSVPs, all in one place.',
+    highlights: [
+      'RSVP online in about a minute',
+      'Schedule, maps and travel tips',
+      'A countdown to the big day',
+    ],
+    tags: ['HTML', 'CSS', 'RSVPs'],
+    status: 'workshop',
+    url: null,
+    code: null,
+    image: null,
+    art: 'wedding',
+    accent: '#e0567a',
   },
 ];
 
