@@ -1,7 +1,7 @@
 // Writes a page for every project in js/projects.js, at projects/<slug>/index.html.
 // Run it after adding a project or changing a name or tagline:
 //   node tools/make-pages.mjs
-// The header and footer are copied from index.html, so change them there.
+// The header and footer are copied from the home page (home/index.html), so change them there.
 // Each page is a small shell; js/project-page.js fills it in from the data.
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { projects } from '../js/projects.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const home = readFileSync(join(root, 'index.html'), 'utf8');
+const home = readFileSync(join(root, 'home', 'index.html'), 'utf8');
 const header = home.match(/  <header class="nav wrap">[\s\S]*?<\/header>/)[0];
 const footer = home.match(/  <footer class="wrap">[\s\S]*?<\/footer>/)[0];
 

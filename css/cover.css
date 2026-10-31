@@ -1,0 +1,129 @@
+/* The cover (/): a brick wall, an orange paint splat, the title and four ways in.
+   Loaded after site.css, so it reuses the theme colors, .title, .brick, .note and .button.
+   The brick texture is a tiny SVG tile (mortar lines and a faint tint per brick) drawn
+   over a base color, so it costs a few KB instead of a photo. */
+
+:root,
+:root[data-theme='dark'] {
+  --wall: #2b1f1b;
+  --wall-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='112'%3E%3Crect x='-60' y='0' width='60' height='28' fill='%23000' fill-opacity='0.051'/%3E%3Cpath d='M-60 0h60M-60 0v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='0' y='0' width='60' height='28' fill='%23000' fill-opacity='0.023'/%3E%3Cpath d='M0 0h60M0 0v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='60' y='0' width='60' height='28' fill='%23fff' fill-opacity='0.049'/%3E%3Cpath d='M60 0h60M60 0v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='120' y='0' width='60' height='28' fill='%23fff' fill-opacity='0.053'/%3E%3Cpath d='M120 0h60M120 0v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='180' y='0' width='60' height='28' fill='%23000' fill-opacity='0.040'/%3E%3Cpath d='M180 0h60M180 0v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='-30' y='28' width='60' height='28' fill='%23000' fill-opacity='0.070'/%3E%3Cpath d='M-30 28h60M-30 28v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='30' y='28' width='60' height='28' fill='%23000' fill-opacity='0.047'/%3E%3Cpath d='M30 28h60M30 28v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='90' y='28' width='60' height='28' fill='%23fff' fill-opacity='0.078'/%3E%3Cpath d='M90 28h60M90 28v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='150' y='28' width='60' height='28' fill='%23000' fill-opacity='0.026'/%3E%3Cpath d='M150 28h60M150 28v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='210' y='28' width='60' height='28' fill='%23000' fill-opacity='0.071'/%3E%3Cpath d='M210 28h60M210 28v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='-60' y='56' width='60' height='28' fill='%23fff' fill-opacity='0.059'/%3E%3Cpath d='M-60 56h60M-60 56v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='0' y='56' width='60' height='28' fill='%23000' fill-opacity='0.036'/%3E%3Cpath d='M0 56h60M0 56v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='60' y='56' width='60' height='28' fill='%23000' fill-opacity='0.076'/%3E%3Cpath d='M60 56h60M60 56v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='120' y='56' width='60' height='28' fill='%23000' fill-opacity='0.034'/%3E%3Cpath d='M120 56h60M120 56v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='180' y='56' width='60' height='28' fill='%23fff' fill-opacity='0.070'/%3E%3Cpath d='M180 56h60M180 56v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='-30' y='84' width='60' height='28' fill='%23000' fill-opacity='0.047'/%3E%3Cpath d='M-30 84h60M-30 84v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='30' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.057'/%3E%3Cpath d='M30 84h60M30 84v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='90' y='84' width='60' height='28' fill='%23000' fill-opacity='0.063'/%3E%3Cpath d='M90 84h60M90 84v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='150' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.042'/%3E%3Cpath d='M150 84h60M150 84v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3Crect x='210' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.021'/%3E%3Cpath d='M210 84h60M210 84v28' stroke='rgba(0,0,0,0.5)' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  --wall-shade: rgba(0, 0, 0, 0.6); /* the vignette at the edges */
+  --cover-note: var(--brand);
+  --cover-glow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+:root[data-theme='light'] {
+  --wall: #e4d6c4; /* painted brick */
+  --wall-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='112'%3E%3Crect x='-60' y='0' width='60' height='28' fill='%237a3c1c' fill-opacity='0.051'/%3E%3Cpath d='M-60 0h60M-60 0v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='0' y='0' width='60' height='28' fill='%237a3c1c' fill-opacity='0.023'/%3E%3Cpath d='M0 0h60M0 0v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='60' y='0' width='60' height='28' fill='%23fff' fill-opacity='0.049'/%3E%3Cpath d='M60 0h60M60 0v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='120' y='0' width='60' height='28' fill='%23fff' fill-opacity='0.053'/%3E%3Cpath d='M120 0h60M120 0v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='180' y='0' width='60' height='28' fill='%237a3c1c' fill-opacity='0.040'/%3E%3Cpath d='M180 0h60M180 0v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='-30' y='28' width='60' height='28' fill='%237a3c1c' fill-opacity='0.070'/%3E%3Cpath d='M-30 28h60M-30 28v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='30' y='28' width='60' height='28' fill='%237a3c1c' fill-opacity='0.047'/%3E%3Cpath d='M30 28h60M30 28v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='90' y='28' width='60' height='28' fill='%23fff' fill-opacity='0.078'/%3E%3Cpath d='M90 28h60M90 28v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='150' y='28' width='60' height='28' fill='%237a3c1c' fill-opacity='0.026'/%3E%3Cpath d='M150 28h60M150 28v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='210' y='28' width='60' height='28' fill='%237a3c1c' fill-opacity='0.071'/%3E%3Cpath d='M210 28h60M210 28v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='-60' y='56' width='60' height='28' fill='%23fff' fill-opacity='0.059'/%3E%3Cpath d='M-60 56h60M-60 56v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='0' y='56' width='60' height='28' fill='%237a3c1c' fill-opacity='0.036'/%3E%3Cpath d='M0 56h60M0 56v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='60' y='56' width='60' height='28' fill='%237a3c1c' fill-opacity='0.076'/%3E%3Cpath d='M60 56h60M60 56v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='120' y='56' width='60' height='28' fill='%237a3c1c' fill-opacity='0.034'/%3E%3Cpath d='M120 56h60M120 56v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='180' y='56' width='60' height='28' fill='%23fff' fill-opacity='0.070'/%3E%3Cpath d='M180 56h60M180 56v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='-30' y='84' width='60' height='28' fill='%237a3c1c' fill-opacity='0.047'/%3E%3Cpath d='M-30 84h60M-30 84v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='30' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.057'/%3E%3Cpath d='M30 84h60M30 84v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='90' y='84' width='60' height='28' fill='%237a3c1c' fill-opacity='0.063'/%3E%3Cpath d='M90 84h60M90 84v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='150' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.042'/%3E%3Cpath d='M150 84h60M150 84v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3Crect x='210' y='84' width='60' height='28' fill='%23fff' fill-opacity='0.021'/%3E%3Cpath d='M210 84h60M210 84v28' stroke='rgba(255,255,255,0.75)' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  --wall-shade: rgba(120, 80, 50, 0.22);
+  --cover-note: #a63509;
+  --cover-glow: 0 1px 8px rgba(255, 250, 240, 0.9);
+}
+:root[data-theme='blueprint'] {
+  --wall: var(--bg); /* the wall, drawn as plans */
+  --wall-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='112'%3E%3Cpath d='M-60 0h60M-60 0v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M0 0h60M0 0v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M60 0h60M60 0v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M120 0h60M120 0v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M180 0h60M180 0v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M-30 28h60M-30 28v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M30 28h60M30 28v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M90 28h60M90 28v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M150 28h60M150 28v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M210 28h60M210 28v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M-60 56h60M-60 56v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M0 56h60M0 56v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M60 56h60M60 56v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M120 56h60M120 56v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M180 56h60M180 56v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M-30 84h60M-30 84v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M30 84h60M30 84v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M90 84h60M90 84v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M150 84h60M150 84v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3Cpath d='M210 84h60M210 84v28' stroke='rgba(255,255,255,0.2)' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  --wall-shade: rgba(6, 26, 56, 0.55);
+  --cover-note: #ffc59e;
+  --cover-glow: 0 2px 10px rgba(6, 26, 56, 0.8);
+}
+
+/* The paint is the same orange in every mode, and the title on it is always near-black */
+:root {
+  --splat: #ff6a1f;
+  --splat-under: #c94a0e;
+  --on-splat: #141311;
+  --t: clamp(56px, 15vw, 150px); /* the title size; the spacing below follows it */
+}
+
+.cover-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background-color: var(--wall);
+  background-image: radial-gradient(ellipse at center, transparent 35%, var(--wall-shade) 100%), var(--wall-tile);
+  background-size: 100% 100%, 240px 112px;
+  background-position: center, center;
+}
+
+.cover {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 48px 16px;
+}
+.cover-stack { display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+/* ---------- The title on its splat ---------- */
+
+.cover-title {
+  position: relative;
+  isolation: isolate;
+  font-size: var(--t);
+  color: var(--on-splat);
+}
+.cover-title .title-wall { justify-content: center; }
+/* The splat reaches past the title on every side; its solid middle always covers the text */
+.splat {
+  position: absolute;
+  inset: -22% -26%;
+  z-index: -1;
+  width: 152%;
+  height: 144%;
+  animation: splat 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.splat-paint { fill: var(--splat); }
+.splat-under { fill: var(--splat-under); opacity: 0.85; }
+@keyframes splat { from { opacity: 0; transform: scale(0.6) rotate(-4deg); } }
+
+/* The Wall bricks sit on the paint, so they get a dark edge to stand apart from it */
+.cover-title .brick {
+  background: #e6521a; /* a shade deeper than the splat, so the white letters stay clear (3.7:1) */
+  box-shadow: inset 0 -0.07em 0 var(--brick-2), 0 0 0 0.035em var(--on-splat), 0.04em 0.06em 0 0.035em rgba(20, 19, 17, 0.55);
+  text-shadow: 0 0.02em 0.04em rgba(20, 19, 17, 0.35);
+}
+:root[data-theme='blueprint'] .cover-title .brick { background: var(--brand); box-shadow: inset 0 -0.07em 0 var(--brick-2), 0 0 0 0.035em var(--on-splat); }
+
+/* ---------- The lines under it ---------- */
+
+.cover-note {
+  margin: calc(var(--t) * 0.62 + 6px) 0 0; /* clears the drips */
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--cover-note);
+  text-shadow: var(--cover-glow);
+  transform: rotate(-2deg);
+  transform-origin: center;
+}
+.cover-name {
+  margin: 18px 0 0;
+  font: 800 clamp(28px, 5vw, 44px)/1.05 var(--display);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: var(--cover-glow);
+}
+.cover-role {
+  margin: 10px 0 0;
+  color: var(--ink-2);
+  text-shadow: var(--cover-glow);
+}
+
+/* ---------- Ways in ---------- */
+
+.cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+/* Solid buttons, so they read on the bricks */
+.cover-actions .button:not(.primary) { background: var(--surface); }
+:root[data-theme='blueprint'] .cover-actions .button:not(.primary) { background: var(--bg); }
+
+@media (max-width: 520px) {
+  .cover-actions { flex-direction: column; align-items: stretch; width: min(100%, 320px); }
+  .cover-actions .button { justify-content: center; min-height: 50px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splat { animation: none; }
+}

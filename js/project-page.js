@@ -1,7 +1,7 @@
 // A project's own page, at /projects/<slug>/. Everything comes from js/projects.js;
 // the page's <main data-slug="..."> says which project it is.
 import { projects } from './projects.js';
-import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, statusPill } from './ui.js';
+import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, statusPill, tabHref } from './ui.js';
 
 const main = $('main');
 const i = projects.findIndex((p) => p.slug === main.dataset.slug);
@@ -31,7 +31,7 @@ if (p) {
   const prev = projects[(i - 1 + projects.length) % projects.length];
   const next = projects[(i + 1) % projects.length];
   main.replaceChildren(
-    h('a', { class: 'back', href: '/#work' }, h('span', { 'aria-hidden': 'true' }, '← '), 'All projects'),
+    h('a', { class: 'back', href: tabHref(p) }, h('span', { 'aria-hidden': 'true' }, '← '), 'All projects'),
     h('header', { class: 'detail-head' },
       h('div', { class: 'project-meta' }, iconTile(p), h('span', { class: 'kicker' }, p.kicker), statusPill(p)),
       h('h1', {}, p.name),
@@ -49,7 +49,7 @@ if (p) {
       h('a', { href: projectHref(prev), style: accentStyle(prev) }, h('span', {}, '← Previous'), h('strong', {}, prev.name)),
       h('a', { href: projectHref(next), style: accentStyle(next) }, h('span', {}, 'Next →'), h('strong', {}, next.name))));
 } else {
-  main.replaceChildren(h('a', { class: 'back', href: '/#work' }, '← All projects'), h('h1', {}, 'That project wandered off.'));
+  main.replaceChildren(h('a', { class: 'back', href: '/home/#polished' }, '← All projects'), h('h1', {}, 'That project wandered off.'));
 }
 
 setUpPage();

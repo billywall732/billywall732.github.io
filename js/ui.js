@@ -40,9 +40,12 @@ export const accentStyle = (p) => `--accent:${p.accent};--accent-ink:${inkOn(p.a
 // ---------- Bits of a project ----------
 
 export const iconTile = (p) => h('span', { class: 'icon-tile', 'aria-hidden': 'true' }, p.icon);
-export const statusPill = (p) => p.status === 'live'
-  ? h('span', { class: 'status is-live' }, 'Live')
-  : h('span', { class: 'status is-workshop' }, 'In the workshop');
+const STATUS = { live: 'Live', rough: 'Rough edges', workshop: 'In the workshop' };
+export const statusPill = (p) => h('span', { class: `status is-${p.status}` }, STATUS[p.status]);
+
+// The home page tab a project is listed on
+const TAB = { live: 'polished', rough: 'rough', workshop: 'workshop' };
+export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'polished'}`;
 
 // Open App / Learn More / See the Code. Workshop projects get "Coming soon" and
 // "Follow along" instead of links that go nowhere.
@@ -305,7 +308,7 @@ export function setUpPage() {
         }
       }
     }, { rootMargin: '0px 0px -8% 0px' });
-    for (const el of document.querySelectorAll('.project, .workshop, .clock, .detail-section')) {
+    for (const el of document.querySelectorAll('.project, .detail-section')) {
       el.classList.add('reveal');
       seen.observe(el);
     }

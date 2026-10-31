@@ -19,6 +19,7 @@
   --brick-2: #e8571f;
   --live: #5fd38d;
   --workshop: #ffd23f;
+  --rough: #ff9f5a;
   --kicker-mix: white;
   --glow: 0.3; /* how bright a card's top glow is at rest */
   --glow-hover: 0.75;
@@ -44,6 +45,7 @@
   --brick-2: #e24b13;
   --live: #17803f;
   --workshop: #8a6500;
+  --rough: #a8480a;
   --kicker-mix: black;
   --glow: 0.22;
   --glow-hover: 0.5;
@@ -72,6 +74,7 @@
   --brick-2: #b9d0f0;
   --live: #9ff0c0;
   --workshop: #ffe27a;
+  --rough: #ffc59e;
   --kicker-mix: white;
   --glow: 0.3;
   --glow-hover: 0.7;
@@ -188,11 +191,16 @@ img { display: block; max-width: 100%; height: auto; }
     linear-gradient(currentColor, currentColor) 50% 0 / 1.5px 100% no-repeat,
     linear-gradient(currentColor, currentColor) 0 50% / 100% 1.5px no-repeat;
 }
-@media (max-width: 760px) { .nav nav a[href='/#off-the-clock'] { display: none; } }
+@media (max-width: 760px) { .nav nav a[href='/home/#off-the-clock'] { display: none; } }
 @media (max-width: 600px) {
   .brand-name { display: none; }
   .nav nav a { padding-inline: 9px; }
+  /* Room for "Cover"; GitHub is still in the hero and the footer */
+  .nav nav a[href='https://github.com/billywall732'] { display: none; }
 }
+@media (max-width: 420px) { .board-toggle .pill-name { display: none; } }
+/* Narrow mouse windows: the toggles go icon-only (their labels still say the state) */
+@media (max-width: 380px) { .pill-toggle .pill-state { display: none; } }
 
 /* ---------- Board cursor ---------- */
 /* Trails the real cursor; never replaces it, never catches clicks */
@@ -218,13 +226,8 @@ img { display: block; max-width: 100%; height: auto; }
 .b-off { fill: var(--ink); stroke: var(--bg); stroke-width: 1.5; stroke-linejoin: round; }
 .board-icon .b-deck { stroke-width: 1.6; }
 
-/* ---------- Hero ---------- */
+/* ---------- The title (on the cover) ---------- */
 
-.hero { display: grid; gap: 32px; padding-top: 12px; padding-bottom: 24px; }
-@media (min-width: 960px) {
-  /* The desk stretches to the title column's height */
-  .hero { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: stretch; gap: 40px; padding-top: 20px; }
-}
 .eyebrow { margin: 0 0 18px; font-size: 13px; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
 .title { font-size: clamp(64px, 13vw, 156px); font-weight: 800; line-height: 0.92; letter-spacing: -0.045em; }
 .title-top { display: block; }
@@ -248,80 +251,56 @@ img { display: block; max-width: 100%; height: auto; }
 .title-wall:hover .brick:nth-child(even) { transform: translateY(0.03em) rotate(0deg); }
 .note { margin: 14px 0 0 0.4em; font: 600 15px/1 var(--display); color: var(--brand); transform: rotate(-2deg); transform-origin: left; }
 .note-arrow { display: inline-block; margin-right: 4px; }
-.lede { max-width: 34em; margin: 26px 0 0; font-size: clamp(17px, 2vw, 20px); color: var(--ink-2); }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 
-/* The live conditions card */
-.desk {
-  display: flex;
-  flex-direction: column;
-  padding: 22px;
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+/* ---------- Home page tabs ---------- */
+/* Like Fantasy Feetpics: a row of tabs under the header that stays put while you scroll */
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
 }
-.desk-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.desk h2 { font-size: 22px; }
-.live-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--live); }
-.live-dot::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--live) 50%, transparent); } 50% { box-shadow: 0 0 0 6px transparent; } }
-.desk-note { margin: 6px 0 14px; font-size: 14px; color: var(--ink-2); }
-/* Rows share the card's height equally, so there's no gap under them */
-.desk-list { display: grid; flex: 1; grid-auto-rows: minmax(64px, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
-.desk-list a {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+.tablist { display: flex; gap: 2px; margin-block: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+.tablist::-webkit-scrollbar { display: none; }
+.tablist a {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  height: 100%;
-  padding: 12px 14px;
-  text-decoration: none;
-  background: var(--surface-2);
-  border: 1.5px solid transparent;
-  border-radius: 12px;
-  transition: transform 0.15s;
-}
-.desk-list a:hover { transform: translateX(3px); }
-.desk-list .is-call a { background: color-mix(in srgb, var(--brand) 12%, var(--surface)); border-color: color-mix(in srgb, var(--brand) 55%, transparent); }
-.desk-list .is-call .desk-label { color: var(--brand); }
-.desk-list .is-loading { border-radius: 12px; background: var(--surface-2); }
-.desk-list .is-loading span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 6%, transparent), transparent) 0 0 / 200% 100%; animation: shimmer 1.4s linear infinite; }
-@keyframes shimmer { to { background-position: -200% 0; } }
-.desk-icon { width: 28px; font-size: 22px; text-align: center; }
-.desk-text { display: grid; min-width: 0; }
-.desk-label { font-size: 12px; font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.desk-text strong { font: 700 17px/1.25 var(--display); }
-.desk-where { font: 500 14px/1.25 var(--sans); color: var(--ink-2); }
-.desk-reason { overflow: hidden; font-size: 13px; color: var(--ink-2); text-overflow: ellipsis; white-space: nowrap; }
-.desk-score { display: grid; justify-items: end; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.meter { width: 54px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--brand) calc(var(--score) * 20%), var(--rule) 0); }
-.desk-time { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
-.desk-time:empty { display: none; }
-
-/* ---------- On the workbench ---------- */
-
-.bench p {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  margin: 8px 0 0;
-  padding: 14px 18px;
+  gap: 8px;
+  padding: 14px 14px 11px;
   font-size: 15px;
-  color: var(--ink-2);
-  border: 1.5px dashed var(--rule);
-  border-radius: 14px;
+  font-weight: 650;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
 }
-.bench-label { padding: 3px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--surface-2); border-radius: 999px; }
-.bench-text a { color: var(--ink); text-underline-offset: 3px; }
+.tablist li:first-child a { padding-left: 2px; }
+.tab-emoji { font-size: 16px; filter: grayscale(0.7); transition: filter 0.2s, transform 0.2s; }
+.tablist a:hover { color: var(--ink); }
+.tablist a:hover .tab-emoji { filter: none; transform: scale(1.15) rotate(-6deg); }
+.tablist a[aria-current='page'] { color: var(--ink); border-bottom-color: var(--brand); }
+.tablist a[aria-current='page'] .tab-emoji { filter: none; }
+.tab-count { min-width: 20px; padding: 1px 6px; font-size: 12px; font-weight: 700; text-align: center; color: var(--ink-2); background: var(--surface-2); border-radius: 999px; }
+.tab-count:empty { display: none; }
+@media (max-width: 600px) {
+  .tab-emoji { display: none; }
+  .tablist a { padding-inline: 10px; }
+  /* The row scrolls sideways here; fade its edges so that's clear */
+  .tablist { -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); }
+}
+
+/* Each tab's page: a big title, a line under it, then its content */
+.view { padding-top: 40px; }
+.view h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 800; }
+.view-lede { margin: 10px 0 28px; font-size: 18px; color: var(--ink-2); }
+.view-empty { padding: 28px; color: var(--muted); text-align: center; border: 1.5px dashed var(--rule); border-radius: var(--radius); }
 
 /* ---------- Projects ---------- */
-
-.work { padding-top: 72px; }
-.section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 28px; }
-.section-head h2, .clock h2 { font-size: clamp(36px, 6vw, 60px); font-weight: 800; }
-.count { margin: 0; font: 650 13px/1.4 var(--label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 
 .projects { display: grid; gap: 24px; }
 @media (min-width: 760px) { .projects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -385,7 +364,7 @@ img { display: block; max-width: 100%; height: auto; }
   .project.featured { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
   .project.featured .frame-link { padding: 28px 0 28px 28px; }
   .project.featured .project-body { justify-content: center; padding: 36px; }
-  .project.featured h3 { font-size: 40px; }
+  .project.featured h2 { font-size: 40px; }
   .project.featured .blurb { font-size: 17px; }
 }
 
@@ -466,9 +445,10 @@ img { display: block; max-width: 100%; height: auto; }
 .status { margin-left: auto; padding: 3px 10px; font-size: 12px; font-weight: 650; white-space: nowrap; border-radius: 999px; }
 .status.is-live { color: var(--live); background: color-mix(in srgb, var(--live) 14%, transparent); }
 .status.is-workshop { color: var(--workshop); background: color-mix(in srgb, var(--workshop) 16%, transparent); }
-.project h3 { font-size: 28px; font-weight: 750; }
-.project h3 a { text-decoration: none; }
-.project h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.status.is-rough { color: var(--rough); background: color-mix(in srgb, var(--rough) 15%, transparent); }
+.project h2 { font-size: 28px; font-weight: 750; }
+.project h2 a { text-decoration: none; }
+.project h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .blurb { margin: 10px 0 0; color: var(--ink-2); }
 .highlights { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; font-size: 14.5px; }
 .highlights li { position: relative; padding-left: 22px; }
@@ -479,9 +459,6 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ---------- In the workshop: compact list ---------- */
 
-.workshop { margin-top: 48px; }
-.workshop h3 { font-size: clamp(24px, 3.5vw, 32px); font-weight: 750; }
-.workshop-lede { margin: 6px 0 16px; color: var(--ink-2); }
 .workshop-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 @media (min-width: 900px) { .workshop-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .workshop-item {
@@ -514,8 +491,6 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ---------- Proudly mediocre at ---------- */
 
-.clock { padding-top: 96px; }
-.clock-lede { margin: 10px 0 24px; font-size: 18px; color: var(--ink-2); }
 .hobbies { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
 .hobby {
   display: flex;
@@ -533,7 +508,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 .hobby-head { display: flex; align-items: center; gap: 10px; }
 .hobby-icon { font-size: 24px; line-height: 1; }
-.hobby h3 { font-size: 19px; font-weight: 700; }
+.hobby h2 { font-size: 19px; font-weight: 700; }
 .mediocre { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .mediocre-text { white-space: nowrap; }
 .mediocre-bar { display: flex; gap: 3px; }
@@ -633,7 +608,6 @@ img { display: block; max-width: 100%; height: auto; }
 /* ---------- Blueprint mode details ---------- */
 
 :root[data-theme='blueprint'] .project,
-:root[data-theme='blueprint'] .desk,
 :root[data-theme='blueprint'] .frame,
 :root[data-theme='blueprint'] .steal,
 :root[data-theme='blueprint'] .detail-section,
@@ -642,10 +616,8 @@ img { display: block; max-width: 100%; height: auto; }
 :root[data-theme='blueprint'] .workshop-item { border-left: 3px solid var(--accent); }
 :root[data-theme='blueprint'] .detail-section { border-top: 2px dashed var(--accent); }
 :root[data-theme='blueprint'] .eyebrow,
-:root[data-theme='blueprint'] .bench-label,
 :root[data-theme='blueprint'] .tags li,
-:root[data-theme='blueprint'] .desk-label,
-:root[data-theme='blueprint'] .live-dot,
+:root[data-theme='blueprint'] .tablist a,
 :root[data-theme='blueprint'] .frame-url,
 :root[data-theme='blueprint'] .footer,
 :root[data-theme='blueprint'] .pill-toggle,
@@ -655,6 +627,4 @@ img { display: block; max-width: 100%; height: auto; }
 :root[data-theme='blueprint'] .frame img { filter: saturate(0.85); }
 :root[data-theme='blueprint'] .hobby { box-shadow: none; border-style: dashed; }
 :root[data-theme='blueprint'] .mediocre-bar i.on { background: var(--ink); border-color: var(--ink); }
-:root[data-theme='blueprint'] .bench p { border-color: var(--rule); }
-:root[data-theme='blueprint'] .desk-list .is-call a { background: transparent; border: 1.5px dashed var(--ink); }
-:root[data-theme='blueprint'] .desk-list .is-call .desk-label { color: var(--ink); }
+:root[data-theme='blueprint'] .tablist a[aria-current='page'] { border-bottom-style: double; }

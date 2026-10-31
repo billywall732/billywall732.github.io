@@ -10,7 +10,7 @@
   <meta property="og:image" content="/img/snow-surf.webp">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#121110">
-  <!-- Dark by default; pick a saved theme before the page draws, so it never flashes -->
+  <!-- The cover: the front door to the site. The projects live at /home/. -->
   <script>
     document.documentElement.dataset.theme = 'dark';
     try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
@@ -19,91 +19,53 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
-  <script type="module" src="/js/main.js"></script>
+  <link rel="stylesheet" href="/css/cover.css">
+  <script type="module" src="/js/cover.js"></script>
 </head>
-<body>
-  <a class="skip" href="#work">Skip to projects</a>
+<body class="cover-page">
+  <main class="cover">
+    <div class="cover-stack">
+      <h1 class="title cover-title">
+        <svg class="splat" viewBox="0 0 400 300" preserveAspectRatio="none" overflow="visible" aria-hidden="true" focusable="false">
+          <g class="splat-under" transform="translate(5 7)">
+            <path class="splat-body" d="M392.4 150.0C395.6 164.0 412.0 184.2 411.0 194.0C410.0 203.8 391.5 204.0 386.2 208.8C380.8 213.5 380.4 217.9 379.1 222.7C377.9 227.5 377.8 232.0 378.7 237.5C379.5 243.0 386.7 252.1 384.5 255.6C382.3 259.2 369.6 256.6 365.4 259.0C361.2 261.3 362.7 267.3 359.3 269.9C356.0 272.6 349.3 272.6 345.3 275.0C341.4 277.3 341.6 283.9 335.5 284.1C329.4 284.2 316.3 277.2 308.8 275.8C301.2 274.5 296.2 275.2 290.2 275.9C284.1 276.5 278.7 277.3 272.3 279.7C265.9 282.2 263.7 289.2 251.6 290.3C239.6 291.5 217.3 286.4 200.0 286.8C182.7 287.1 160.8 291.5 147.6 292.5C134.4 293.4 129.2 292.0 120.8 292.2C112.3 292.5 103.0 295.3 97.0 293.8C91.0 292.3 89.0 286.1 84.8 283.3C80.6 280.4 77.1 278.0 72.0 276.6C67.0 275.2 61.6 274.8 54.6 275.0C47.6 275.2 33.6 280.4 29.9 278.0C26.2 275.6 34.0 264.6 32.2 260.5C30.5 256.4 22.7 256.6 19.2 253.5C15.7 250.5 14.2 246.2 11.3 242.4C8.5 238.5 0.6 236.3 1.9 230.4C3.1 224.5 15.3 214.4 18.9 207.2C22.5 199.9 22.8 196.4 23.2 186.8C23.6 177.3 23.9 162.9 21.2 150.0C18.4 137.1 6.5 119.1 6.8 109.7C7.0 100.4 20.0 99.3 22.8 94.1C25.6 88.8 23.4 83.5 23.6 78.4C23.8 73.4 23.7 68.5 23.8 63.7C24.0 58.9 20.7 51.9 24.7 49.6C28.6 47.2 42.5 51.0 47.7 49.6C52.8 48.3 53.1 44.3 55.6 41.3C58.0 38.3 61.2 36.2 62.3 31.6C63.4 27.0 59.4 17.3 61.9 13.4C64.5 9.6 72.0 10.0 77.6 8.4C83.2 6.8 88.9 5.3 95.3 3.9C101.8 2.5 108.8 2.3 116.5 0.1C124.2 -2.0 127.6 -10.8 141.5 -9.0C155.4 -7.2 181.9 7.0 200.0 10.7C218.1 14.5 237.6 13.0 250.2 13.6C262.7 14.3 266.7 15.7 275.4 14.6C284.1 13.5 296.0 6.4 302.3 7.2C308.6 8.0 309.0 16.3 313.0 19.2C317.1 22.2 321.6 23.4 326.5 24.8C331.4 26.3 337.7 26.1 342.2 27.7C346.7 29.3 352.2 30.6 353.5 34.5C354.8 38.4 349.7 46.7 350.0 51.2C350.3 55.6 352.6 58.2 355.3 61.1C358.0 63.9 360.2 66.7 366.3 68.5C372.5 70.4 388.7 68.3 392.1 72.0C395.5 75.8 386.9 84.7 386.8 91.0C386.7 97.4 390.5 100.3 391.5 110.1C392.4 119.9 389.1 136.0 392.4 150.0Z"/>
+          </g>
+          <g class="splat-paint">
+            <path class="splat-body" d="M392.4 150.0C395.6 164.0 412.0 184.2 411.0 194.0C410.0 203.8 391.5 204.0 386.2 208.8C380.8 213.5 380.4 217.9 379.1 222.7C377.9 227.5 377.8 232.0 378.7 237.5C379.5 243.0 386.7 252.1 384.5 255.6C382.3 259.2 369.6 256.6 365.4 259.0C361.2 261.3 362.7 267.3 359.3 269.9C356.0 272.6 349.3 272.6 345.3 275.0C341.4 277.3 341.6 283.9 335.5 284.1C329.4 284.2 316.3 277.2 308.8 275.8C301.2 274.5 296.2 275.2 290.2 275.9C284.1 276.5 278.7 277.3 272.3 279.7C265.9 282.2 263.7 289.2 251.6 290.3C239.6 291.5 217.3 286.4 200.0 286.8C182.7 287.1 160.8 291.5 147.6 292.5C134.4 293.4 129.2 292.0 120.8 292.2C112.3 292.5 103.0 295.3 97.0 293.8C91.0 292.3 89.0 286.1 84.8 283.3C80.6 280.4 77.1 278.0 72.0 276.6C67.0 275.2 61.6 274.8 54.6 275.0C47.6 275.2 33.6 280.4 29.9 278.0C26.2 275.6 34.0 264.6 32.2 260.5C30.5 256.4 22.7 256.6 19.2 253.5C15.7 250.5 14.2 246.2 11.3 242.4C8.5 238.5 0.6 236.3 1.9 230.4C3.1 224.5 15.3 214.4 18.9 207.2C22.5 199.9 22.8 196.4 23.2 186.8C23.6 177.3 23.9 162.9 21.2 150.0C18.4 137.1 6.5 119.1 6.8 109.7C7.0 100.4 20.0 99.3 22.8 94.1C25.6 88.8 23.4 83.5 23.6 78.4C23.8 73.4 23.7 68.5 23.8 63.7C24.0 58.9 20.7 51.9 24.7 49.6C28.6 47.2 42.5 51.0 47.7 49.6C52.8 48.3 53.1 44.3 55.6 41.3C58.0 38.3 61.2 36.2 62.3 31.6C63.4 27.0 59.4 17.3 61.9 13.4C64.5 9.6 72.0 10.0 77.6 8.4C83.2 6.8 88.9 5.3 95.3 3.9C101.8 2.5 108.8 2.3 116.5 0.1C124.2 -2.0 127.6 -10.8 141.5 -9.0C155.4 -7.2 181.9 7.0 200.0 10.7C218.1 14.5 237.6 13.0 250.2 13.6C262.7 14.3 266.7 15.7 275.4 14.6C284.1 13.5 296.0 6.4 302.3 7.2C308.6 8.0 309.0 16.3 313.0 19.2C317.1 22.2 321.6 23.4 326.5 24.8C331.4 26.3 337.7 26.1 342.2 27.7C346.7 29.3 352.2 30.6 353.5 34.5C354.8 38.4 349.7 46.7 350.0 51.2C350.3 55.6 352.6 58.2 355.3 61.1C358.0 63.9 360.2 66.7 366.3 68.5C372.5 70.4 388.7 68.3 392.1 72.0C395.5 75.8 386.9 84.7 386.8 91.0C386.7 97.4 390.5 100.3 391.5 110.1C392.4 119.9 389.1 136.0 392.4 150.0Z"/>
+            <!-- Drips off the bottom edge -->
+            <path d="M112 280h14v22a7 7 0 0 1-14 0z"/>
+            <path d="M236 282h10v28a5 5 0 0 1-10 0z"/>
+            <path d="M312 276h12v16a6 6 0 0 1-12 0z"/>
+            <!-- Flicks and spatter around the edge -->
+            <circle cx="398" cy="118" r="7"/>
+            <circle cx="410" cy="96" r="3.5"/>
+            <circle cx="394" cy="232" r="4"/>
+            <circle cx="4" cy="178" r="6"/>
+            <circle cx="-10" cy="160" r="3"/>
+            <circle cx="12" cy="40" r="4.5"/>
+            <circle cx="150" cy="-2" r="5"/>
+            <circle cx="168" cy="-14" r="2.5"/>
+            <circle cx="292" cy="2" r="3.5"/>
+            <circle cx="62" cy="300" r="4"/>
+            <circle cx="372" cy="292" r="3"/>
+          </g>
+        </svg>
+        <span class="title-top">Off the</span>
+        <span class="title-wall" aria-label="Wall">
+          <span class="brick" aria-hidden="true">W</span><span class="brick" aria-hidden="true">a</span><span class="brick" aria-hidden="true">l</span><span class="brick" aria-hidden="true">l</span>
+        </span>
+      </h1>
+      <p class="note cover-note"><span class="note-arrow" aria-hidden="true">↑</span> projects off the dome</p>
+      <p class="cover-name">Billy Wall</p>
+      <p class="eyebrow cover-role">Chief Vibing Officer (CVO)</p>
 
-  <header class="nav wrap">
-    <a class="brand" href="/" aria-label="Off the Wall, home">
-      <span class="brand-mark" aria-hidden="true">W</span>
-      <span class="brand-name">Off the Wall</span>
-    </a>
-    <nav aria-label="Main">
-      <a href="/#work">Work</a>
-      <a href="/#off-the-clock">Off the clock</a>
-      <a href="https://github.com/billywall732" rel="me">GitHub</a>
-      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
-      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero wrap" aria-labelledby="title">
-      <div class="hero-copy">
-        <p class="eyebrow">Billy Wall · Chief Vibing Officer (CVO)</p>
-        <h1 id="title" class="title">
-          <span class="title-top">Off the</span>
-          <span class="title-wall" aria-label="Wall">
-            <span class="brick" aria-hidden="true">W</span><span class="brick" aria-hidden="true">a</span><span class="brick" aria-hidden="true">l</span><span class="brick" aria-hidden="true">l</span>
-          </span>
-        </h1>
-        <p class="note"><span class="note-arrow" aria-hidden="true">↖</span> projects off the dome</p>
-        <p class="lede">This is my workshop. I build tools that fix small, annoying problems, a few things just for fun, and a snow and surf report so I can catch zero waves more efficiently.</p>
-        <div class="hero-actions">
-          <a class="button primary" href="#work">See the work <span aria-hidden="true">↓</span></a>
-          <a class="button" href="https://github.com/billywall732">GitHub <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-
-      <aside class="desk" aria-labelledby="desk-title" aria-busy="true">
-        <div class="desk-head">
-          <h2 id="desk-title">Conditions desk</h2>
-          <span class="live-dot">Live</span>
-        </div>
-        <p class="desk-note">Today’s best bets, straight from the <a href="/snow-surf-report/">Snow and Surf Report</a>.</p>
-        <ul class="desk-list">
-          <li class="is-loading" aria-hidden="true"><span></span></li>
-          <li class="is-loading" aria-hidden="true"><span></span></li>
-          <li class="is-loading is-call" aria-hidden="true"><span></span></li>
-        </ul>
-        <p class="desk-time"></p>
-      </aside>
-    </section>
-
-    <section class="bench wrap" aria-label="On the workbench">
-      <p><span class="bench-label">On the workbench</span> <span class="bench-text"></span></p>
-    </section>
-
-    <section id="work" class="work wrap" aria-labelledby="work-title">
-      <div class="section-head">
-        <h2 id="work-title">Things I built</h2>
-        <p class="count"></p>
-      </div>
-      <div class="projects"></div>
-
-      <section id="workshop" class="workshop" aria-labelledby="workshop-title">
-        <h3 id="workshop-title">In the workshop</h3>
-        <p class="workshop-lede">Still being built. Peek at the plans.</p>
-        <ul class="workshop-list"></ul>
-      </section>
-    </section>
-
-    <section id="off-the-clock" class="clock wrap" aria-labelledby="clock-title">
-      <h2 id="clock-title">Off the clock</h2>
-      <p class="clock-lede">When I’m not coding, I’m proudly mediocre at:</p>
-      <ul class="hobbies"></ul>
-    </section>
-  </main>
-
-  <footer class="wrap">
-    <section class="steal" aria-labelledby="steal-title"></section>
-    <div class="footer">
-      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
-      <p>Hand-built, no templates, no tracking.</p>
+      <nav class="cover-actions" aria-label="Start here">
+        <a class="button primary" href="/home/#polished">Projects</a>
+        <a class="button" href="https://github.com/billywall732" rel="me">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="button" href="/home/#off-the-clock">Off the Clock</a>
+        <a class="button say-hello" href="https://github.com/billywall732/billywall732.github.io/issues/new">Say Hello</a>
+      </nav>
     </div>
-  </footer>
-
-  <noscript><p class="wrap">Turn on JavaScript to see the projects, or visit <a href="https://github.com/billywall732">github.com/billywall732</a>.</p></noscript>
+  </main>
 </body>
 </html>

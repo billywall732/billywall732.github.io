@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Off the Wall · Billy Wall</title>
+  <meta name="description" content="Billy Wall's workshop: apps for snow and surf, fantasy football, budgets and more, built because I wanted them to exist.">
+  <meta property="og:title" content="Off the Wall · Billy Wall">
+  <meta property="og:description" content="Apps I built because I wanted them to exist.">
+  <meta property="og:image" content="/img/snow-surf.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <!-- Dark by default; pick a saved theme before the page draws, so it never flashes -->
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module" src="/js/main.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to projects</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="/home/#polished">Projects</a>
+      <a href="/home/#off-the-clock">Off the clock</a>
+      <a href="https://github.com/billywall732" rel="me">GitHub</a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- Four tabs, each its own page. The address says which one: #polished, #rough, #workshop or #off-the-clock (js/main.js) -->
+    <nav class="tabs" aria-label="Sections">
+      <ul class="tablist wrap">
+        <li><a href="#polished" data-view="polished" aria-current="page"><span class="tab-emoji" aria-hidden="true">✨</span>Polished Projects<span class="tab-count"></span></a></li>
+        <li><a href="#rough" data-view="rough"><span class="tab-emoji" aria-hidden="true">🧱</span>Rough Around the Edges<span class="tab-count"></span></a></li>
+        <li><a href="#workshop" data-view="workshop"><span class="tab-emoji" aria-hidden="true">🛠️</span>In the Workshop<span class="tab-count"></span></a></li>
+        <li><a href="#off-the-clock" data-view="off-the-clock"><span class="tab-emoji" aria-hidden="true">⏰</span>Off the Clock</a></li>
+      </ul>
+    </nav>
+
+    <section id="view-polished" class="view wrap" aria-labelledby="polished-title">
+      <h1 id="polished-title">Polished Projects</h1>
+      <p class="view-lede">Finished, working and in use. Go click around.</p>
+      <div class="projects" data-status="live"></div>
+    </section>
+
+    <section id="view-rough" class="view wrap" aria-labelledby="rough-title" hidden>
+      <h1 id="rough-title">Rough Around the Edges</h1>
+      <p class="view-lede">They work, mostly. Mind the loose bricks.</p>
+      <div class="projects" data-status="rough"></div>
+    </section>
+
+    <section id="view-workshop" class="view wrap" aria-labelledby="workshop-title" hidden>
+      <h1 id="workshop-title">In the Workshop</h1>
+      <p class="view-lede">Still being built. Peek at the plans.</p>
+      <ul class="workshop-list"></ul>
+    </section>
+
+    <section id="view-off-the-clock" class="view wrap" aria-labelledby="clock-title" hidden>
+      <h1 id="clock-title">Off the Clock</h1>
+      <p class="view-lede">When I’m not coding, I’m proudly mediocre at:</p>
+      <ul class="hobbies"></ul>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates, no tracking.</p>
+    </div>
+  </footer>
+
+  <noscript><p class="wrap">Turn on JavaScript to see the projects, or visit <a href="https://github.com/billywall732">github.com/billywall732</a>.</p></noscript>
+</body>
+</html>

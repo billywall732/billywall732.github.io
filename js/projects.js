@@ -16,7 +16,8 @@
 //   highlights  up to 3 short points: what they can do with it
 //   why         why I built it
 //   how         how it works, as a few short steps
-//   status      'live' or 'workshop' (still being built)
+//   status      which tab it's on: 'live' (Polished Projects), 'rough' (Rough Around
+//               the Edges: works, but not finished) or 'workshop' (still being built)
 //   statusNote  where it stands right now
 //   next        what's next
 //   tags        what it's built with
@@ -25,8 +26,8 @@
 //   image       a screenshot of its cover page in img/ (1280 x 800), or null
 //   art         when there's no image: 'chart', 'trivia', 'snowboard' or 'wedding'
 //
-// Live projects show first, as big cards, in the order below; the first one is
-// the widest. Workshop projects go in the compact list.
+// Polished and rough projects show as big cards, in the order below; the first
+// polished one is the widest. Workshop projects go in the compact list.
 export const projects = [
   {
     slug: 'snow-and-surf-report',
@@ -140,7 +141,7 @@ export const projects = [
       'Live prices come through a small Cloudflare Worker, which keeps API keys out of the page.',
       'Holdings save to your own Google Drive, the same way Budget Ledger does.',
     ],
-    status: 'workshop',
+    status: 'rough',
     statusNote: 'Imports and live prices work; getting it ready to publish.',
     next: [
       'Publish it',
@@ -250,14 +251,14 @@ export const projects = [
 
 // "Off the clock". rating is how good I am, out of 5.
 export const hobbies = [
-  { icon: '🏂', name: 'Snowboarding', rating: 3 },
-  { icon: '🚵', name: 'Mountain biking', rating: 3 },
+  { icon: '🏂', name: 'Snowboarding', rating: 4 },
+  { icon: '🚵', name: 'Mountain biking', rating: 4 },
   { icon: '🏄', name: 'Surfing', rating: 2 },
-  { icon: '⛳', name: 'Golf', rating: 2 },
-  { icon: '🧗', name: 'Rock climbing', rating: 3 },
+  { icon: '⛳', name: 'Golf', rating: 1 },
+  { icon: '🧗', name: 'Rock climbing', rating: 4 },
   { icon: '🦞', name: 'Lobstering', rating: 3 },
-  { icon: '🤿', name: 'Spearfishing', rating: 2 },
-  { icon: '🥍', name: 'Lacrosse', rating: 3 },
+  { icon: '🤿', name: 'Spearfishing', rating: 3 },
+  { icon: '🥍', name: 'Lacrosse', rating: 4 },
 ];
 
 // The footer strip
