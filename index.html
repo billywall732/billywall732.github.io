@@ -7,8 +7,8 @@
   <meta name="description" content="Billy Wall's workshop: apps for snow and surf, fantasy football, budgets and more, built because I wanted them to exist.">
   <meta property="og:title" content="Off the Wall · Billy Wall">
   <meta property="og:description" content="Apps I built because I wanted them to exist.">
-  <meta property="og:image" content="img/snow-surf.webp">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <meta property="og:image" content="/img/snow-surf.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#121110">
   <!-- Dark by default; pick a saved theme before the page draws, so it never flashes -->
   <script>
@@ -18,40 +18,37 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
-  <link rel="stylesheet" href="css/site.css">
-  <script type="module" src="js/main.js"></script>
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module" src="/js/main.js"></script>
 </head>
 <body>
   <a class="skip" href="#work">Skip to projects</a>
 
   <header class="nav wrap">
-    <a class="brand" href="./" aria-label="Off the Wall, home">
+    <a class="brand" href="/" aria-label="Off the Wall, home">
       <span class="brand-mark" aria-hidden="true">W</span>
       <span class="brand-name">Off the Wall</span>
     </a>
     <nav aria-label="Main">
-      <a href="#work">Work</a>
-      <a href="#off-the-clock">Off the clock</a>
+      <a href="/#work">Work</a>
+      <a href="/#off-the-clock">Off the clock</a>
       <a href="https://github.com/billywall732" rel="me">GitHub</a>
-      <div class="theme-switch" role="group" aria-label="Color mode">
-        <button type="button" data-theme="dark" aria-pressed="true" title="Dark"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Dark</span></button>
-        <button type="button" data-theme="light" aria-pressed="false" title="Light"><span class="ti ti-light" aria-hidden="true"></span><span class="sr">Light</span></button>
-        <button type="button" data-theme="blueprint" aria-pressed="false" title="Blueprint"><span class="ti ti-blueprint" aria-hidden="true"></span><span class="sr">Blueprint</span></button>
-      </div>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
     </nav>
   </header>
 
   <main>
     <section class="hero wrap" aria-labelledby="title">
       <div class="hero-copy">
-        <p class="eyebrow">Billy Wall · builder of things</p>
+        <p class="eyebrow">Billy Wall · Chief Vibing Officer (CVO)</p>
         <h1 id="title" class="title">
           <span class="title-top">Off the</span>
           <span class="title-wall" aria-label="Wall">
             <span class="brick" aria-hidden="true">W</span><span class="brick" aria-hidden="true">a</span><span class="brick" aria-hidden="true">l</span><span class="brick" aria-hidden="true">l</span>
           </span>
         </h1>
-        <p class="note" aria-hidden="true"><span class="note-arrow">↖</span> yes, that’s my last name</p>
+        <p class="note"><span class="note-arrow" aria-hidden="true">↖</span> projects off the dome</p>
         <p class="lede">This is my workshop. I build tools that fix small, annoying problems, a few things just for fun, and a snow and surf report so I can catch zero waves more efficiently.</p>
         <div class="hero-actions">
           <a class="button primary" href="#work">See the work <span aria-hidden="true">↓</span></a>
@@ -59,13 +56,17 @@
         </div>
       </div>
 
-      <aside class="desk" aria-labelledby="desk-title" hidden>
+      <aside class="desk" aria-labelledby="desk-title" aria-busy="true">
         <div class="desk-head">
           <h2 id="desk-title">Conditions desk</h2>
           <span class="live-dot">Live</span>
         </div>
         <p class="desk-note">Today’s best bets, straight from the <a href="/snow-surf-report/">Snow and Surf Report</a>.</p>
-        <ul class="desk-list"></ul>
+        <ul class="desk-list">
+          <li class="is-loading" aria-hidden="true"><span></span></li>
+          <li class="is-loading" aria-hidden="true"><span></span></li>
+          <li class="is-loading is-call" aria-hidden="true"><span></span></li>
+        </ul>
         <p class="desk-time"></p>
       </aside>
     </section>
@@ -77,9 +78,15 @@
     <section id="work" class="work wrap" aria-labelledby="work-title">
       <div class="section-head">
         <h2 id="work-title">Things I built</h2>
-        <p class="count" aria-hidden="true"></p>
+        <p class="count"></p>
       </div>
       <div class="projects"></div>
+
+      <section id="workshop" class="workshop" aria-labelledby="workshop-title">
+        <h3 id="workshop-title">In the workshop</h3>
+        <p class="workshop-lede">Still being built. Peek at the plans.</p>
+        <ul class="workshop-list"></ul>
+      </section>
     </section>
 
     <section id="off-the-clock" class="clock wrap" aria-labelledby="clock-title">
@@ -87,17 +94,14 @@
       <p class="clock-lede">When I’m not coding, I’m proudly mediocre at:</p>
       <ul class="hobbies"></ul>
     </section>
-
-    <section class="contact wrap" aria-labelledby="contact-title">
-      <h2 id="contact-title">Got an idea, or found something broken?</h2>
-      <p>Most of this gets shared with friends, so poke around, borrow ideas, or tell me what to fix.</p>
-      <a class="button primary" href="https://github.com/billywall732">Say hi on GitHub <span aria-hidden="true">↗</span></a>
-    </section>
   </main>
 
-  <footer class="footer wrap">
-    <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
-    <p>Hand-built, no templates, no tracking.</p>
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates, no tracking.</p>
+    </div>
   </footer>
 
   <noscript><p class="wrap">Turn on JavaScript to see the projects, or visit <a href="https://github.com/billywall732">github.com/billywall732</a>.</p></noscript>
