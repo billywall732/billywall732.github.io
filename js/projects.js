@@ -117,7 +117,7 @@ export const projects = [
       'Smarter categories for imported expenses',
     ],
     tags: ['HTML', 'Google Drive', 'Charts'],
-    url: '/my-budget-ledger/',
+    url: '/my-budget-ledger/cover.html',
     code: 'https://github.com/billywall732/my-budget-ledger',
     image: '/img/budget-ledger.webp',
   },
