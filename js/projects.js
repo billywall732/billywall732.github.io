@@ -249,16 +249,47 @@ export const projects = [
   },
 ];
 
-// "Off the clock". rating is how good I am, out of 5.
+// "Off the clock". rating is how good I am, out of 5. photos are the ones in
+// clockPhotos below that tapping the block shows (tap again for the next one).
 export const hobbies = [
-  { icon: '🏂', name: 'Snowboarding', rating: 4 },
-  { icon: '🚵', name: 'Mountain biking', rating: 4 },
-  { icon: '🏄', name: 'Surfing', rating: 2 },
-  { icon: '⛳', name: 'Golf', rating: 1 },
-  { icon: '🧗', name: 'Rock climbing', rating: 4 },
-  { icon: '🦞', name: 'Lobstering', rating: 3 },
-  { icon: '🤿', name: 'Spearfishing', rating: 3 },
-  { icon: '🥍', name: 'Lacrosse', rating: 4 },
+  { icon: '🏂', name: 'Snowboarding', rating: 4, photos: ['snowboarding', 'ski-mountain'] },
+  { icon: '🚵', name: 'Mountain biking', rating: 4, photos: ['mountain-biking', 'mtb-crash'] },
+  { icon: '🏄', name: 'Surfing', rating: 2, photos: ['surfing'] },
+  { icon: '⛳', name: 'Golf', rating: 1, photos: ['golfing'] },
+  { icon: '🥾', name: 'Hiking', rating: 4, photos: ['hiking'] },
+  { icon: '🦞', name: 'Lobstering', rating: 3, photos: ['lobstering'] },
+  { icon: '🛶', name: 'Kayaking', rating: 4, photos: ['kayaking', 'sea-cave-kayaking', 'river-kayaking'] },
+  { icon: '🏹', name: 'Archery', rating: 4, photos: ['archery-group'] },
+];
+
+// The photo carousel on "Off the clock", in the order it plays. Each is
+// img/clock/<id>.webp. To add one: put the original in photos/ (not committed)
+// and run, from the repo folder:
+//   ffmpeg -i photos/Name.jpeg -map_metadata -1 -vf "scale='if(gt(iw,ih),min(1400,iw),-2)':'if(gt(iw,ih),-2,min(1400,ih))'" -c:v libwebp -quality 72 img/clock/name.webp
+// -map_metadata -1 strips the location and camera data from the photo.
+export const clockPhotos = [
+  { id: 'snowboarding', caption: 'Snowboarding', alt: 'Snowboarding down a groomed run with snowy peaks behind' },
+  { id: 'mountain-biking', caption: 'Mountain biking', alt: 'A selfie with a mountain bike on one shoulder, green canyons behind' },
+  { id: 'surfing', caption: 'Surfing', alt: 'Carrying a surfboard down the beach in a wetsuit' },
+  { id: 'golfing', caption: 'Golf (mostly the cart)', alt: 'A selfie in a golf cart on the course' },
+  { id: 'lobstering', caption: 'Lobstering', alt: 'Diving headfirst toward the sea floor in clear blue water' },
+  { id: 'kayaking', caption: 'Kayaking', alt: 'Two people paddling a red kayak with an American flag paddle' },
+  { id: 'hiking-peak', caption: 'Hiking', alt: 'Two hikers sitting on a rocky summit above the clouds' },
+  { id: 'horses', caption: 'Horseback riding', alt: 'Riding a horse along a bluff above the ocean' },
+  { id: 'ski-mountain', caption: 'Snowboarding', alt: 'A chairlift climbing toward snowy mountain peaks' },
+  { id: 'sea-cave-kayaking', caption: 'Sea cave kayaking', alt: 'Two kayakers cheering under the orange rock of a sea cave' },
+  { id: 'skydiving', caption: 'Skydiving', alt: 'A parachute coming in to land over a green field' },
+  { id: 'atv', caption: 'Dune riding', alt: 'Riding a yellow ATV on sand dunes' },
+  { id: 'mtb-crash', caption: 'Mountain biking, the other half', alt: 'Sitting on a rocky trail next to a fallen mountain bike' },
+  { id: 'stand-up-paddle', caption: 'Stand-up paddling', alt: 'Paddleboarding down a turquoise river through mangroves' },
+  { id: 'archery-group', caption: 'Archery with the crew', alt: 'A group selfie at an archery range, bows in hand' },
+  { id: 'hiking-dog', caption: 'Hiking with a trail buddy', alt: 'A hiker crouching to pet a dog on a dry hillside trail' },
+  { id: 'river-kayaking', caption: 'River kayaking', alt: 'Kayaking down a river past trees with a flag paddle' },
+  { id: 'horsebackriding', caption: 'Horseback riding', alt: 'A selfie on horseback at sunset with another rider behind' },
+  { id: 'hiking', caption: 'Hiking', alt: 'Hikers on a trail above a sea of clouds' },
+  { id: 'scuba-diving', caption: 'Scuba diving', alt: 'A diver far below in deep green-blue water' },
+  { id: 'mountains', caption: 'Road trip', alt: 'A highway leading toward snowy mountains' },
+  { id: 'billy', caption: 'Off the clock, officially', alt: 'Standing on a balcony above palm trees with a drink' },
 ];
 
 // The footer strip

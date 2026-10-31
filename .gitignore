@@ -1,0 +1,3 @@
+# Original phone photos: big, and they carry location data. The site uses the
+# resized, metadata-free copies in img/clock/ instead (see README).
+photos/

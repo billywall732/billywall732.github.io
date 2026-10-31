@@ -44,11 +44,14 @@ js/ui.js              shared: color-mode and board-cursor buttons, footer strip,
 js/main.js            the home page: four tabs (#polished, #rough, #workshop, #off-the-clock)
 js/project-page.js    a project's page
 tools/make-pages.mjs  writes projects/<slug>/index.html for each project
-img/                  project screenshots
+img/                  project screenshots; img/clock/ has the Off the Clock photos
+photos/               your original photos (not committed: big, with location data)
 icon.svg              the tab icon
 ```
 
 The **home page** has four tabs, each shown as its own page: Polished Projects, Rough Around the Edges, In the Workshop and Off the Clock. The address picks the tab (`/home/#rough`), so each can be linked to, and old `/home/#work` links open Polished Projects.
+
+The **Off the Clock** tab shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
 
 The **Board** button in the header (mouse only, hidden with reduced motion) cycles skateboard → snowboard → surfboard → off. The normal cursor always stays; the board just trails it.
 
