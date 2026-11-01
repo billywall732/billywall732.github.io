@@ -1,3 +1,13 @@
 # Original phone photos: big, and they carry location data. The site uses the
 # resized, metadata-free copies in img/clock/ instead (see README).
 photos/
+
+# The original claude.ai apps (Contrail holds Billy's real trips) and anything extracted from them.
+# Ported into contrail/ and wallet/ with made-up demo data instead.
+reference/
+# Cloudflare Worker secrets for local development (Phase 3)
+.dev.vars
+
+# Tools run with temporary installs (see tools/build-airports.mjs)
+node_modules/
+package-lock.json

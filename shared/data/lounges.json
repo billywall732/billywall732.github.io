@@ -1,0 +1,2977 @@
+{
+ "about": "Airport lounges and who gets in. Access tags: CO Capital One Lounge, CS Chase Sapphire Lounge, PP Priority Pass, AX Amex (Centurion; Sky Club when flying Delta), UA United Club, AA Admirals Club, AS Alaska Lounge, DL Delta Sky Club membership, AL airline ticket or status, PAY day pass sold. Entries with needsReview are unverified.",
+ "access": {
+  "CO": "Capital One Lounge",
+  "CS": "Chase Sapphire Lounge",
+  "PP": "Priority Pass",
+  "AX": "Amex (Centurion, Sky Club)",
+  "UA": "United Club",
+  "AA": "Admirals Club",
+  "AS": "Alaska Lounge",
+  "DL": "Delta Sky Club",
+  "AL": "Airline ticket / status",
+  "PAY": "Day pass"
+ },
+ "airports": {
+  "LAX": {
+   "note": "No Capital One or Chase lounge at LAX. Priority Pass options are limited to Gameway and the Virgin Clubhouse (fee).",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "BUR": {
+   "note": "No lounges listed. The new terminal opened Oct 13, 2026; check the airport's site for new amenities.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "LAS": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "SLC": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "DEN": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "IAH": {
+   "note": "The Terminal B mezzanine United Club is temporarily closed.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "ATL": {
+   "note": "No Capital One or Chase lounge at ATL.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "CLT": {
+   "note": "A Capital One Lounge is announced for Concourse A but not open yet.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "MIA": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "EYW": {
+   "note": "Key West has no airport lounges.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "MCO": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "PBI": {
+   "note": "Access details here were last reported in 2020. Check before you go.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "IAD": {
+   "note": "Both Lufthansa lounges in Concourse B are closed through 2026.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "EWR": {
+   "note": "A Centurion Lounge is coming to Terminal A in 2026. The British Airways lounge is closed until summer 2027.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "JFK": {
+   "note": "Delta flies from Terminal 4; lounges listed are in Terminal 4.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "OPO": {
+   "note": "Here “ANA” is Portugal's airport operator, not the Japanese airline.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "NRT": {
+   "note": "Singapore Airlines uses Terminal 1. Ask the airline which partner lounge business travelers use.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "HND": {
+   "note": "ANA international flights use Terminal 3; ANA domestic flights (for example to Sapporo) normally leave from Terminal 2.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "CTS": {
+   "note": "Flights to Tokyo Haneda are domestic. The North Lounge closed June 30, 2026.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "BOI": {
+   "note": "No passenger lounge found at Boise.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "BTR": {
+   "note": "No passenger lounge found at Baton Rouge.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "BZN": {
+   "note": "No passenger lounge found at Bozeman.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "BOS": {
+   "note": "A JetBlue BlueHouse is planned for Terminal C and a Centurion Lounge for 2029. No Capital One lounge.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "DFW": {
+   "note": "A Chase Sapphire Lounge is coming to Terminal D near D35; check whether it has opened.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "ORD": {
+   "note": "No Priority Pass, Capital One, Chase or Centurion lounge in United's Terminal 1.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "AUS": {
+   "note": "The United Club is temporarily closed. No Priority Pass, Capital One or Chase lounge.",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "MSY": {
+   "note": "",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "YYC": {
+   "note": "US flights leave from the transborder area (Concourse E).",
+   "lastVerified": "2026-10",
+   "needsReview": false
+  },
+  "SFO": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "SEA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "PDX": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "SAN": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "PHX": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "SJC": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "HNL": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "LGA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "DCA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "PHL": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "BWI": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "MSP": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "DTW": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "TPA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "FLL": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "BNA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "SAT": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "RDU": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "PIT": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "HOU": {
+   "note": "No passenger lounge found. Not yet checked.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "ANC": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "LHR": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "CDG": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "FRA": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "AMS": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "LIS": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "MEX": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "CUN": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "YVR": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "YYZ": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "ICN": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  },
+  "SIN": {
+   "note": "Lounge list from general knowledge, not yet checked. Confirm before relying on it.",
+   "lastVerified": null,
+   "needsReview": true
+  }
+ },
+ "lounges": [
+  {
+   "airport": "LAX",
+   "name": "United Club",
+   "terminal": "Terminal 7",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United Club members and eligible United tickets",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "United Polaris Lounge",
+   "terminal": "Terminal 7",
+   "access": [
+    "AL"
+   ],
+   "notes": "United Polaris international business class",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 3",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets, Amex Platinum when flying Delta",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Delta One Lounge",
+   "terminal": "Terminal 3",
+   "access": [
+    "AL"
+   ],
+   "notes": "Delta One passengers",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Gameway",
+   "terminal": "Terminals 3 and 6",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Gaming lounge, not a full lounge",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Admirals Club",
+   "terminal": "Terminal 4",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "Admirals Club members, Citi AAdvantage Executive",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Flagship Lounge",
+   "terminal": "Terminal 4",
+   "access": [
+    "AL"
+   ],
+   "notes": "American premium cabins and top status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Alaska Lounge",
+   "terminal": "Terminal 6",
+   "access": [
+    "AL",
+    "PAY"
+   ],
+   "notes": "Alaska Lounge members or day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Centurion Lounge",
+   "terminal": "Tom Bradley Intl, level 6",
+   "access": [
+    "AX"
+   ],
+   "notes": "Amex Platinum and Centurion",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Star Alliance Lounge",
+   "terminal": "Tom Bradley Intl, level 6",
+   "access": [
+    "AL",
+    "PAY"
+   ],
+   "notes": "Star Alliance premium cabins and Gold; paid entry",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Virgin Atlantic Clubhouse",
+   "terminal": "Tom Bradley Intl, level 6",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Virgin and Delta premium cabins; Priority Pass with a fee, off-peak",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "oneworld Business Lounge / Qantas First",
+   "terminal": "Tom Bradley Intl, level 5",
+   "access": [
+    "AL"
+   ],
+   "notes": "oneworld premium cabins and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAX",
+   "name": "Emirates, Korean Air, Air France and LA Intl Lounges",
+   "terminal": "Tom Bradley Intl",
+   "access": [
+    "AL"
+   ],
+   "notes": "Those airlines' premium passengers",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "Capital One Lounge",
+   "terminal": "D gates, atrium near D50",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "Venture X; $90 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "Chase Sapphire Lounge by The Club",
+   "terminal": "C gates, near C23",
+   "access": [
+    "CS",
+    "PAY"
+   ],
+   "notes": "Sapphire Reserve; $100 day pass. Left Priority Pass in Aug 2026",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "Centurion Lounge",
+   "terminal": "D gates, opposite D1",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "Sidecar by The Centurion Lounge",
+   "terminal": "D gates, central",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards, within 90 min of departure",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "The Club LAS",
+   "terminal": "D gates near D33, and Terminal 3 opposite E2",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; $60 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "LAS",
+   "name": "United Club",
+   "terminal": "D gates, between D33 and D35",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members and eligible tickets; $59 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "SLC",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse A, level 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "SLC",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse B, center",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Same as Concourse A",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "SLC",
+   "name": "Centurion Lounge",
+   "terminal": "Concourse B, near B31 (opened Oct 2025)",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "SLC",
+   "name": "Minute Suites",
+   "terminal": "Concourse A, near A33",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "Capital One Lounge",
+   "terminal": "Concourse A mezzanine, near A34",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "Venture X; paid entry may be available",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "Centurion Lounge",
+   "terminal": "Concourse C mezzanine, near C46",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "United Club",
+   "terminal": "Concourse A, near A25",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members, Star Alliance Gold, eligible tickets",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "United Club",
+   "terminal": "Concourse B, near B32 and near B44",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "Same as above",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "United Club Fly",
+   "terminal": "Concourse B, near B60",
+   "access": [
+    "AL",
+    "UA"
+   ],
+   "notes": "Grab-and-go; members and eligible flyers only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse A, north end",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DEN",
+   "name": "Admirals Club",
+   "terminal": "Concourse C, near C32",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "Admirals Club members and eligible flyers",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "United Club",
+   "terminal": "Terminal A near A9; C near C1 and C33; E near E11",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members and eligible tickets; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "United Polaris Lounge",
+   "terminal": "Terminal E, near E12",
+   "access": [
+    "AL"
+   ],
+   "notes": "United Polaris long-haul business and first",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "United Club Fly",
+   "terminal": "Terminal B, near B12–B20",
+   "access": [
+    "AL",
+    "UA"
+   ],
+   "notes": "Grab-and-go format",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal D mezzanine, near D12",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "KLM Crown Lounge",
+   "terminal": "Terminal D, near D15",
+   "access": [
+    "AL",
+    "PP",
+    "PAY"
+   ],
+   "notes": "KLM premium cabins and status; Priority Pass; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "Air France Lounge",
+   "terminal": "Terminal D, opposite D18",
+   "access": [
+    "AL",
+    "PP",
+    "PAY"
+   ],
+   "notes": "Air France, KLM and Delta premium; Priority Pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "Admirals Club",
+   "terminal": "Terminal A, near A25",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American and oneworld; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAH",
+   "name": "Minute Suites",
+   "terminal": "Terminal C, near C14",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "Delta Sky Club",
+   "terminal": "Every concourse (two in A)",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "Centurion Lounge",
+   "terminal": "Concourse E",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "The Club ATL",
+   "terminal": "Concourse F mezzanine",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; $50 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "Poppin",
+   "terminal": "Concourse F mezzanine",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "Minute Suites",
+   "terminal": "Concourses B, E and F",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "Admirals Club",
+   "terminal": "Concourse T",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American and oneworld; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ATL",
+   "name": "United Club",
+   "terminal": "Concourse T",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United and Star Alliance; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CLT",
+   "name": "Admirals Club",
+   "terminal": "Concourse B, and the C/D intersection",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "Members, eligible cabins and cards; $79 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CLT",
+   "name": "The Club CLT",
+   "terminal": "Concourse A, near A21",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; $50 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CLT",
+   "name": "Gameway",
+   "terminal": "Concourse E, opposite E36",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CLT",
+   "name": "Minute Suites",
+   "terminal": "Atrium, and near D1",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Flagship Lounge",
+   "terminal": "Concourse D",
+   "access": [
+    "AL"
+   ],
+   "notes": "American and oneworld premium cabins and top status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Admirals Club",
+   "terminal": "Concourse D, near D15 and D30",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "Members, premium cabins; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Centurion Lounge",
+   "terminal": "Concourse D",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Turkish Airlines Lounge",
+   "terminal": "Concourse E, and the H–J connector",
+   "access": [
+    "AL",
+    "PP",
+    "PAY"
+   ],
+   "notes": "Star Alliance premium; Priority Pass; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Avianca and TAP Lounge",
+   "terminal": "Concourse J",
+   "access": [
+    "AL",
+    "PP",
+    "PAY"
+   ],
+   "notes": "Star Alliance premium; Priority Pass; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse H",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MIA",
+   "name": "British Airways Lounge",
+   "terminal": "Concourse E satellite",
+   "access": [
+    "AL"
+   ],
+   "notes": "BA and oneworld premium on transatlantic flights",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MCO",
+   "name": "The Club MCO",
+   "terminal": "Airside 1 (gates 1–29) and Airside 4 (gates 70–99)",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; day pass from $50",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MCO",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Terminal C, near C241",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass, 2-hour limit; paid entry",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MCO",
+   "name": "United Club",
+   "terminal": "Airside 3, near gate 43",
+   "access": [
+    "AL",
+    "UA"
+   ],
+   "notes": "United members and eligible cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MCO",
+   "name": "Admirals Club",
+   "terminal": "Airside 3, near gate 55",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "Members; $79 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MCO",
+   "name": "Delta Sky Club",
+   "terminal": "Airside 4, near gate 71",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta members and eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "PBI",
+   "name": "Primeclass Lounge",
+   "terminal": "A/B concourse, after security",
+   "access": [
+    "PAY"
+   ],
+   "notes": "Day pass; DragonPass. Priority Pass was planned",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "Capital One Lounge",
+   "terminal": "Main terminal, after security",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "Venture X; $90 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "Etihad Lounge with Chase",
+   "terminal": "Concourse A",
+   "access": [
+    "CS",
+    "AL",
+    "PAY"
+   ],
+   "notes": "Sapphire Reserve; Etihad premium; $100 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "United Club",
+   "terminal": "Concourse C near C7 and C17; Concourse D near D8",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members; $59 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "United Polaris Lounge",
+   "terminal": "Concourse C, near C17",
+   "access": [
+    "AL"
+   ],
+   "notes": "United Polaris international business and first",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "Air France-KLM Lounge",
+   "terminal": "Concourse A",
+   "access": [
+    "AL",
+    "PP",
+    "PAY"
+   ],
+   "notes": "SkyTeam premium and status; Priority Pass; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "Virgin Atlantic Clubhouse",
+   "terminal": "Concourse A",
+   "access": [
+    "AL",
+    "AX",
+    "PP"
+   ],
+   "notes": "Virgin premium; select Amex; Priority Pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "Turkish Airlines Lounge",
+   "terminal": "Concourse B",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Star Alliance premium and Gold; Priority Pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "IAD",
+   "name": "British Airways Lounge",
+   "terminal": "Concourse B",
+   "access": [
+    "AL"
+   ],
+   "notes": "BA and oneworld premium and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "United Club",
+   "terminal": "Terminal A near A27; Terminal C near C74 and C123",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members; $59 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "United Polaris Lounge",
+   "terminal": "Terminal C, between C102 and C120",
+   "access": [
+    "AL"
+   ],
+   "notes": "United Polaris international business",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal A",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "Admirals Club",
+   "terminal": "Terminal A",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American and oneworld; $79 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "Lufthansa Business Lounge",
+   "terminal": "Terminal B3",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Star Alliance business and Gold; Priority Pass, 3-hour limit",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "SAS Lounge",
+   "terminal": "Terminal B3",
+   "access": [
+    "AL"
+   ],
+   "notes": "SAS and SkyTeam premium and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "EWR",
+   "name": "Minute Suites",
+   "terminal": "Terminal C, near gate 125",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Capital One Lounge",
+   "terminal": "Retail hall, after security",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "Venture X; $90 day pass; within 3 hours of departure",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Chase Sapphire Lounge",
+   "terminal": "Upper level, after security",
+   "access": [
+    "CS",
+    "PAY"
+   ],
+   "notes": "Sapphire Reserve plus two guests; $100 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Centurion Lounge",
+   "terminal": "Just after security",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Delta One Lounge",
+   "terminal": "Between Concourses A and B",
+   "access": [
+    "AL"
+   ],
+   "notes": "Delta One tickets only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Delta Sky Club",
+   "terminal": "Near A8, and near B31 (with Sky Deck)",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta premium cabins, Medallion status, eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "HelloSky",
+   "terminal": "Concourse A, near A2",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass; within 3 hours of departure",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Air India Maharajah Lounge",
+   "terminal": "Near A5",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Air India premium; Priority Pass when space allows",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Virgin Atlantic Clubhouse",
+   "terminal": "Concourse A",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Virgin premium; Priority Pass off-peak",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "JFK",
+   "name": "Emirates Lounge",
+   "terminal": "Near A5",
+   "access": [
+    "AL",
+    "PAY"
+   ],
+   "notes": "Emirates premium and status; paid entry on Emirates flights",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "OPO",
+   "name": "ANA Lounge",
+   "terminal": "Level 3, after security, near gate 32",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Open to all; Priority Pass and DragonPass; daily 4am–11pm",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "OPO",
+   "name": "CIP Lounge",
+   "terminal": "Main terminal",
+   "access": [
+    "PAY"
+   ],
+   "notes": "Meetings and business appointments only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "NRT",
+   "name": "IASS Superior Lounge NOA",
+   "terminal": "Terminal 1 Central Building 3F, after security",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass (use the app QR code)",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "NRT",
+   "name": "IASS Executive Lounge 1",
+   "terminal": "Terminal 1 Central Building 5F, before security",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass; landside only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "NRT",
+   "name": "ANA Lounge and ANA Suite Lounge",
+   "terminal": "Terminal 1 Satellite 5, 4F",
+   "access": [
+    "AL"
+   ],
+   "notes": "Star Alliance business/first and Gold",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "NRT",
+   "name": "United Club",
+   "terminal": "Terminal 1 Central Building 3F",
+   "access": [
+    "AL",
+    "UA"
+   ],
+   "notes": "Star Alliance premium and Gold; United Club members",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "HND",
+   "name": "TIAT Lounge",
+   "terminal": "Terminal 3, after security",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; paid from ¥3,300; 24 hours",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "HND",
+   "name": "Sky Lounge",
+   "terminal": "Terminal 3, after security",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; paid entry; main lounge 24 hours",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "HND",
+   "name": "ANA Lounge",
+   "terminal": "Terminals 3 and 2",
+   "access": [
+    "AL"
+   ],
+   "notes": "ANA and Star Alliance business, Gold, ANA Platinum",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "HND",
+   "name": "ANA Suite Lounge",
+   "terminal": "Terminals 3 and 2",
+   "access": [
+    "AL"
+   ],
+   "notes": "ANA first class and Diamond",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "HND",
+   "name": "Power Lounge (Central, North, South)",
+   "terminal": "Terminal 2",
+   "access": [
+    "PAY"
+   ],
+   "notes": "Paid walk-in or select Japanese credit cards; snacks only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CTS",
+   "name": "Super Lounge and Annex",
+   "terminal": "Domestic terminal 3F/4F, before security",
+   "access": [
+    "PAY"
+   ],
+   "notes": "¥1,500 at the door; select Japanese gold cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CTS",
+   "name": "ANA Lounge",
+   "terminal": "Domestic terminal, after security",
+   "access": [
+    "AL"
+   ],
+   "notes": "ANA and Star Alliance premium and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CTS",
+   "name": "JAL Sakura Lounge",
+   "terminal": "Domestic terminal, after security",
+   "access": [
+    "AL"
+   ],
+   "notes": "JAL and oneworld premium and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "CTS",
+   "name": "Cafe Sky Library",
+   "terminal": "International building 4F, before security",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass, DragonPass or paid; includes a meal",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "Chase Sapphire Lounge by The Club",
+   "terminal": "Terminal B, near B39/B40",
+   "access": [
+    "CS",
+    "PAY"
+   ],
+   "notes": "Sapphire Reserve plus two guests; Priority Pass once a year then $75; $100 walk-up",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "The Lounge",
+   "terminal": "Terminal C, across from C19",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; about $50 day pass; may restrict entry 2:30–8pm",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "Air France Lounge",
+   "terminal": "Terminal E, near E3/E4",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Air France/KLM premium, SkyTeam Elite Plus; Priority Pass, 3-hour limit",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "United Club",
+   "terminal": "Terminal B, near B24",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members and eligible tickets",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "Admirals Club",
+   "terminal": "Terminal B, near B4",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American and oneworld; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal A near A6 and A18; Terminal E near E13",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Sky Club members, eligible Delta tickets and Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "Delta One Lounge",
+   "terminal": "Terminal E",
+   "access": [
+    "AL"
+   ],
+   "notes": "Delta One passengers",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "BOS",
+   "name": "British Airways, Lufthansa and Emirates Lounges",
+   "terminal": "Terminal E, upper level",
+   "access": [
+    "AL"
+   ],
+   "notes": "Those airlines' premium passengers and status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Capital One Lounge",
+   "terminal": "Terminal D, near D22",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "Venture X; $65 entry",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal D, near D12",
+   "access": [
+    "AX"
+   ],
+   "notes": "Eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "The Club DFW",
+   "terminal": "Terminal D, near D27",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; $60 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Terminal D near D15; Terminal E near E31",
+   "access": [
+    "PP",
+    "AX",
+    "PAY"
+   ],
+   "notes": "Priority Pass, 2 hours; Amex Platinum; paid from $62",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Admirals Club",
+   "terminal": "Terminals A, B, C, D and E",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American members and eligible flyers; $79 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Flagship Lounge",
+   "terminal": "Terminal D, near D23",
+   "access": [
+    "AL"
+   ],
+   "notes": "American international premium cabins and top status",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Gameway",
+   "terminal": "Terminal B near B42; Terminal E near E16",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass, 2 hours",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Minute Suites",
+   "terminal": "Terminal A near A39; Terminal D near D23",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Private rooms; Priority Pass 1 hour",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal E, near E10",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta members and eligible tickets",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "DFW",
+   "name": "United Club",
+   "terminal": "Terminal E, near E6",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members; $59 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "United Club",
+   "terminal": "Terminal 1, near B6, B18 and C10",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members; $59 day pass; eligible United cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "United Polaris Lounge",
+   "terminal": "Terminal 1, near C18",
+   "access": [
+    "AL"
+   ],
+   "notes": "United Polaris international business and first",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "United Club",
+   "terminal": "Terminal 2, near F1",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "Same as Terminal 1 clubs",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "Admirals Club and Flagship Lounge",
+   "terminal": "Terminal 3",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American members, premium cabins and status; day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 5, near M11–M14",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta members and eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "Swissport Lounge",
+   "terminal": "Terminal 5, Concourse M upper level",
+   "access": [
+    "PP"
+   ],
+   "notes": "Priority Pass; Terminal 5 departures only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "ORD",
+   "name": "Air France Lounge",
+   "terminal": "Terminal 5, near M17",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "Priority Pass at limited hours; Terminal 5 departures only",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "AUS",
+   "name": "Admirals Club",
+   "terminal": "Mezzanine, across from gate 22",
+   "access": [
+    "AL",
+    "PAY",
+    "AA"
+   ],
+   "notes": "American and oneworld; $79 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "AUS",
+   "name": "Delta Sky Club",
+   "terminal": "Mezzanine, near gate 4",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta members, eligible cards and premium cabins",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "AUS",
+   "name": "United Club",
+   "terminal": "Mezzanine, across from gate 22",
+   "access": [
+    "AL"
+   ],
+   "notes": "Temporarily closed",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MSY",
+   "name": "The Club MSY",
+   "terminal": "Level 3 above Concourse A",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; about $60 Club Pass; renovated 2026",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MSY",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse C, near C1",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "Delta members and eligible Amex cards",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "MSY",
+   "name": "United Club",
+   "terminal": "Concourse C, near C7",
+   "access": [
+    "AL",
+    "PAY",
+    "UA"
+   ],
+   "notes": "United members; $59 day pass",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "YYC",
+   "name": "Aspire Lounge (transborder)",
+   "terminal": "Concourse E, after US preclearance",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; walk-up about C$55; closes around 7pm",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "YYC",
+   "name": "Aspire Lounge (international)",
+   "terminal": "Concourse D",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "Priority Pass; walk-up about C$55",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "YYC",
+   "name": "WestJet Elevation Lounge",
+   "terminal": "Domestic, across from Concourse B",
+   "access": [
+    "AL",
+    "PAY"
+   ],
+   "notes": "WestJet status; pay per use; Priority Pass discount",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "YYC",
+   "name": "Air Canada Maple Leaf Lounge",
+   "terminal": "Domestic, Concourse C",
+   "access": [
+    "AL"
+   ],
+   "notes": "Air Canada premium and Star Alliance Gold",
+   "lastVerified": "2026-10",
+   "source": "Contrail research, Oct 2026"
+  },
+  {
+   "airport": "SFO",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 3, near gate F2",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SFO",
+   "name": "United Club",
+   "terminal": "Terminal 3, F and E gates",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SFO",
+   "name": "United Polaris Lounge",
+   "terminal": "International Terminal G",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SFO",
+   "name": "Delta Sky Club",
+   "terminal": "Harvey Milk Terminal 1",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SFO",
+   "name": "Air France-KLM Lounge",
+   "terminal": "International Terminal A",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SEA",
+   "name": "Centurion Lounge",
+   "terminal": "Central Terminal, near B gates",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SEA",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse A and the S gates",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SEA",
+   "name": "Alaska Lounge",
+   "terminal": "Concourses C and D, and the N gates",
+   "access": [
+    "AL",
+    "AS",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SEA",
+   "name": "The Club SEA",
+   "terminal": "Concourse A and the S gates",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PDX",
+   "name": "Alaska Lounge",
+   "terminal": "Concourse C",
+   "access": [
+    "AL",
+    "AS",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PDX",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse D",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PDX",
+   "name": "United Club",
+   "terminal": "Concourse E",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SAN",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SAN",
+   "name": "United Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SAN",
+   "name": "Airspace Lounge",
+   "terminal": "Terminal 2",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHX",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 4, Concourse B",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHX",
+   "name": "Admirals Club",
+   "terminal": "Terminal 4",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHX",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 4",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHX",
+   "name": "Escape Lounge",
+   "terminal": "Terminal 4",
+   "access": [
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SJC",
+   "name": "The Club SJC",
+   "terminal": "Terminal A",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "HNL",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 2",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "HNL",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "HNL",
+   "name": "United Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "HNL",
+   "name": "Plumeria Lounge",
+   "terminal": "Terminal 2",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LGA",
+   "name": "Chase Sapphire Lounge",
+   "terminal": "Terminal B",
+   "access": [
+    "CS",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LGA",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal B",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LGA",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal C",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LGA",
+   "name": "United Club",
+   "terminal": "Terminal B",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LGA",
+   "name": "Admirals Club",
+   "terminal": "Terminal B",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DCA",
+   "name": "Capital One Lounge",
+   "terminal": "National Hall, after security",
+   "access": [
+    "CO",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DCA",
+   "name": "Admirals Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DCA",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DCA",
+   "name": "United Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHL",
+   "name": "Centurion Lounge",
+   "terminal": "Between Terminals A and B",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHL",
+   "name": "Admirals Club",
+   "terminal": "Terminals A, B and F",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHL",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal D",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PHL",
+   "name": "The Club PHL",
+   "terminal": "Terminal A",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "BWI",
+   "name": "The Club BWI",
+   "terminal": "Concourse D",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "MSP",
+   "name": "Delta Sky Club",
+   "terminal": "Concourses C, F and G",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "MSP",
+   "name": "Escape Lounge",
+   "terminal": "Terminal 1, near Concourse E",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DTW",
+   "name": "Delta Sky Club",
+   "terminal": "McNamara Terminal, Concourses A and B",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "DTW",
+   "name": "Escape Lounge",
+   "terminal": "",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "TPA",
+   "name": "Delta Sky Club",
+   "terminal": "Airside E",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "TPA",
+   "name": "Admirals Club",
+   "terminal": "Airside F",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "TPA",
+   "name": "United Club",
+   "terminal": "Airside C",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "FLL",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "FLL",
+   "name": "The Club FLL",
+   "terminal": "Terminal 4",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "BNA",
+   "name": "Admirals Club",
+   "terminal": "Concourse C",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "BNA",
+   "name": "Delta Sky Club",
+   "terminal": "Concourse B",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "BNA",
+   "name": "The Club BNA",
+   "terminal": "Concourse D",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SAT",
+   "name": "The Club SAT",
+   "terminal": "Terminal A",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "RDU",
+   "name": "Admirals Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "RDU",
+   "name": "Delta Sky Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "RDU",
+   "name": "United Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "UA",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "PIT",
+   "name": "The Club PIT",
+   "terminal": "Airside Concourse D",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "ANC",
+   "name": "Alaska Lounge",
+   "terminal": "South Terminal, C gates",
+   "access": [
+    "AL",
+    "AS",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LHR",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Terminals 2, 3 and 4",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LHR",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 3",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LHR",
+   "name": "United Club",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL",
+    "UA"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LHR",
+   "name": "Virgin Atlantic Clubhouse",
+   "terminal": "Terminal 3",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "CDG",
+   "name": "Air France Lounge",
+   "terminal": "Terminal 2E and 2F",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "CDG",
+   "name": "Star Alliance Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "AL",
+    "PP"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "FRA",
+   "name": "Lufthansa Business Lounge",
+   "terminal": "Terminal 1, concourses A, B and Z",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "FRA",
+   "name": "Primeclass Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "AMS",
+   "name": "KLM Crown Lounge",
+   "terminal": "Schengen and non-Schengen areas",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "AMS",
+   "name": "Aspire Lounge",
+   "terminal": "Lounge 26 and 41",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LIS",
+   "name": "ANA Lounge",
+   "terminal": "Terminal 1, Schengen and non-Schengen",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "LIS",
+   "name": "TAP Premium Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "MEX",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "MEX",
+   "name": "Aeromexico Salon Premier",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "CUN",
+   "name": "Centurion Lounge",
+   "terminal": "Terminal 3",
+   "access": [
+    "AX"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "CUN",
+   "name": "Mera Business Lounge",
+   "terminal": "Terminals 3 and 4",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "YVR",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Domestic, international and US transborder",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "YVR",
+   "name": "Air Canada Maple Leaf Lounge",
+   "terminal": "Domestic and international",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "YYZ",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Terminals 1 and 3",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "YYZ",
+   "name": "Air Canada Maple Leaf Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "ICN",
+   "name": "Korean Air Prestige Lounge",
+   "terminal": "Terminal 2",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "ICN",
+   "name": "Matina Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SIN",
+   "name": "SilverKris Lounge",
+   "terminal": "Terminals 2 and 3",
+   "access": [
+    "AL"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  },
+  {
+   "airport": "SIN",
+   "name": "Plaza Premium Lounge",
+   "terminal": "Terminal 1",
+   "access": [
+    "PP",
+    "PAY"
+   ],
+   "notes": "",
+   "lastVerified": null,
+   "source": "General knowledge, not verified",
+   "needsReview": true
+  }
+ ]
+}
