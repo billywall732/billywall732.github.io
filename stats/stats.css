@@ -1,0 +1,30 @@
+/* The hidden /stats/ page */
+.stats-page { padding-block: 40px 64px; display: grid; gap: 18px; }
+.stats-page h1 { font-size: clamp(36px, 6vw, 56px); }
+.stats-page .eyebrow { margin: 0; }
+.stats-note { margin: 0; color: var(--muted); max-width: 70ch; }
+.range-tabs { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.range-tabs button { font: 600 14px/1 var(--sans); padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
+.range-tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.stat-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; }
+.stat-card b { display: block; font: 800 32px/1.1 var(--display); }
+.stat-card span { color: var(--muted); font-size: 13px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.stat-panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+.stat-panel h2 { font-size: 20px; margin: 0 0 4px; }
+.stat-panel .sub { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bars li { display: grid; grid-template-columns: minmax(0, 11em) 1fr 3.5em; gap: 10px; align-items: center; font-size: 14px; }
+.bars li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bars li i { height: 9px; border-radius: 4px; background: linear-gradient(90deg, var(--brand) var(--w), color-mix(in srgb, var(--ink) 10%, transparent) var(--w)); }
+.bars li b { text-align: right; font-variant-numeric: tabular-nums; }
+.page-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.page-table th, .page-table td { padding: 8px 6px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.page-table th.n, .page-table td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.page-table thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.page-table tr.on td { font-weight: 700; }
+.page-table details summary { cursor: pointer; overflow-wrap: anywhere; }
+.page-table .detail { display: grid; gap: 4px; padding: 6px 0 2px; color: var(--muted); font-weight: 400; font-size: 13px; }
+.table-scroll { overflow-x: auto; }
+.empty { color: var(--muted); margin: 0; }

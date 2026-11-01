@@ -1,0 +1,15 @@
+# The hidden /stats/ page's Worker (see README.md in this folder). The GoatCounter key is a secret:
+#   npx wrangler secret put GOATCOUNTER_TOKEN
+# and is never written here.
+name = "otw-stats"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+workers_dev = true
+
+# Request logs and traces off: nothing about visitors is kept
+[observability]
+enabled = false
+
+[vars]
+SITE = "offthewall"
+ALLOWED_ORIGINS = "https://offthewall.dev"

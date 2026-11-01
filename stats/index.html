@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visit counts · Off the Wall</title>
+  <!-- Hidden page: not linked from anywhere, not indexed, not counted. It shows aggregate counts only. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/stats/stats.css">
+  <script type="module" src="/stats/stats.js"></script>
+</head>
+<body>
+  <main class="wrap stats-page">
+    <p class="eyebrow">Off the Wall · hidden page</p>
+    <h1>Visit counts</h1>
+    <p class="stats-note">Aggregate counts only: views per page, referrer domains, countries and US states, device types and browser families. No IP addresses, no cookies, no individual visitors. Visitor numbers are <b>estimates</b>.</p>
+    <div class="range-tabs" role="tablist" aria-label="Time range">
+      <button role="tab" data-range="today" aria-selected="false">Today</button>
+      <button role="tab" data-range="week" aria-selected="true">Last 7 days</button>
+      <button role="tab" data-range="month" aria-selected="false">Last 30 days</button>
+    </div>
+    <div id="stats" aria-live="polite"><p class="stats-note">Loading…</p></div>
+  </main>
+</body>
+</html>

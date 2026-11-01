@@ -77,6 +77,18 @@ Both run as **demos**: anyone can click around made-up data for "Alex & Jordan",
 - **Lounges** (`shared/data/lounges.json`): airports marked `needsReview` come from general knowledge and haven't been checked. Each lounge list shows when it was last checked.
 - **Cards** (`shared/data/cards.json`): fees and earning rates as of 2026. They change often; update them here.
 
+## Visit counts
+
+Every public page loads `shared/count.js`, the site's own small counter, which reports to the `offthewall` GoatCounter account. It sends:
+- page paths, with no query strings;
+- the referrer's domain only;
+- device type and browser family (no versions);
+- entry page, time-on-page bucket and an estimated exit page.
+
+There are no cookies and nothing is stored in the browser, so "Anonymous visit counts, no cookies." in the footer stays true. The league's own Fantasy Feetpics site keeps its separate counter.
+
+The counts are on a hidden page, `/stats/`. It's linked from nowhere, isn't indexed and isn't counted itself. It reads the counts through `worker-stats/` (setup in that folder's README) and shows only aggregates.
+
 ## Run it on your computer
 
 From the folder: `python -m http.server 8080`, then open http://localhost:8080. (The app links only work on the real site, where the other repos live next to it.)
