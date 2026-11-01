@@ -12,7 +12,7 @@ export const config = {
   // Billy's sign-in email; gets the Admin page (Phase 2)
   adminEmail: '',
   // The stats Worker (worker-stats/) that the hidden /stats/ page reads; empty = not set up yet
-  statsUrl: '',
+  statsUrl: 'https://otw-stats.offthewall-dev.workers.dev',
   // Where "Request access" goes until the real request flow exists
   contactEmail: 'WallWorks732@gmail.com',
 };

@@ -33,12 +33,22 @@ export default {
 };
 
 async function summary(env) {
+  // GoatCounter's API allows only a few requests a second: one at a time, a short gap between them,
+  // and when it says "429 Too Many Requests", wait as long as it asks and try again.
+  const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+  let last = 0;
   const api = async (path, params = {}) => {
-    const res = await fetch(`https://${env.SITE}.goatcounter.com/api/v0${path}?${new URLSearchParams(params)}`, {
-      headers: { Authorization: `Bearer ${env.GOATCOUNTER_TOKEN}`, 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) throw new Error(`GoatCounter ${res.status} for ${path}`);
-    return res.json();
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const wait = last + 300 - Date.now(); if (wait > 0) await pause(wait);
+      last = Date.now();
+      const res = await fetch(`https://${env.SITE}.goatcounter.com/api/v0${path}?${new URLSearchParams(params)}`, {
+        headers: { Authorization: `Bearer ${env.GOATCOUNTER_TOKEN}`, 'Content-Type': 'application/json' },
+      });
+      if (res.status === 429) { await pause(Math.min(10, Number(res.headers.get('X-Rate-Limit-Reset')) || 1) * 1000 + 200); continue; }
+      if (!res.ok) throw new Error(`GoatCounter ${res.status} for ${path}`);
+      return res.json();
+    }
+    throw new Error(`GoatCounter kept saying 429 for ${path}`);
   };
   // Days in the account's own time zone
   const me = await api('/me');
@@ -48,12 +58,10 @@ async function summary(env) {
   const ranges = {};
   for (const [name, back] of Object.entries(RANGES)) {
     const span = { start: day(back), end: day(0) };
-    const [total, hits, refs, locs] = await Promise.all([
-      api('/stats/total', span),
-      api('/stats/hits', { ...span, limit: 200 }),
-      api('/stats/toprefs', { ...span, limit: 25 }).catch(() => ({ stats: [] })),
-      api('/stats/locations', { ...span, limit: 40 }).catch(() => ({ stats: [] })),
-    ]);
+    const total = await api('/stats/total', span);
+    const hits = await api('/stats/hits', { ...span, limit: 200 });
+    const refs = await api('/stats/toprefs', { ...span, limit: 25 }).catch(() => ({ stats: [] }));
+    const locs = await api('/stats/locations', { ...span, limit: 40 }).catch(() => ({ stats: [] }));
     const r = { start: span.start, end: span.end, views: 0, visitorsEstimate: null, pages: [], referrers: [], countries: [], regions: [], devices: {}, browsers: {}, entry: {}, exit: {}, time: {}, perPage: {} };
     const add = (o, k, n) => { o[k] = (o[k] || 0) + n; };
     for (const h of hits.hits || []) {
@@ -86,7 +94,7 @@ async function summary(env) {
     ranges[name] = r;
   }
   // Referrer domains for the busiest pages (last 30 days)
-  for (const p of ranges.month.pages.sort((a, b) => b.views - a.views).slice(0, 12)) {
+  for (const p of ranges.month.pages.sort((a, b) => b.views - a.views).slice(0, 8)) {
     if (p.pathId == null) continue;
     const pr = await api(`/stats/hits/${p.pathId}`, { start: ranges.month.start, end: ranges.month.end, limit: 8 }).catch(() => ({ refs: [] }));
     const list = pr.refs || pr.stats || [];
