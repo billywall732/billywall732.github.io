@@ -1,0 +1,48 @@
+/* Contrail analytics: charts use the app's color variables, so they follow the color mode */
+.contrail-app .backlink { color: var(--accent); text-decoration: none; }
+.contrail-app .backlink:hover { text-decoration: underline; }
+.contrail-app .secnav { position: sticky; top: 0; z-index: 20; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; background: var(--bg); padding-block: 8px; border-bottom: 2px solid var(--ink); }
+.contrail-app .secnav a { font-family: var(--f-display); font-size: 16px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 6px 12px; color: var(--muted); text-decoration: none; white-space: nowrap; border-radius: 4px; }
+.contrail-app .secnav a:hover { color: var(--ink); background: var(--surface-2); }
+.contrail-app .an-sections { display: flex; flex-direction: column; gap: 20px; }
+.contrail-app .an-sec { scroll-margin-top: 64px; gap: 10px; }
+.contrail-app .an-sec h2 { font-size: 26px; }
+.contrail-app .an-sec h3 { font-size: 18px; text-transform: uppercase; letter-spacing: .04em; margin-top: 8px; }
+.contrail-app .an-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px 28px; }
+.contrail-app .an-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.contrail-app .an-grid line { stroke: var(--line); stroke-width: 1; }
+.contrail-app .an-axis, .contrail-app .an-axis text { font-family: var(--f-mono); font-size: 12px; fill: var(--muted); }
+.contrail-app .an-bar { fill: var(--accent); }
+.contrail-app .an-bar:hover { fill: var(--t-near); }
+.contrail-app .an-line { fill: none; stroke-width: 3; stroke-linejoin: round; }
+.contrail-app .an-lbl { font-family: var(--f-mono); font-size: 13px; font-weight: 500; }
+.contrail-app .c0 { stroke: var(--t-later); fill: var(--t-later); } .contrail-app .an-line.c0 { fill: none; }
+.contrail-app .c1 { stroke: var(--t-near); fill: var(--t-near); } .contrail-app .an-line.c1 { fill: none; }
+.contrail-app .c2 { stroke: var(--accent); fill: var(--accent); } .contrail-app .an-line.c2 { fill: none; }
+.contrail-app .c3 { stroke: var(--t-now); fill: var(--t-now); } .contrail-app .an-line.c3 { fill: none; }
+.contrail-app .c4 { stroke: var(--t-soon); fill: var(--t-soon); } .contrail-app .an-line.c4 { fill: none; }
+.contrail-app .an-lbl { stroke: none; }
+.contrail-app .an-day.l0 { fill: var(--surface-2); }
+.contrail-app .an-day.l1 { fill: color-mix(in srgb, var(--accent) 45%, var(--surface)); }
+.contrail-app .an-day.l2 { fill: var(--accent); }
+.contrail-app .an-key { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+.contrail-app .an-key.l1 { background: color-mix(in srgb, var(--accent) 45%, var(--surface)); }
+.contrail-app .an-key.l2 { background: var(--accent); }
+.contrail-app .an-legend { border: 0; padding: 4px 0 0; background: none; }
+.contrail-app .an-scroll { overflow-x: auto; max-width: 100%; }
+.contrail-app .an-scroll .an-svg { min-width: 700px; }
+.contrail-app .an-map .landp { fill: var(--land); stroke: var(--border-c); stroke-width: .6; }
+.contrail-app .an-map .landp.an-on { fill: var(--accent); }
+.contrail-app .an-map .sea { fill: var(--sea); }
+.contrail-app .an-map { border-radius: 4px; overflow: hidden; }
+.contrail-app .an-callout { margin: 0; font-size: 15px; }
+.contrail-app .an-callout b { font-family: var(--f-display); font-size: 26px; color: var(--accent); }
+.contrail-app .an-records { margin-top: 4px; }
+.contrail-app .an-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; align-self: flex-start; }
+.contrail-app .an-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.contrail-app .an-table th, .contrail-app .an-table td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+.contrail-app .an-table thead th { font-family: var(--f-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+.contrail-app .an-table .r { text-align: right; }
+.contrail-app .an-grid-t td { text-align: center; background: color-mix(in srgb, var(--accent) calc(var(--a) * 70%), transparent); min-width: 34px; }
+.contrail-app .an-grid-t tbody th { font-weight: 500; white-space: nowrap; }
+.contrail-app .an-empty { padding: 14px; border: 1px dashed var(--line); border-radius: 6px; }

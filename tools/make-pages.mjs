@@ -65,3 +65,13 @@ for (const p of projects) {
   writeFileSync(join(dir, p.slug, 'index.html'), page(p));
 }
 console.log(`Wrote ${readdirSync(dir).length} project pages: ${projects.map((p) => `/projects/${p.slug}/`).join(' ')}`);
+
+// The app pages (Contrail, Wallet) keep their own content; their header and footer come from the home page too
+const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html'];
+for (const f of APP_PAGES) {
+  const path = join(root, f);
+  const html = readFileSync(path, 'utf8');
+  const next = html.replace(/  <header class="nav wrap">[\s\S]*?<\/header>/, header).replace(/  <footer class="wrap">[\s\S]*?<\/footer>/, footer);
+  if (next !== html) writeFileSync(path, next);
+}
+console.log(`Refreshed the header and footer of ${APP_PAGES.join(', ')}`);

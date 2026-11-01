@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Contrail analytics · Off the Wall</title>
+  <meta name="description" content="Contrail travel analytics: flights, miles, airlines, airports, places and stays over time.">
+  <meta property="og:title" content="Contrail · Off the Wall">
+  <meta property="og:description" content="A flight and hotel log with a route map and lounge access by card.">
+  <meta property="og:image" content="/img/contrail.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/shared/apps.css">
+  <link rel="stylesheet" href="/contrail/app.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/contrail/analytics/"}' async src="//gc.zgo.at/count.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <link rel="stylesheet" href="/contrail/analytics/analytics.css">
+  <script type="module" src="/contrail/analytics/analytics.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to analytics</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="/home/#polished">Projects</a>
+      <a href="/home/#off-the-clock">Off the clock</a>
+      <a href="https://github.com/billywall732" rel="me">GitHub</a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+    <main id="main" class="contrail-app">
+  <div class="wrap">
+    <div id="demoBanner"></div>
+    <header>
+      <div class="head-l">
+        <span class="eyebrow"><a href="/contrail/" class="backlink">← Contrail</a></span>
+        <h1>Travel analytics</h1>
+        <p class="owner" id="anOwner"></p>
+      </div>
+      <div class="actions"><div class="yrs" role="group" aria-label="Year"><span class="ctl">Year</span><span id="yearSel" class="yrchips"></span></div></div>
+    </header>
+    <nav class="secnav" aria-label="Sections" id="secnav"></nav>
+    <div id="sections" class="an-sections"></div>
+    <p class="foot">Built from the trips and stays in Contrail. Miles are great-circle distances between airports; hours in the air come from booked departure and arrival times.</p>
+  </div>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates. Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+
+  <noscript><p class="wrap">The analytics need JavaScript to draw the charts.</p></noscript>
+</body>
+</html>

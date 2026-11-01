@@ -12,6 +12,8 @@ This repo is named `billywall732.github.io`, which makes it the main GitHub Page
 |---|---|
 | `/` | this repo |
 | `/projects/<slug>/` | this repo: one page per project |
+| `/contrail/`, `/contrail/analytics/` | this repo: the Contrail app |
+| `/wallet/` | this repo: the What's in My Wallet? app |
 | `/snow-surf-report/` | snow-surf-report |
 | `/fantasy-football/` | fantasy-football (built and pushed by fantasy-feetpics) |
 | `/my-budget-ledger/` | my-budget-ledger |
@@ -47,6 +49,17 @@ tools/make-pages.mjs  writes projects/<slug>/index.html for each project
 img/                  project screenshots; img/clock/ has the Off the Clock photos
 photos/               your original photos (not committed: big, with location data)
 icon.svg              the tab icon
+contrail/             Contrail, the flight and hotel log (app.js, csv.js import, demo-data.js, analytics/, cover/)
+wallet/               What's in My Wallet?, the card tracker (app.js, demo-data.js, cover/)
+contrail/about/, wallet/about/   redirect to the apps' project pages
+shared/               what both apps use:
+  config.js           every environment value (Firebase, Worker, OAuth client, contact email) in one place
+  store.js            the data layer; Phase 1 keeps everything in memory (a reload starts over)
+  trips.js, travel.js trip math (time zones, miles) and the travel summary Wallet reads
+  app-shell.js        site header/footer behavior, demo banner, file downloads
+  data/               airports.json (from OurAirports), lounges.json, cards.json
+tools/build-airports.mjs  rebuilds shared/data/airports.json (see the file for how)
+reference/            the original claude.ai apps; not committed (Contrail's has real trips)
 ```
 
 The **home page** has four tabs, each shown as its own page: Polished Projects, Rough Around the Edges, In the Workshop and Off the Clock. The address picks the tab (`/home/#rough`), so each can be linked to, and old `/home/#work` links open Polished Projects.
@@ -54,6 +67,15 @@ The **home page** has four tabs, each shown as its own page: Polished Projects, 
 The **Off the Clock** tab shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
 
 The **Board** button in the header (mouse only, hidden with reduced motion) cycles skateboard → snowboard → surfboard → off. The normal cursor always stays; the board just trails it.
+
+## The apps (Contrail and What's in My Wallet?)
+
+Both run as **demos**: anyone can click around made-up data for "Alex & Jordan", and nothing is saved. The sample trips are placed relative to today, so there's always one coming up. Sign-in for approved users (their own saved data, Gmail import, Claude features) comes in later phases; see `shared/config.js`.
+
+- Their header and footer are copied from `home/index.html` by `node tools/make-pages.mjs`, like the project pages.
+- Each app's CSS is scoped under `.contrail-app` / `.wallet-app` so it can't affect the rest of the site.
+- **Lounges** (`shared/data/lounges.json`): airports marked `needsReview` come from general knowledge and haven't been checked. Each lounge list shows when it was last checked.
+- **Cards** (`shared/data/cards.json`): fees and earning rates as of 2026. They change often; update them here.
 
 ## Run it on your computer
 

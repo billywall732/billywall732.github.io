@@ -1,0 +1,321 @@
+/* Ported from the original claude.ai app. Everything is scoped under .contrail-app so it can't
+   leak into the site, and the site's styles for these shared class names are reset first. */
+.contrail-app :is(.eyebrow, .note, .on, .primary, .sr, .tabs, .wrap) { all: revert; }
+.contrail-app{--bg:#eef1f4; --surface:#ffffff; --surface-2:#f6f8fa; --line:#d5dbe2;
+  --ink:#16233a; --muted:#5b6778; --land:#d9e0e8; --border-c:#c3ccd6; --sea:#eef1f4;
+  --accent:#6741d9; --past:#16233a;
+  --t-now:#2b8a3e; --t-soon:#e03131; --t-near:#d9770b; --t-later:#1c7ed6;
+  --warn:#b7791f;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  /* map tokens (auto style follows the page theme) */
+  --m-sea:var(--sea); --m-land:var(--land); --m-border:var(--border-c); --m-grat:transparent;
+  --m-past:var(--past); --m-label:var(--ink); --m-halo:var(--surface); --m-later:var(--t-later);}
+:root[data-theme="dark"] .contrail-app, :root[data-theme="blueprint"] .contrail-app{--bg:#0f1724; --surface:#162133; --surface-2:#1b283c; --line:#2a3a52;
+  --ink:#e6ecf4; --muted:#93a1b5; --land:#24344b; --border-c:#33465f; --sea:#0f1724;
+  --accent:#9775fa; --past:#cfd8e4; --t-now:#51cf66; --t-soon:#ff6b6b; --t-near:#ffa94d; --t-later:#5aa9f2; --warn:#e2b04a; color-scheme:dark}
+.contrail-app .mapbox[data-mapstyle="blueprint"]{--m-sea:#123a6b;--m-land:#1d4f8a;--m-border:#6f9bd1;--m-grat:rgba(255,255,255,.13);--m-past:#e7f0fb;--m-label:#ffffff;--m-halo:#123a6b;--m-later:#7fd3ff}
+.contrail-app .mapbox[data-mapstyle="topo"]{--m-sea:#cfe6f3;--m-land:#dfe8c8;--m-border:#a3b483;--m-grat:rgba(40,80,110,.14);--m-past:#2f3b2a;--m-label:#1e2a1c;--m-halo:#f4f8ec;--m-later:#1c6fc4}
+.contrail-app .mapbox[data-mapstyle="night"]{--m-sea:#05080f;--m-land:#141b29;--m-border:#2a3550;--m-grat:rgba(120,150,200,.09);--m-past:#8ea3c7;--m-label:#dbe4f5;--m-halo:#05080f;--m-later:#5aa9f2}
+.contrail-app .mapbox[data-mapstyle="paper"]{--m-sea:#efe6d2;--m-land:#ddd0b0;--m-border:#b5a27c;--m-grat:rgba(110,90,50,.17);--m-past:#4a3b26;--m-label:#3a2e1c;--m-halo:#f6efe0;--m-later:#2a63a8}
+.contrail-app .mapbox[data-mapstyle="mono"]{--m-sea:#ffffff;--m-land:#e9e9e9;--m-border:#c9c9c9;--m-grat:transparent;--m-past:#222222;--m-label:#111111;--m-halo:#ffffff;--m-later:#1c7ed6}
+.contrail-app, .contrail-app *{box-sizing:border-box}
+.contrail-app{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+body.noscroll{overflow:hidden}
+.contrail-app .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.contrail-app h1, .contrail-app h2, .contrail-app h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em;margin:0;text-wrap:balance}
+.contrail-app h1{font-size:clamp(34px,6vw,52px);line-height:1;text-transform:uppercase}
+.contrail-app h2{font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.contrail-app .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.contrail-app .mono{font-family:var(--f-mono)}
+.contrail-app .num{font-variant-numeric:tabular-nums}
+.contrail-app header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.contrail-app .head-l{display:flex;flex-direction:column;gap:6px;min-width:0}
+.contrail-app .head-l p{margin:0;color:var(--muted);max-width:60ch}
+.contrail-app .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.contrail-app button, .contrail-app select, .contrail-app input, .contrail-app textarea{font:inherit}
+.contrail-app button{cursor:pointer}
+.contrail-app .btn, .contrail-app select.btn{font-family:var(--f-mono);font-size:13px;padding:7px 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px}
+.contrail-app .btn:hover{border-color:var(--ink)}
+.contrail-app .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.contrail-app :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.contrail-app label.ctl{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.contrail-app .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border:1px solid var(--line);background:var(--surface);border-radius:6px}
+.contrail-app .stat{padding:12px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.contrail-app .stat:last-child{border-right:0}
+.contrail-app .stat b{font-family:var(--f-display);font-size:32px;font-weight:600;line-height:1}
+.contrail-app .stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.contrail-app .next{display:grid;grid-template-columns:auto 1fr auto;gap:8px 20px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--tc,var(--t-later));border-radius:6px;padding:16px 20px}
+.contrail-app .next .route{font-family:var(--f-display);font-size:34px;font-weight:700;letter-spacing:.04em;line-height:1}
+.contrail-app .next .route i{font-style:normal;color:var(--tc);padding:0 6px}
+.contrail-app .next .count{font-family:var(--f-display);font-size:44px;font-weight:700;text-align:right;line-height:1;color:var(--tc)}
+.contrail-app .next .count small{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;font-weight:400;color:var(--muted)}
+@media (max-width:640px){
+.contrail-app .next{grid-template-columns:1fr auto}
+.contrail-app .next .meta{grid-column:1/-1}
+}
+.contrail-app .mapbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.contrail-app .maptools{display:flex;justify-content:space-between;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.contrail-app .maptools .grp{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.contrail-app .legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:8px 14px;border-top:1px solid var(--line);background:var(--surface)}
+.contrail-app .legend span{display:inline-flex;align-items:center;gap:6px}
+.contrail-app .sw{width:22px;height:4px;border-radius:2px;background:var(--c)}
+.contrail-app .sw.dash{background:repeating-linear-gradient(90deg,var(--c) 0 6px,transparent 6px 10px)}
+.contrail-app .mapstage{position:relative;background:var(--m-sea);flex:1;min-height:0}
+.contrail-app #map{display:block;width:100%;height:auto;max-width:100%;touch-action:none;cursor:grab}
+.contrail-app #map:active{cursor:grabbing}
+.contrail-app .zoomctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px}
+.contrail-app .zoomctl button{width:34px;height:34px;border-radius:4px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:var(--f-mono);font-size:16px;line-height:1}
+.contrail-app .sea{fill:var(--m-sea)}
+.contrail-app .landp{fill:var(--m-land);stroke:var(--m-border);stroke-width:.6;vector-effect:non-scaling-stroke}
+.contrail-app .grat{fill:none;stroke:var(--m-grat);stroke-width:.6;vector-effect:non-scaling-stroke}
+.contrail-app .arc{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke:var(--c)}
+.contrail-app .arc.past{stroke-opacity:.6;stroke-width:1.4}
+.contrail-app .arc.future{stroke-width:2.2;stroke-dasharray:6 5}
+.contrail-app .arc.halo{stroke:var(--m-halo);stroke-width:7;stroke-opacity:.9;stroke-dasharray:none}
+.contrail-app .arc.hl{stroke-width:3.4;stroke-opacity:1}
+.contrail-app .arc.dim{stroke-opacity:.14}
+.contrail-app .dot{fill:var(--m-halo);stroke:var(--m-label);stroke-width:1.5;cursor:pointer}
+.contrail-app .dot.home{fill:var(--accent);stroke:var(--m-halo)}
+.contrail-app .dot.sel{fill:var(--accent);stroke:var(--accent)}
+.contrail-app .ring{fill:none;stroke:var(--t-soon);stroke-width:2}
+.contrail-app .lbl{font-family:var(--f-mono);font-size:10.5px;fill:var(--m-label);paint-order:stroke;stroke:var(--m-halo);stroke-width:3px;pointer-events:none}
+.contrail-app .mapbox.expanded{position:fixed;inset:0;z-index:50;border-radius:0;border:0;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);background:var(--surface)}
+.contrail-app .mapbox.expanded #map{height:100%;width:100%}
+.contrail-app .mapbox.expanded .mapstage{display:flex}
+.contrail-app .filtpanel{flex-basis:100%;padding-top:10px;border-top:1px dashed var(--line)}
+.contrail-app #filtToggle{display:inline-flex;align-items:center;gap:6px}
+.contrail-app #filtToggle[aria-expanded="true"] .ftw{transform:rotate(90deg)}
+.contrail-app .ftw{display:inline-block;transition:transform .15s}
+.contrail-app .fsum{color:var(--accent);max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contrail-app .fsum:not(:empty)::before{content:"· ";color:var(--muted)}
+.contrail-app .tabs{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.contrail-app .tab{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;background:var(--surface);border:0;color:var(--muted)}
+.contrail-app .tab+.tab{border-left:1px solid var(--line)}
+.contrail-app .tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.contrail-app .grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){
+.contrail-app .grid{grid-template-columns:1fr}
+}
+.contrail-app .col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.contrail-app .colhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.contrail-app .year{font-family:var(--f-display);font-size:18px;color:var(--muted);letter-spacing:.08em;padding-top:6px;border-top:1px solid var(--line)}
+.contrail-app .strip{display:grid;grid-template-columns:6px 1fr;background:var(--surface);border:1px solid var(--line);border-radius:4px;--c:var(--past)}
+.contrail-app .strip .bar{background:var(--c);border-radius:4px 0 0 4px}
+.contrail-app .strip.past .bar{opacity:.55}
+.contrail-app .strip.on{box-shadow:0 0 0 2px var(--c)}
+.contrail-app .strip.t-soon, .contrail-app .strip.t-now{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,var(--surface)),var(--surface) 60%)}
+.contrail-app .strip-body{min-width:0;display:flex;flex-direction:column}
+.contrail-app .strip-head{all:unset;box-sizing:border-box;cursor:pointer;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;border-radius:0 4px 4px 0}
+.contrail-app .strip-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.contrail-app .strip-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.contrail-app .strip-top h3{font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.contrail-app .purpose-line{font-size:13.5px;color:var(--ink)}
+.contrail-app .purpose-line em{font-style:normal;color:var(--muted)}
+.contrail-app .chips{display:flex;gap:6px;flex-wrap:wrap}
+.contrail-app .chip{font-family:var(--f-mono);font-size:11px;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.contrail-app .chip.tier{color:var(--surface);background:var(--c);border-color:var(--c);font-weight:500}
+.contrail-app .chip.purpose{color:var(--accent);border-color:currentColor}
+.contrail-app .chip.note{color:var(--warn);border-color:currentColor}
+.contrail-app .path{font-family:var(--f-mono);font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.contrail-app .path b{color:var(--ink);font-weight:500}
+.contrail-app .legs{display:none;flex-direction:column;border-top:1px dashed var(--line);margin:0 14px;padding:4px 0 14px}
+.contrail-app .strip.on .legs{display:flex}
+.contrail-app .leg{display:grid;grid-template-columns:72px 1fr auto;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--surface-2);align-items:center}
+.contrail-app .leg .fn{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.contrail-app .leg .fn b{display:block;color:var(--ink);font-size:13px;font-weight:500}
+.contrail-app .leg .od{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
+.contrail-app .leg .pt{display:flex;flex-direction:column}
+.contrail-app .leg .pt b{font-family:var(--f-display);font-size:22px;line-height:1;font-weight:600}
+.contrail-app .leg .pt span{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.contrail-app .leg .arrow{color:var(--muted);font-family:var(--f-mono)}
+.contrail-app .leg .dur{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-align:right}
+.contrail-app .tripsum{font-family:var(--f-mono);font-size:12px;color:var(--muted);padding:8px 0}
+.contrail-app .tripnote{font-size:13px;color:var(--muted);margin:0 0 8px}
+.contrail-app .purpose{border:1px solid var(--line);border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--surface-2)}
+.contrail-app .purpose .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.contrail-app .purpose p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}
+.contrail-app .purpose .empty{color:var(--muted);font-size:13.5px}
+.contrail-app .purpose form{display:flex;flex-direction:column;gap:8px}
+.contrail-app .purpose select, .contrail-app .purpose input, .contrail-app .purpose textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:14px}
+.contrail-app .purpose textarea{min-height:90px;resize:vertical}
+.contrail-app .purpose .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.contrail-app .purpose .msg{font-size:12.5px;color:var(--muted)}
+.contrail-app .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.contrail-app .apts{display:flex;flex-direction:column}
+.contrail-app .apt{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:9px 4px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;text-align:left;width:100%}
+.contrail-app .apt:last-child{border-bottom:0}
+.contrail-app .apt b{font-family:var(--f-display);font-size:22px;font-weight:600}
+.contrail-app .apt .nm{font-size:13px;line-height:1.3;min-width:0}
+.contrail-app .apt .nm small{display:block;color:var(--muted)}
+.contrail-app .apt .ct{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.contrail-app .apt.on{background:var(--surface-2)}
+.contrail-app .apt.on b{color:var(--accent)}
+.contrail-app .ad{display:flex;flex-direction:column;gap:10px}
+.contrail-app .ad .code{font-family:var(--f-display);font-size:56px;font-weight:700;line-height:.9;color:var(--accent)}
+.contrail-app dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:13.5px}
+.contrail-app dt{color:var(--muted);font-family:var(--f-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.contrail-app dd{margin:0;min-width:0}
+.contrail-app .yrs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.contrail-app .yrchips{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex-wrap:wrap}
+.contrail-app .yr{font-family:var(--f-mono);font-size:12px;padding:6px 10px;background:var(--surface);border:0;color:var(--muted)}
+.contrail-app .yr+.yr{border-left:1px solid var(--line)}
+.contrail-app .yr[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.contrail-app .owner{margin:0;color:var(--muted);font-size:16px}
+.contrail-app .owner b{color:var(--ink);font-weight:600}
+.contrail-app .ownerform{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.contrail-app .ownerform input{padding:6px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:15px;min-width:0}
+.contrail-app .linkbtn{background:none;border:0;padding:0;color:var(--accent);font-family:var(--f-mono);font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.contrail-app .pagetabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;background:var(--bg);padding-block:8px;border-bottom:2px solid var(--ink)}
+.contrail-app .pagetabs button{font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px;border:0;border-radius:4px 4px 0 0;background:none;color:var(--muted);white-space:nowrap}
+.contrail-app .pagetabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.contrail-app .pagetabs button:hover:not([aria-selected="true"]){color:var(--ink)}
+.contrail-app .lead{margin:0;color:var(--muted);max-width:65ch}
+.contrail-app .wallet{display:flex;flex-direction:column;gap:16px}
+.contrail-app .wgroup{display:flex;flex-direction:column;gap:8px}
+.contrail-app .wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.contrail-app .wcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;border-top:4px solid var(--line)}
+.contrail-app .wcard.has{border-top-color:var(--accent)}
+.contrail-app .wtop{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.contrail-app .wtop b{font-size:15px;overflow-wrap:anywhere}
+.contrail-app .empty-card{gap:4px}
+.contrail-app .addform{display:flex;flex-direction:column;gap:12px}
+.contrail-app .frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.contrail-app .fl{display:flex;flex-direction:column;gap:4px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:0;border:0;padding:0;margin:0}
+.contrail-app .fl legend{padding:0;margin-bottom:4px}
+.contrail-app .fl select, .contrail-app .fl input{font-family:var(--f-body);font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);width:100%}
+.contrail-app .checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--f-body);font-size:13.5px;letter-spacing:0;text-transform:none;color:var(--ink)}
+.contrail-app .checks label{display:flex;gap:6px;align-items:center}
+.contrail-app .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.contrail-app .tabpanel[hidden]{display:none!important}
+.contrail-app .research{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px;align-items:start}
+@media (max-width:860px){
+.contrail-app .research{grid-template-columns:1fr}
+}
+.contrail-app .profile{display:flex;flex-direction:column;gap:8px}
+.contrail-app .profile textarea, .contrail-app .rxform textarea{font-family:var(--f-body);font-size:14px;letter-spacing:0;text-transform:none;color:var(--ink);padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);width:100%;resize:vertical}
+.contrail-app .bars{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-direction:column;gap:4px}
+.contrail-app .bars li{display:grid;grid-template-columns:minmax(0,9em) 1fr 2.5em;gap:8px;align-items:center;font-size:13px}
+.contrail-app .bars li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contrail-app .bars li i{height:8px;border-radius:2px;background:linear-gradient(90deg,var(--accent) var(--w),var(--surface-2) var(--w))}
+.contrail-app .bars li b{font-family:var(--f-mono);font-weight:500;text-align:right;font-size:12px}
+.contrail-app .chat{display:flex;flex-direction:column;gap:12px;min-height:520px}
+.contrail-app .presets{display:flex;flex-wrap:wrap;gap:6px}
+.contrail-app .preset{font-size:13px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);text-align:left}
+.contrail-app .preset:hover{border-color:var(--accent)}
+.contrail-app .msgs{flex:1;min-height:260px;max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px}
+.contrail-app .msg{max-width:92%;padding:10px 12px;border-radius:8px;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+.contrail-app .msg p{margin:0 0 6px}
+.contrail-app .msg p:last-child{margin:0}
+.contrail-app .msg ul{margin:4px 0 8px;padding-left:20px}
+.contrail-app .msg h4{font-family:var(--f-display);font-size:17px;text-transform:uppercase;letter-spacing:.03em;margin:8px 0 4px}
+.contrail-app .msg.user{align-self:flex-end;background:var(--ink);color:var(--bg)}
+.contrail-app .msg.assistant{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line)}
+.contrail-app .hint{display:flex;flex-direction:column;gap:4px;padding:16px;border:1px dashed var(--line);border-radius:6px}
+.contrail-app .rxform{display:flex;flex-direction:column;gap:8px}
+.contrail-app .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.contrail-app .payf{border:0;padding:0;margin:4px 0 0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.contrail-app .payf legend{padding:0;margin-bottom:6px}
+.contrail-app .paym{display:flex;flex-wrap:wrap;gap:6px}
+.contrail-app .pill{position:relative;cursor:pointer}
+.contrail-app .pill input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.contrail-app .pill span{display:inline-block;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;background:var(--surface);color:var(--ink)}
+.contrail-app .pill input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.contrail-app .pill input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.contrail-app .paygrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.contrail-app .paygrid .wide{grid-column:1/-1}
+.contrail-app .pf{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.contrail-app .pf[hidden]{display:none}
+.contrail-app .pf.chk{flex-direction:row;align-items:center;gap:8px;text-transform:none;font-family:var(--f-body);font-size:14px;color:var(--ink);letter-spacing:0;align-self:end;padding-bottom:8px}
+.contrail-app .purpose .pf.chk input{width:auto}
+.contrail-app .paid{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;font-size:14px;padding-top:6px;border-top:1px dashed var(--line)}
+.contrail-app .paid .lw{flex-basis:100%}
+.contrail-app .pm{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid currentColor;color:var(--accent)}
+.contrail-app .pm-other{color:var(--warn)}
+.contrail-app .pm-points, .contrail-app .pm-mixed{color:var(--t-later)}
+.contrail-app .staymap{gap:10px}
+.contrail-app .smstage{position:relative;border-radius:4px;overflow:hidden;background:var(--m-sea)}
+.contrail-app #stayMap{display:block;width:100%;height:auto;touch-action:none;cursor:grab}
+.contrail-app .smdot{stroke:var(--surface);stroke-width:1.5;cursor:pointer;fill-opacity:.85}
+.contrail-app .smdot.hotel{fill:var(--accent)}
+.contrail-app .smdot.rental{fill:var(--t-now)}
+.contrail-app .smdot:hover, .contrail-app .smdot:focus{fill-opacity:1;stroke:var(--ink);outline:none}
+.contrail-app .smlbl{font-family:var(--f-mono);font-size:11px;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:3px;pointer-events:none}
+.contrail-app .smcount{font-family:var(--f-mono);font-size:10px;fill:#fff;pointer-events:none;font-weight:500}
+@media (max-width:640px){
+.contrail-app .smlbl{font-size:13px}
+}
+.contrail-app .stay-mix{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.contrail-app .stay{border:1px solid var(--line);border-left:4px solid var(--past);background:var(--surface);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;transition:box-shadow .3s}
+.contrail-app .stay.up{border-left-color:var(--accent)}
+.contrail-app .stay.flash{box-shadow:0 0 0 3px var(--accent)}
+.contrail-app .stay h3{margin:0;font-size:18px;text-transform:uppercase;letter-spacing:.02em}
+.contrail-app .stop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.contrail-app .stdate{font-size:13px;white-space:nowrap}
+.contrail-app .stnote{margin:0}
+.contrail-app .stay .row{display:flex;gap:14px;justify-content:flex-end}
+.contrail-app .linkchip{cursor:pointer;color:var(--accent);border-color:currentColor;background:transparent;font:inherit;font-size:12px}
+.contrail-app .stayform{gap:10px}
+.contrail-app .stayform .pf input, .contrail-app .stayform .pf select{font-family:var(--f-body);font-size:14px;text-transform:none;letter-spacing:0}
+.contrail-app .lounges{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.contrail-app .accrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.contrail-app .accrow .eyebrow{margin-right:4px}
+.contrail-app .acc{font-family:var(--f-mono);font-size:11.5px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.contrail-app .acc.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.contrail-app .only{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.contrail-app .llist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.contrail-app .llist li{display:flex;flex-direction:column;gap:3px;padding:9px 0 9px 10px;border-bottom:1px solid var(--line);border-left:3px solid transparent}
+.contrail-app .llist li:last-child{border-bottom:0}
+.contrail-app .llist li.yes{border-left-color:var(--accent)}
+.contrail-app .llist li:not(.yes){opacity:.78}
+.contrail-app .lt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.contrail-app .lt b{font-weight:600;font-size:14px}
+.contrail-app .lw{font-size:12.5px;color:var(--muted)}
+.contrail-app .la{font-size:13px}
+.contrail-app .chip.in{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.contrail-app .chip.in-soft{color:var(--accent);border-color:currentColor}
+.contrail-app .lnote{font-size:12.5px;color:var(--muted);margin:0}
+.contrail-app .empty{color:var(--muted);font-size:13.5px;margin:0}
+.contrail-app ul.tl{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.contrail-app ul.tl b{display:inline-block;min-width:38px}
+.contrail-app .older{font-size:13.5px;color:var(--muted)}
+.contrail-app .older ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.contrail-app .foot{font-size:12.5px;color:var(--muted);max-width:75ch}
+.contrail-app .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);font-family:var(--f-mono);font-size:13px;padding:8px 14px;border-radius:4px;z-index:60}
+.contrail-app textarea.copybox{width:100%;min-height:140px;font-family:var(--f-mono);font-size:12px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px}
+@media (prefers-reduced-motion:no-preference){
+.contrail-app .arc.future:not(.halo){animation:dash 1.6s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-22}}
+.contrail-app .ring{animation:ping 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes ping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+}
+
+/* ---- Added on the site: analytics link, flight form, airport suggestions, settings ---- */
+.contrail-app .pagetabs .pagelink{font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px;color:var(--accent);text-decoration:none;white-space:nowrap;margin-left:auto}
+.contrail-app .pagetabs .pagelink:hover{text-decoration:underline}
+.contrail-app .btn.danger{color:var(--t-soon);border-color:currentColor}
+.contrail-app .tripform{gap:12px}
+.contrail-app .legf{border:1px dashed var(--line);border-radius:6px;padding:10px 12px 8px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+.contrail-app .legf legend{padding:0 4px}
+.contrail-app .legf .pf input,.contrail-app .tripform .pf input,.contrail-app .tripform .pf select,.contrail-app .settings .pf input{font-family:var(--f-body);font-size:14px;text-transform:none;letter-spacing:0;width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.contrail-app .legmi{margin:0;grid-column:1/-1;min-height:1em}
+.contrail-app .aptbox{position:relative}
+.contrail-app .aptsug{position:absolute;z-index:30;left:0;right:0;top:100%;margin:2px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:280px;overflow-y:auto;text-transform:none;letter-spacing:0;font-family:var(--f-body)}
+.contrail-app .aptsug li{padding:6px 8px;border-radius:4px;cursor:pointer;font-size:13.5px;color:var(--ink);line-height:1.3}
+.contrail-app .aptsug li small{display:block;color:var(--muted);font-size:12px}
+.contrail-app .aptsug li b{font-family:var(--f-mono);margin-right:4px}
+.contrail-app .aptsug li[aria-selected="true"],.contrail-app .aptsug li:hover{background:var(--surface-2);outline:1px solid var(--accent)}
+.contrail-app .cardchecks{flex-direction:column;align-items:flex-start;gap:6px}
+.contrail-app .settings .panel h3{margin:0}
+.contrail-app #stayMap.picking{cursor:crosshair}
+.contrail-app .pickhint{margin:0;color:var(--accent);font-weight:600}
+.contrail-app .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media (max-width:640px){.contrail-app .pagetabs .pagelink{margin-left:0}}
+/* A purpose chip shares its class with the trip-details box; keep it chip-sized */
+.contrail-app .chip.purpose{display:inline-block;padding:2px 7px;border-radius:3px;background:none;gap:0}
+.contrail-app .chips{align-items:center}
+.contrail-app .coverlink{color:inherit;text-decoration:underline;text-underline-offset:2px}
