@@ -13,7 +13,7 @@ This repo is named `billywall732.github.io`, which makes it the main GitHub Page
 | `/` | this repo |
 | `/projects/<slug>/` | this repo: one page per project |
 | `/snow-surf-report/` | snow-surf-report |
-| `/fantasy-feetpics/` | fantasy-feetpics |
+| `/fantasy-football/` | fantasy-football (built and pushed by fantasy-feetpics) |
 | `/my-budget-ledger/` | my-budget-ledger |
 
 When a custom domain is added to **this** repo (Settings → Pages → Custom domain), all of them move with it: `yourdomain.com/snow-surf-report/` and so on.

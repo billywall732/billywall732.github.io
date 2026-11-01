@@ -253,7 +253,7 @@ img { display: block; max-width: 100%; height: auto; }
 .note-arrow { display: inline-block; margin-right: 4px; }
 
 /* ---------- Home page tabs ---------- */
-/* Like Fantasy Feetpics: a row of tabs under the header that stays put while you scroll */
+/* Like the Fantasy Football site: a row of tabs under the header that stays put while you scroll */
 
 .tabs {
   position: sticky;
