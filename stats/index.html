@@ -17,7 +17,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/stats/stats.css">
-  <script type="module" src="/stats/stats.js"></script>
+  <!-- A fresh copy of the script each visit (GitHub Pages lets browsers keep files for 10 minutes) -->
+  <script type="module">import(`/stats/stats.js?t=${Date.now()}`);</script>
 </head>
 <body>
   <main class="wrap stats-page">

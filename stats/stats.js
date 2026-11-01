@@ -1,7 +1,8 @@
 // The hidden /stats/ page: aggregate visit counts from the stats Worker (worker-stats/), which reads
 // GoatCounter with a key that never reaches this page. Everything shown is a count; there are no
 // visitor rows, IPs or anything about a person.
-import { config } from '/shared/config.js';
+// Settings are loaded fresh each time (GitHub Pages lets browsers keep files for 10 minutes)
+const { config } = await import(`/shared/config.js?t=${Date.now()}`);
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -86,7 +87,7 @@ if (!config.statsUrl) {
   try {
     const res = await fetch(`${config.statsUrl.replace(/\/$/, '')}/summary`);
     DATA = await res.json();
-    if (!res.ok || DATA.error) throw new Error(DATA.error || res.status);
+    if (!res.ok || DATA.error) throw new Error([DATA.error || res.status, DATA.detail].filter(Boolean).join(': '));
     render();
   } catch (e) {
     $('#stats').innerHTML = `<p class="stats-note">Couldn’t load the counts (${esc(e.message)}). Try again in a minute.</p>`;
