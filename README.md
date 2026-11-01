@@ -38,7 +38,7 @@ home/index.html       the home page at /home/ (its header and footer are copied 
 projects/<slug>/      project pages, made by tools/make-pages.mjs; don't edit by hand
 css/site.css          styles: dark, light and blueprint modes via CSS variables
 css/cover.css         the cover's styles, including the brick texture (a tiny SVG tile per mode)
-js/cover.js           points the cover's "Say Hello" at contact.email once it's set
+js/cover.js           points the cover's "Contact" button at contact.email
 js/projects.js        the data: edit this to change what's shown
 js/ui.js              shared: color-mode and board-cursor buttons, footer strip, card bits
 js/main.js            the home page: four tabs (#polished, #rough, #workshop, #off-the-clock)

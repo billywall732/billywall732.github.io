@@ -56,7 +56,7 @@ export const projects = [
       'A one-sentence morning verdict written by AI',
     ],
     tags: ['JavaScript', 'GitHub Actions', 'Firebase', 'NOAA data'],
-    url: '/snow-surf-report/',
+    url: '/snow-surf-report/?cover',
     code: 'https://github.com/billywall732/snow-surf-report',
     image: '/img/snow-surf.webp',
   },
@@ -294,7 +294,7 @@ export const clockPhotos = [
 
 // The footer strip
 export const contact = {
-  email: '', // your public email address; the "Email me" button shows up once it's set
+  email: 'WallWorks732@gmail.com', // your public email address; the "Email me" button shows up once it's set
   github: 'https://github.com/billywall732',
   issues: 'https://github.com/billywall732/billywall732.github.io/issues/new',
 };
