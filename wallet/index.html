@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>What’s in My Wallet? · Off the Wall</title>
+  <meta name="description" content="What’s in My Wallet?: every card you carry, which one to use, and when to keep, call or downgrade.">
+  <meta property="og:title" content="What’s in My Wallet? · Off the Wall">
+  <meta property="og:description" content="A credit card tracker: multipliers, credits, renewals and 5/24.">
+  <meta property="og:image" content="/img/wallet.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/shared/apps.css">
+  <link rel="stylesheet" href="/wallet/app.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/wallet/"}' async src="//gc.zgo.at/count.js"></script>
+  <script type="module" src="/wallet/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the wallet</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="/home/#polished">Projects</a>
+      <a href="/home/#off-the-clock">Off the clock</a>
+      <a href="https://github.com/billywall732" rel="me">GitHub</a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+    <main id="main" class="wallet-app">
+  <div class="wrap">
+    <div id="demoBanner" style="padding-top:16px"></div>
+    <header class="top">
+      <div class="brand">
+        <div class="chip-mark" aria-hidden="true"></div>
+        <div>
+          <h1>What's in My Wallet?</h1>
+          <div class="muted" style="font-size:.88rem">Every card you carry, and when to keep it, call or downgrade. <a href="/wallet/cover/">Cover</a></div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="save-state" id="saveState"><span class="dot"></span><span>Loading…</span></span>
+        <button class="btn primary" id="addCardTop">+ Add card</button>
+      </div>
+    </header>
+    <div class="profiles" id="profileBar" aria-label="Whose cards"></div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <div id="view"></div>
+  </div>
+  <div id="modalRoot"></div>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates. Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+
+  <noscript><p class="wrap">What’s in My Wallet? needs JavaScript.</p></noscript>
+</body>
+</html>
