@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Contrail · Off the Wall</title>
+  <meta name="description" content="Contrail: a flight and hotel log with a route map, lounge access by card, and travel stats.">
+  <meta property="og:title" content="Contrail · Off the Wall">
+  <meta property="og:description" content="A flight and hotel log with a route map and lounge access by card.">
+  <meta property="og:image" content="/img/contrail.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/shared/apps.css">
+  <link rel="stylesheet" href="/contrail/app.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/contrail/"}' async src="//gc.zgo.at/count.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <script type="module" src="/contrail/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to Contrail</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="/home/#polished">Projects</a>
+      <a href="/home/#off-the-clock">Off the clock</a>
+      <a href="https://github.com/billywall732" rel="me">GitHub</a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+  <main id="main" class="contrail-app">
+  <div class="wrap">
+    <div id="demoBanner"></div>
+    <header>
+      <div class="head-l">
+        <span class="eyebrow"><a href="/contrail/cover/" class="coverlink">Contrail cover</a> · Flight and hotel log</span>
+        <h1>Contrail</h1>
+        <p class="owner">The travels of <b id="ownerName">…</b> <button type="button" class="linkbtn" id="editOwner">Edit name</button></p>
+      </div>
+      <div class="actions">
+        <label class="ctl" for="soonSel">Flag as soon within
+          <select class="btn" id="soonSel">
+            <option value="7">7 days</option><option value="14">14 days</option>
+            <option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option>
+          </select>
+        </label>
+        <button class="btn" id="copyUp" type="button">Copy upcoming trips</button>
+      </div>
+    </header>
+
+    <nav class="pagetabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="overview" id="t-overview" aria-controls="p-overview">Overview</button>
+      <button role="tab" data-tab="trips" id="t-trips" aria-controls="p-trips">Trips</button>
+      <button role="tab" data-tab="stays" id="t-stays" aria-controls="p-stays">Stays</button>
+      <button role="tab" data-tab="airports" id="t-airports" aria-controls="p-airports">Airports &amp; lounges</button>
+      <button role="tab" data-tab="cards" id="t-cards" aria-controls="p-cards">My cards</button>
+      <button role="tab" data-tab="settings" id="t-settings" aria-controls="p-settings">Settings</button>
+      <a class="pagelink" href="/contrail/analytics/">Analytics <span aria-hidden="true">→</span></a>
+    </nav>
+
+    <div class="tabpanel" data-show="overview" id="p-overview">
+      <section class="next" id="next" aria-label="Next departure"></section>
+      <section class="stats" id="stats" aria-label="Totals"></section>
+    </div>
+
+    <section class="mapbox tabpanel" data-show="overview trips" id="mapbox" data-mapstyle="auto" aria-label="Route map">
+      <div class="maptools">
+        <div class="tabs" role="tablist" aria-label="Map view">
+          <button class="tab" role="tab" id="v-all" data-v="all" aria-selected="true">All</button>
+          <button class="tab" role="tab" id="v-up" data-v="up" aria-selected="false">Upcoming</button>
+          <button class="tab" role="tab" id="v-past" data-v="past" aria-selected="false">History</button>
+        </div>
+        <div class="grp">
+          <button class="btn" id="filtToggle" type="button" aria-expanded="false" aria-controls="filtPanel"><span class="ftw">▸</span> Filters<span id="filtSum" class="fsum"></span></button>
+          <button class="btn" id="resetMap" type="button" hidden>Show all routes</button>
+          <button class="btn" id="expandMap" type="button" aria-pressed="false">Expand map</button>
+        </div>
+        <div class="grp filtpanel" id="filtPanel" hidden>
+          <div class="yrs" role="group" aria-label="Years to show"><span class="ctl">Years</span><span id="yearChips" class="yrchips"></span></div>
+          <div class="yrs" role="group" aria-label="USA or international"><span class="ctl">Region</span><span id="regionChips" class="yrchips"><button type="button" class="yr" data-r="all" aria-pressed="true">Both</button><button type="button" class="yr" data-r="us" aria-pressed="false">USA only</button><button type="button" class="yr" data-r="intl" aria-pressed="false">International</button></span></div>
+          <label class="ctl" for="styleSel">Map style
+            <select class="btn" id="styleSel">
+              <option value="auto">Match theme</option>
+              <option value="topo">Topo</option>
+              <option value="blueprint">Blueprint</option>
+              <option value="night">Night</option>
+              <option value="paper">Paper chart</option>
+              <option value="mono">Monochrome</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="mapstage">
+        <svg id="map" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of flown and booked routes"></svg>
+        <div class="zoomctl">
+          <button type="button" id="zin" aria-label="Zoom in">+</button>
+          <button type="button" id="zout" aria-label="Zoom out">−</button>
+          <button type="button" id="zfit" aria-label="Fit routes" style="font-size:12px">fit</button>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="tabpanel col" data-show="trips" id="p-trips">
+      <div class="colhead">
+        <h2 id="listTitle">Trips</h2>
+        <div class="row"><span class="eyebrow">Tap a trip for legs, notes and lounges</span><button type="button" class="btn primary" id="addTripBtn">Add a flight</button></div>
+      </div>
+      <div id="tripFormPanel"></div>
+      <div class="col" id="trips"></div>
+    </div>
+
+    <div class="tabpanel col" data-show="stays" id="p-stays">
+      <div class="colhead"><h2>Stays</h2><span class="eyebrow" id="staysState"></span></div>
+      <p class="lead">Hotels and rentals, linked to the trips they belong to.</p>
+      <section class="stats" id="stayStats" aria-label="Stay totals"></section>
+      <section class="panel staymap" aria-label="Map of stays">
+        <div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">Where you stayed</h3>
+          <div class="tabs" role="group" aria-label="Map area" id="smRegion"></div></div>
+        <p class="lw pickhint" id="pickHint" hidden>Tap the map where the stay is to set its pin.</p>
+        <div class="smstage"><svg id="stayMap" viewBox="0 0 1000 480" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of hotels and rentals"></svg>
+          <div class="zoomctl"><button type="button" id="smIn" aria-label="Zoom in">+</button><button type="button" id="smOut" aria-label="Zoom out">−</button></div></div>
+        <div class="legend" style="border:0;padding:0"><span><i class="sw" style="--c:var(--accent);width:12px;height:12px;border-radius:50%"></i>Hotel</span><span><i class="sw" style="--c:var(--t-now);width:12px;height:12px;border-radius:50%"></i>Airbnb or rental</span><span>Bigger dot = more nights · tap a dot to jump to the stay</span></div>
+        <p class="lw" id="smMissing" style="margin:0"></p>
+      </section>
+      <div class="stay-mix">
+        <div class="panel" id="stayBrands"></div>
+        <div class="panel" id="stayChannels"></div>
+      </div>
+      <div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">All stays</h3><button type="button" class="btn primary" id="addStayBtn">Add a stay</button></div>
+      <div id="stayFormPanel"></div>
+      <div class="col" id="stays"></div>
+    </div>
+
+    <div class="tabpanel grid" data-show="airports" id="p-airports">
+      <div class="panel" id="aptDetail"></div>
+      <div class="panel">
+        <div class="colhead"><h2>Airports</h2><span class="eyebrow">Visits</span></div>
+        <div class="apts" id="apts"></div>
+      </div>
+    </div>
+
+    <div class="tabpanel col" data-show="cards" id="p-cards">
+      <div class="colhead">
+        <h2>My cards</h2>
+        <span class="eyebrow" id="walletState"></span>
+      </div>
+      <p class="lead">Add the cards you carry. Lounge lists across the page mark the lounges these cards get you into.</p>
+      <div class="panel" id="accessSummary"></div>
+      <div class="wallet" id="wallet"></div>
+      <div class="panel" id="addCardPanel"></div>
+    </div>
+
+    <div class="tabpanel settings" data-show="settings" id="p-settings"></div>
+
+    <datalist id="progs"><option>United MileagePlus</option><option>American AAdvantage</option><option>Delta SkyMiles</option><option>Alaska Mileage Plan</option><option>Southwest Rapid Rewards</option><option>ANA Mileage Club</option><option>Chase Ultimate Rewards</option><option>Capital One Miles</option><option>Amex Membership Rewards</option><option>Citi ThankYou</option><option>Bilt Rewards</option><option>World of Hyatt</option><option>Marriott Bonvoy</option><option>Hilton Honors</option><option>IHG One Rewards</option></datalist>
+    <p class="foot">Times are as booked, not live flight status. Lounge details come with the date they were last checked; confirm with the lounge before relying on them. Card names are stored without numbers.</p>
+  </div>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates. Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+
+  <noscript><p class="wrap">Contrail needs JavaScript to draw the map and your trips.</p></noscript>
+</body>
+</html>
