@@ -36,6 +36,8 @@ const page = (p) => `<!doctype html>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data) -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   <script type="module" src="/js/project-page.js"></script>
 </head>
 <body>

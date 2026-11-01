@@ -203,6 +203,15 @@ function show(name, { scroll = false } = {}) {
   // If the visitor had scrolled down, bring the new page's top into view under the tabs
   const nav = $('.tabs');
   if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
+  countView(name);
+}
+
+// Each tab counts as its own page in the visit counter (/home/#rough and so on). The counter
+// script loads in the background, so the first count waits for it.
+function countView(name) {
+  const send = () => window.goatcounter?.count?.({ path: `/home/#${name}`, title: document.title });
+  if (window.goatcounter?.count) send();
+  else window.addEventListener('load', () => setTimeout(send, 0), { once: true });
 }
 
 window.addEventListener('hashchange', () => show(viewFromHash(), { scroll: true }));
