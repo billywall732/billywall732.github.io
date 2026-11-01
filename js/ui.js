@@ -64,7 +64,7 @@ export function actions(p, { learnMore = true } = {}) {
 export function preview(p, { link = true } = {}) {
   const bar = h('div', { class: 'frame-bar', 'aria-hidden': 'true' },
     h('span', { class: 'frame-dots' }, h('i'), h('i'), h('i')),
-    h('span', { class: 'frame-url' }, p.url ? `billywall732.github.io${p.url.split('?')[0]}` : 'coming soon'));
+    h('span', { class: 'frame-url' }, p.url ? `offthewall.dev${p.url.split('?')[0]}` : 'coming soon'));
   const body = p.image
     ? h('img', { src: p.image, alt: `The ${p.name} cover page`, width: '1280', height: '800', loading: 'lazy', decoding: 'async' })
     : placeholder(p.art);

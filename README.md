@@ -1,6 +1,6 @@
 # Off the Wall
 
-Billy Wall's projects site: https://billywall732.github.io/
+Billy Wall's projects site: https://offthewall.dev/ (the old https://billywall732.github.io/ addresses redirect there)
 
 Plain HTML, CSS and JavaScript. No build step for the site itself; one small Node script makes the project pages.
 
