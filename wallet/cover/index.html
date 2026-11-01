@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What’s in My Wallet? · Off the Wall</title>
+<meta name="description" content="What’s in My Wallet?: every card you carry, which one to use, and when to keep, call or downgrade.">
+<meta property="og:title" content="What’s in My Wallet?">
+<meta property="og:description" content="Every card you carry, which one to use, and when to keep, call or downgrade.">
+<meta property="og:image" content="/img/wallet.webp">
+<meta name="theme-color" content="#0e1116">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+<script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/wallet/cover/"}' async src="//gc.zgo.at/count.js"></script>
+<style>
+/* The cover: a gold card taps a payment terminal, the screen says Approved, the card lifts away.
+   One loop every five seconds; reduced motion shows the approved moment, still. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  min-height: 100svh; color: #f1ede4; overflow-x: hidden;
+  font: 16px/1.5 "IBM Plex Sans", system-ui, sans-serif;
+  background: radial-gradient(60vmax 60vmax at 72% 55%, #3a2f1a 0%, #1a1712 45%, #0e1116 75%) fixed, #0e1116;
+}
+a { color: inherit; }
+.back { position: absolute; left: 16px; top: max(14px, env(safe-area-inset-top)); font-size: 14px; text-decoration: none; opacity: .8; padding: 6px 4px; z-index: 3; }
+.back:hover { opacity: 1; text-decoration: underline; }
+main { min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 24px;
+  max-width: 1120px; margin: 0 auto; padding: 64px 24px 40px; }
+.words { max-width: 30rem; }
+.eyebrow { margin: 0 0 10px; font: 500 12px/1.4 "IBM Plex Mono", monospace; letter-spacing: .2em; text-transform: uppercase; color: #d9ab52; }
+h1 { margin: 0; font: 800 clamp(44px, 7vw, 82px)/.95 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: -.02em; }
+h1 em { font-style: normal; color: #d9ab52; }
+.tagline { margin: 16px 0 0; font-size: clamp(17px, 2vw, 20px); color: #cfc8b9; max-width: 32ch; }
+.cta { margin-top: 26px; display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 12px;
+  background: linear-gradient(135deg, #f0d48f, #c99a3e); color: #17130a; font: 800 18px/1 "Bricolage Grotesque", sans-serif; text-decoration: none;
+  box-shadow: 0 10px 30px #d9ab5233; transition: transform .15s; }
+.cta:hover { transform: translateY(-2px); }
+.cta:focus-visible, .back:focus-visible { outline: 3px solid #f0d48f; outline-offset: 3px; }
+.cta .arrow { transition: transform .15s; }
+.cta:hover .arrow { transform: translateX(4px); }
+.chips { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span { font: 500 12.5px/1 "IBM Plex Mono", monospace; padding: 7px 11px; border-radius: 999px; border: 1px solid #ffffff2e; color: #e7e1d3; }
+.demo { margin-top: 18px; font-size: 13px; color: #a69f90; }
+
+/* ---- the scene ---- */
+.scene { --rx: 150px; --ry: -110px; position: relative; height: 520px; display: flex; justify-content: center; align-items: flex-end; }
+.terminal { position: relative; width: 210px; height: 330px; border-radius: 30px; padding: 18px;
+  background: linear-gradient(160deg, #3b3f47, #1d2026 70%); box-shadow: inset 0 1px 0 #ffffff26, 0 30px 60px #00000080; display: flex; flex-direction: column; gap: 14px; }
+.reader { height: 64px; border-radius: 16px; background: #15171c; display: grid; place-items: center; position: relative; }
+.reader svg { width: 34px; height: 34px; color: #8b93a3; }
+.wave { position: absolute; inset: 50% auto auto 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 2px solid #5fcf8f; opacity: 0; }
+.screen { flex: 1; max-height: 112px; border-radius: 12px; background: #e9efe6; color: #1d2026; position: relative; overflow: hidden; }
+.screen > div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.amount b { font: 600 30px/1 "IBM Plex Mono", monospace; }
+.amount span { font-size: 13px; color: #4b5361; }
+.ok { background: #1d7a4a; color: #fff; opacity: 0; }
+.ok svg { width: 36px; height: 36px; }
+.ok b { font: 800 20px/1 "Bricolage Grotesque", sans-serif; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.keys i { height: 14px; border-radius: 4px; background: #2c3038; box-shadow: inset 0 1px 0 #ffffff14; }
+.keys i:nth-child(10) { background: #8a3b36; } .keys i:nth-child(12) { background: #2f6b47; }
+.card { position: absolute; left: 50%; bottom: 230px; width: 270px; height: 170px; margin-left: -135px; border-radius: 14px; padding: 18px 20px;
+  background: linear-gradient(135deg, #f3dc9c 0%, #d6ab55 45%, #a87a2c 100%); color: #2b2210; box-shadow: 0 24px 40px #0000008c;
+  display: flex; flex-direction: column; justify-content: space-between; transform-origin: 50% 100%; z-index: 2;
+  transform: translate(var(--rx), var(--ry)) rotate(16deg); }
+.card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, #ffffff59, #ffffff00 45%, #00000026); pointer-events: none; }
+.card .top { display: flex; justify-content: space-between; align-items: center; }
+.card .issuer { font: 600 11px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.card .chip { width: 40px; height: 30px; border-radius: 6px; background: linear-gradient(135deg, #fbe7ad, #b88a35); box-shadow: inset 0 0 0 1px #00000033; position: relative; }
+.card .chip::after { content: ""; position: absolute; inset: 7px 11px; border: 1px solid #0000004d; border-radius: 2px; }
+.card .nfc { width: 24px; height: 24px; }
+.card .num { font: 500 17px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; }
+.card .name { display: flex; justify-content: space-between; font: 800 15px/1 "Bricolage Grotesque", sans-serif; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card { animation: tap 5s cubic-bezier(.45, .05, .3, 1) infinite; }
+  .wave { animation: ripple 5s ease-out infinite; }
+  .wave:nth-of-type(2) { animation-delay: .18s; }
+  .wave:nth-of-type(3) { animation-delay: .36s; }
+  .amount { animation: amount 5s step-end infinite; }
+  .ok { animation: ok 5s ease-out infinite; }
+  .scene, .card, .wave, .amount, .ok { animation-play-state: var(--play, running); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { transform: translate(0, -28px) rotate(0deg); }
+  .amount { opacity: 0; } .ok { opacity: 1; }
+}
+@keyframes tap {
+  0%, 8% { transform: translate(var(--rx), var(--ry)) rotate(16deg); }
+  32% { transform: translate(14px, -50px) rotate(4deg); }
+  40%, 56% { transform: translate(0, -28px) rotate(0deg); }
+  78%, 100% { transform: translate(var(--rx), var(--ry)) rotate(16deg); }
+}
+@keyframes ripple { 0%, 38% { opacity: 0; transform: scale(.6); } 42% { opacity: 1; } 60% { opacity: 0; transform: scale(2.6); } 100% { opacity: 0; } }
+@keyframes amount { 0% { opacity: 1; } 44% { opacity: 0; } 86% { opacity: 1; } }
+@keyframes ok { 0%, 43% { opacity: 0; transform: scale(.94); } 47% { opacity: 1; transform: scale(1); } 82% { opacity: 1; } 88%, 100% { opacity: 0; } }
+
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; text-align: center; padding-top: 56px; gap: 8px; }
+  .words { margin: 0 auto; }
+  .tagline { margin-inline: auto; }
+  .chips { justify-content: center; }
+  .scene { --rx: 56px; --ry: -70px; height: 430px; order: -1; transform: scale(.82); transform-origin: 50% 100%; margin-top: -40px; }
+}
+</style>
+</head>
+<body>
+<a class="back" href="/home/#polished">← Off the Wall</a>
+<main>
+  <div class="words">
+    <p class="eyebrow">Credit card tracker</p>
+    <h1>What’s in My <em>Wallet?</em></h1>
+    <p class="tagline">Every card you carry, which one to use, and when to keep, call or downgrade.</p>
+    <a class="cta" href="/wallet/">Open the wallet <span class="arrow" aria-hidden="true">→</span></a>
+    <div class="chips"><span>Best card per category</span><span>Renewal plans</span><span>5/24 tracker</span></div>
+    <p class="demo">A demo with sample cards: click around, nothing is saved.</p>
+  </div>
+  <div class="scene" aria-hidden="true">
+    <div class="card">
+      <div class="top"><span class="issuer">Off the Wall</span>
+        <svg class="nfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 7.5a6.5 6.5 0 0 1 0 9"/><path d="M12 5a10 10 0 0 1 0 14"/><path d="M15.5 2.5a13.5 13.5 0 0 1 0 19"/><path d="M5 10a3 3 0 0 1 0 4"/></svg></div>
+      <div class="chip"></div>
+      <div class="num">•••• •••• 1009</div>
+      <div class="name"><span>ALEX J.</span><span>GOLD</span></div>
+    </div>
+    <div class="terminal">
+      <div class="reader">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 7.5a6.5 6.5 0 0 1 0 9"/><path d="M12 5a10 10 0 0 1 0 14"/><path d="M15.5 2.5a13.5 13.5 0 0 1 0 19"/><path d="M5 10a3 3 0 0 1 0 4"/></svg>
+        <span class="wave"></span><span class="wave"></span><span class="wave"></span>
+      </div>
+      <div class="screen">
+        <div class="amount"><b>$42.18</b><span>Tap to pay</span></div>
+        <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Approved</b></div>
+      </div>
+      <div class="keys"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </div>
+</main>
+<script>
+// Pause the loop while the tab is in the background
+document.addEventListener('visibilitychange', () => document.documentElement.style.setProperty('--play', document.hidden ? 'paused' : 'running'));
+</script>
+</body>
+</html>
