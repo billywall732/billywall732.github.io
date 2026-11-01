@@ -1,0 +1,21 @@
+/* Shared by the app pages (Contrail, Wallet): the demo banner and the space around an app
+   inside the site's header and footer. Each app's own look lives in its app.css. */
+.contrail-app, .wallet-app { display: block; border-block: 1px solid var(--rule); }
+
+.demo-banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 4px;
+  background: color-mix(in srgb, #ffd23f 22%, var(--surface, #fff)); color: var(--ink, #111);
+  border: 1px solid color-mix(in srgb, #c99a00 45%, transparent);
+  font: 14px/1.4 var(--f-body, system-ui, sans-serif);
+}
+.demo-banner p { margin: 0; }
+.demo-access {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px;
+  background: var(--ink, #111); color: var(--bg, #fff); font-weight: 600; text-decoration: none; white-space: nowrap;
+}
+.demo-access:hover { text-decoration: underline; }
+.demo-access:focus-visible { outline: 2px solid var(--accent, #6741d9); outline-offset: 2px; }
+
+/* The site's footer strip sits right below an app: give it room */
+.contrail-app + footer, .wallet-app + footer { margin-top: 32px; }
