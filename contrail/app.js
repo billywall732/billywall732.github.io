@@ -713,6 +713,9 @@ function showTab(t, focus) {
   if (!TABS.includes(t)) t = 'overview';
   TAB = t; prefs.set('tab', t);
   root.querySelectorAll('.pagetabs [role=tab]').forEach((b) => { const on = b.dataset.tab === t; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+  // Keep the active tab in view when the bar scrolls sideways (phones), without moving the page
+  const bar = root.querySelector('.pagetabs .tabscroll'), sel = $id('t-' + t);
+  if (sel.offsetLeft < bar.scrollLeft || sel.offsetLeft + sel.offsetWidth > bar.scrollLeft + bar.clientWidth - 24) bar.scrollLeft = sel.offsetLeft - 8;
   root.querySelectorAll('.tabpanel').forEach((p) => { p.hidden = !p.dataset.show.split(' ').includes(t); });
   try { history.replaceState(null, '', '#' + t); } catch { /* sandboxed */ }
   if (t === 'overview' || t === 'trips') requestAnimationFrame(draw);
@@ -725,6 +728,8 @@ root.querySelector('.pagetabs').addEventListener('keydown', (e) => {
   if (!['ArrowLeft', 'ArrowRight'].includes(e.key) || !e.target.closest('[role=tab]')) return;
   const i = TABS.indexOf(TAB), n = (i + (e.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length; showTab(TABS[n], true); e.preventDefault();
 });
+// Typing or following a #tab address switches tabs too
+addEventListener('hashchange', () => { const h = location.hash.slice(1); if (TABS.includes(h) && h !== TAB) showTab(h); });
 root.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) { showTab(g.dataset.goto); window.scrollTo({ top: root.offsetTop }); } });
 
 function selectApt(c, go) { selApt = c; renderApts(); renderAptDetail(); draw(); if (go) showTab('airports'); }
@@ -1059,7 +1064,7 @@ function renderYearChips() {
 }
 function renderAll() {
   // In the demo each page starts fresh, so tell the analytics page when the sample data is gone
-  root.querySelector('.pagelink').href = '/contrail/analytics/' + (store.mode === 'demo' && !TRIPS.length && !STAYS.length ? '?sample=none' : '');
+  $id('analyticsLink').href = '/contrail/analytics/' + (store.mode === 'demo' && !TRIPS.length && !STAYS.length ? '?sample=none' : '');
   renderOwner(); renderYearChips(); renderLegend(); renderNext(); renderStats();
   if (!editing) renderTrips();
   renderApts(); renderAptDetail(); renderWallet(); renderAddForm();

@@ -170,10 +170,17 @@ body.noscroll{overflow:hidden}
 .contrail-app .ownerform{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .contrail-app .ownerform input{padding:6px 9px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font-size:15px;min-width:0}
 .contrail-app .linkbtn{background:none;border:0;padding:0;color:var(--accent);font-family:var(--f-mono);font-size:12px;text-decoration:underline;text-underline-offset:2px}
-.contrail-app .pagetabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;background:var(--bg);padding-block:8px;border-bottom:2px solid var(--ink)}
-.contrail-app .pagetabs button{font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px;border:0;border-radius:4px 4px 0 0;background:none;color:var(--muted);white-space:nowrap}
-.contrail-app .pagetabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
-.contrail-app .pagetabs button:hover:not([aria-selected="true"]){color:var(--ink)}
+/* Section tabs: same language as Fantasy Football (all-caps bold links, accent underline on the active one, utility pills on the right) */
+.contrail-app .pagetabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:8px;background:color-mix(in oklab,var(--bg) 95%,transparent);border-bottom:1px solid var(--line)}
+.contrail-app .tabscroll{position:relative;display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.contrail-app .tabscroll::-webkit-scrollbar{display:none}
+.contrail-app .tabgroup{display:flex;gap:2px}
+.contrail-app .pagetabs :is([role=tab],.tablink){display:inline-flex;align-items:center;font-family:var(--f-display);font-size:17px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:12px 8px 9px;border:0;border-bottom:3px solid transparent;border-radius:0;background:none;white-space:nowrap;cursor:pointer;transition:color .2s}
+.contrail-app .pagetabs :is([role=tab],.tablink):hover{color:var(--ink)}
+.contrail-app .pagetabs :is([role=tab][aria-selected="true"],.tablink[aria-current="page"]){color:var(--ink);border-bottom-color:var(--accent)}
+.contrail-app .tabtools{display:flex;gap:6px;flex:none}
+.contrail-app .utilpill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font-family:var(--f-body);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;cursor:pointer}
+.contrail-app .utilpill:hover{border-color:var(--accent)}
 .contrail-app .lead{margin:0;color:var(--muted);max-width:65ch}
 .contrail-app .wallet{display:flex;flex-direction:column;gap:16px}
 .contrail-app .wgroup{display:flex;flex-direction:column;gap:8px}
@@ -294,9 +301,7 @@ body.noscroll{overflow:hidden}
 @keyframes ping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
 }
 
-/* ---- Added on the site: analytics link, flight form, airport suggestions, settings ---- */
-.contrail-app .pagetabs .pagelink{font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:6px 14px;color:var(--accent);text-decoration:none;white-space:nowrap;margin-left:auto}
-.contrail-app .pagetabs .pagelink:hover{text-decoration:underline}
+/* ---- Added on the site: flight form, airport suggestions, settings ---- */
 .contrail-app .btn.danger{color:var(--t-soon);border-color:currentColor}
 .contrail-app .tripform{gap:12px}
 .contrail-app .legf{border:1px dashed var(--line);border-radius:6px;padding:10px 12px 8px;margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -314,8 +319,7 @@ body.noscroll{overflow:hidden}
 .contrail-app #stayMap.picking{cursor:crosshair}
 .contrail-app .pickhint{margin:0;color:var(--accent);font-weight:600}
 .contrail-app .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-@media (max-width:640px){.contrail-app .pagetabs .pagelink{margin-left:0}}
 /* A purpose chip shares its class with the trip-details box; keep it chip-sized */
 .contrail-app .chip.purpose{display:inline-block;padding:2px 7px;border-radius:3px;background:none;gap:0}
 .contrail-app .chips{align-items:center}
-.contrail-app .coverlink{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media (max-width:640px){.contrail-app .tabscroll{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);padding-right:24px}.contrail-app .pagetabs :is([role=tab],.tablink){font-size:15px;padding-inline:7px}.contrail-app .utilpill{padding:4px 9px;font-size:12px}.contrail-app .pill-more{display:none}}

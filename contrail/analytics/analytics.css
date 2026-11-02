@@ -1,8 +1,8 @@
 /* Contrail analytics: charts use the app's color variables, so they follow the color mode */
-.contrail-app .backlink { color: var(--accent); text-decoration: none; }
-.contrail-app .backlink:hover { text-decoration: underline; }
-.contrail-app .secnav { position: sticky; top: 0; z-index: 20; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; background: var(--bg); padding-block: 8px; border-bottom: 2px solid var(--ink); }
-.contrail-app .secnav a { font-family: var(--f-display); font-size: 16px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; padding: 6px 12px; color: var(--muted); text-decoration: none; white-space: nowrap; border-radius: 4px; }
+/* The Contrail tab bar scrolls away here; the section links below it stay on screen */
+.contrail-app .pagetabs { position: static; }
+.contrail-app .secnav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 19; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; background: var(--bg); padding-block: 8px; border-bottom: 1px solid var(--line); }
+.contrail-app .secnav a { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; color: var(--muted); text-decoration: none; white-space: nowrap; border-radius: 4px; }
 .contrail-app .secnav a:hover { color: var(--ink); background: var(--surface-2); }
 .contrail-app .an-sections { display: flex; flex-direction: column; gap: 20px; }
 .contrail-app .an-sec { scroll-margin-top: 64px; gap: 10px; }

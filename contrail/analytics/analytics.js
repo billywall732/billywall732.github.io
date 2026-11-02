@@ -8,6 +8,8 @@ import { demoBanner, setUpApp } from '/shared/app-shell.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 
 setUpApp();
+// On a phone the Contrail tab bar scrolls sideways; bring the active Analytics tab into view
+{ const bar = document.querySelector('.pagetabs .tabscroll'), a = bar?.querySelector('[aria-current="page"]'); if (a) bar.scrollLeft = a.offsetLeft + a.offsetWidth - bar.clientWidth + 24; }
 const $id = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = (n) => Math.round(n).toLocaleString();

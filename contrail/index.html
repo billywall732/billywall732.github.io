@@ -49,7 +49,7 @@
     <div id="demoBanner"></div>
     <header>
       <div class="head-l">
-        <span class="eyebrow"><a href="/contrail/cover/" class="coverlink">Contrail cover</a> · Flight and hotel log</span>
+        <span class="eyebrow">Flight and hotel log</span>
         <h1>Contrail</h1>
         <p class="owner">The travels of <b id="ownerName">…</b> <button type="button" class="linkbtn" id="editOwner">Edit name</button></p>
       </div>
@@ -60,18 +60,25 @@
             <option value="30" selected>30 days</option><option value="60">60 days</option><option value="90">90 days</option>
           </select>
         </label>
-        <button class="btn" id="copyUp" type="button">Copy upcoming trips</button>
       </div>
     </header>
 
-    <nav class="pagetabs" role="tablist" aria-label="Sections">
-      <button role="tab" data-tab="overview" id="t-overview" aria-controls="p-overview">Overview</button>
-      <button role="tab" data-tab="trips" id="t-trips" aria-controls="p-trips">Trips</button>
-      <button role="tab" data-tab="stays" id="t-stays" aria-controls="p-stays">Stays</button>
-      <button role="tab" data-tab="airports" id="t-airports" aria-controls="p-airports">Airports &amp; lounges</button>
-      <button role="tab" data-tab="cards" id="t-cards" aria-controls="p-cards">My cards</button>
-      <button role="tab" data-tab="settings" id="t-settings" aria-controls="p-settings">Settings</button>
-      <a class="pagelink" href="/contrail/analytics/">Analytics <span aria-hidden="true">→</span></a>
+    <nav class="pagetabs" aria-label="Contrail">
+      <div class="tabscroll">
+        <div class="tabgroup" role="tablist" aria-label="Sections">
+          <button role="tab" data-tab="overview" id="t-overview" aria-controls="p-overview">Overview</button>
+          <button role="tab" data-tab="trips" id="t-trips" aria-controls="p-trips">Trips</button>
+          <button role="tab" data-tab="stays" id="t-stays" aria-controls="p-stays">Stays</button>
+          <button role="tab" data-tab="airports" id="t-airports" aria-controls="p-airports">Airports</button>
+          <button role="tab" data-tab="cards" id="t-cards" aria-controls="p-cards">Cards</button>
+          <button role="tab" data-tab="settings" id="t-settings" aria-controls="p-settings">Settings</button>
+        </div>
+        <a class="tablink" id="analyticsLink" href="/contrail/analytics/">Analytics</a>
+      </div>
+      <div class="tabtools">
+        <a class="utilpill" href="/contrail/cover/" title="Back to the cover page">Cover</a>
+        <button class="utilpill" id="copyUp" type="button" title="Copy upcoming trips">Copy<span class="pill-more"> upcoming</span></button>
+      </div>
     </nav>
 
     <div class="tabpanel" data-show="overview" id="p-overview">
