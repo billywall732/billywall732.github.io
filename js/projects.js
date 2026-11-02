@@ -310,6 +310,91 @@ export const projects = [
     image: null,
     art: 'wedding',
   },
+  {
+    slug: 'krillion-code-breaker',
+    name: 'Krillion Code Breaker',
+    kicker: 'Practice Companion',
+    icon: '🤿',
+    accent: '#23b5c4',
+    tagline: 'A practice companion for krillion.io’s daily dive, aiming for 700.',
+    blurb: 'A trainer for krillion.io’s daily trivia dive: practice rounds with my own prompts, a strategy guide, and a log of your real scores on the way to a perfect 700. Practice companion: scores are entered by you, this app does not play krillion.io for you.',
+    highlights: [
+      'Practice dives: seven prompts, 25 seconds each, scored by rarity',
+      'A strategy guide: opening moves, high-value patterns, common traps',
+      'A score log and progress chart toward 700',
+    ],
+    // Extra sections on the project page (optional): { title, text, items }
+    notes: [
+      {
+        title: 'The rules I’m training for',
+        text: 'Krillion’s daily dive, as described in its FAQ and in published player guides (checked Nov 1, 2026):',
+        items: [
+          'Seven open-ended prompts a day, the same for everyone, with 25 seconds to type one answer to each.',
+          'An accepted answer scores by how rare it is: Plankton 10, Too Clever 15, Schooler 30, Rare 60, Deep Cut 85, One in a Krillion 100. A wrong or empty answer scores 0.',
+          '“Too Clever” is the go-to “obscure” pick that isn’t actually obscure, so it scores less than an honest Schooler.',
+          'Rarity comes from a familiarity database for some prompts and from AI help plus manual review for others.',
+          'Each point is 10 meters of depth. One scored daily dive per day.',
+        ],
+      },
+      {
+        title: 'What a 700 takes',
+        text: '700 is the maximum: seven prompts at 100 points each, so a One in a Krillion answer on every prompt with nothing to spare. One Deep Cut makes it 685. The trainer tracks your best, your average and your Krillions per dive along the way.',
+      },
+      {
+        title: 'What it doesn’t do',
+        text: 'It never connects to krillion.io: no scraping, no auto-play, no submitting scores and no getting around any of its controls. The practice prompts and their rarity tiers are mine, and your real scores are typed in by you and stay in your browser.',
+      },
+    ],
+    why: 'I play Krillion most mornings and kept landing in the 400s. I wanted somewhere to practice the habit of skipping the obvious answer, and to see whether I’m actually getting better.',
+    how: [
+      'Practice: a dive of seven of my own prompts, picked by date (or at random), with a 25-second timer and answers scored by rarity tier.',
+      'Strategy: what wins points, what traps cost them, and the break-even math for swinging at a rarer answer.',
+      'Score log: you play krillion.io yourself, then type in your score, date and notes. Saved in your browser.',
+      'Progress: best, recent average and a chart against the 700 line.',
+    ],
+    status: 'workshop',
+    statusNote: 'A first working version: practice, guide, log and progress.',
+    next: [
+      'More practice prompts, so dives repeat less',
+      'Track which tiers you land most, per category',
+    ],
+    tags: ['JavaScript', 'Daily puzzles', 'SVG'],
+    url: '/code-breaker/',
+    code: null,
+    image: '/img/code-breaker.webp',
+    art: 'trivia',
+  },
+  {
+    slug: 'loop-lab',
+    name: 'Loop Lab',
+    kicker: 'Music Toy',
+    icon: '🎛️',
+    accent: '#ff4fa3',
+    tagline: 'A 16-step loop maker with sounds built from scratch in the browser.',
+    blurb: 'A one-bar step sequencer: six sounds, a 16-step grid, tempo, and play. Every sound is synthesized with Web Audio, so there are no samples, no sign-in and nothing uploaded.',
+    highlights: [
+      'Kick, snare, hi-hat, clap, bass and lead, all synthesized',
+      'Tempo from 60 to 180 BPM, with mute and pitch per sound',
+      'Save three patterns in your browser, or export a WAV',
+    ],
+    why: 'I wanted to understand how drum machines make sound without samples, and a step grid is the most fun way to hear it.',
+    how: [
+      'Each sound is a few Web Audio nodes: oscillators and noise, shaped by filters and envelopes.',
+      'A look-ahead scheduler queues each step a fraction of a second early, so timing stays tight.',
+      'Patterns save to three slots in your browser; the WAV export renders four loops offline.',
+    ],
+    status: 'workshop',
+    statusNote: 'One working instrument and one pattern, playing cleanly.',
+    next: [
+      'Swing and per-step velocity',
+      'Chain patterns into a short song',
+    ],
+    tags: ['JavaScript', 'Web Audio'],
+    url: '/loop-lab/',
+    code: null,
+    image: '/img/loop-lab.webp',
+    art: 'chart',
+  },
 ];
 
 // "Off the clock". rating is how good I am, out of 5. photos are the ones in

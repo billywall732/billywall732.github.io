@@ -1,0 +1,53 @@
+/* Loop Lab: the site's type and surfaces, with a warm magenta accent */
+.ll { --ll: #ff4fa3; padding-block: 28px 56px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+:root[data-theme="light"] .ll { --ll: #c2186f; }
+.ll h1 { font-size: clamp(34px, 6vw, 54px); }
+.ll .eyebrow { margin: 0; }
+.ll .eyebrow a { color: inherit; }
+.ll-head { display: grid; gap: 10px; }
+.ll-lede { margin: 0; max-width: 64ch; color: var(--ink-2); }
+
+.ll-transport { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; padding: 12px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; }
+.ll-play { display: inline-flex; align-items: center; gap: 10px; min-width: 120px; padding: 10px 18px; border-radius: 999px; border: 0; background: var(--ll); color: #1a0410; font: 800 16px var(--sans); cursor: pointer; }
+.ll-play:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.ll-play-i { width: 0; height: 0; border-left: 12px solid currentColor; border-block: 8px solid transparent; }
+.ll-play[aria-pressed="true"] .ll-play-i { width: 12px; height: 14px; border: 0; border-inline: 4px solid currentColor; }
+.ll-bpm, .ll-vol { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.ll-bpm output { min-width: 6.5ch; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+.ll input[type=range] { accent-color: var(--ll); width: 140px; }
+.ll-keys { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* The grid: names on the left, 16 steps in groups of four */
+.ll-grid-wrap { overflow-x: auto; padding: 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; }
+.ll-grid { display: grid; gap: 8px; min-width: 620px; }
+.ll-track { display: grid; grid-template-columns: 128px 1fr; gap: 10px; align-items: center; }
+.ll-name { display: flex; gap: 6px; align-items: center; }
+.ll-mute { flex: 1; text-align: left; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: 600 14px var(--sans); cursor: pointer; }
+.ll-mute[aria-pressed="true"] { color: var(--muted); text-decoration: line-through; }
+.ll-name select { padding: 6px 4px; border-radius: 8px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); font: 13px var(--sans); }
+.ll-steps { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 4px; }
+.ll-cell { height: 40px; border-radius: 6px; border: 1px solid var(--rule); background: color-mix(in srgb, var(--ink) 6%, var(--bg)); cursor: pointer; padding: 0; }
+.ll-cell.beat { background: color-mix(in srgb, var(--ink) 12%, var(--bg)); }
+.ll-cell[aria-pressed="true"] { background: var(--ll); border-color: var(--ll); }
+.ll-cell.now { box-shadow: 0 0 0 2px var(--ink); }
+.ll-cell[aria-pressed="true"].now { filter: brightness(1.25); }
+.ll-cell:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.ll-track.muted .ll-cell[aria-pressed="true"] { opacity: .35; }
+
+.ll-tools { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-start; }
+.ll-group { display: grid; gap: 6px; }
+.ll-lbl { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ll-row, .ll-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.ll-slot { display: inline-flex; gap: 6px; align-items: center; padding: 4px 6px 4px 10px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); }
+.pill-btn { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); font: 600 13px var(--sans); cursor: pointer; }
+.pill-btn:hover:not(:disabled) { border-color: var(--ll); }
+.pill-btn:disabled { opacity: .45; cursor: default; }
+.ll-msg { flex-basis: 100%; margin: 0; min-height: 1.3em; font-size: 14px; color: var(--ink-2); }
+@media (max-width: 640px) {
+  .ll-keys { display: none; } .ll input[type=range] { width: 110px; }
+  .ll-grid-wrap { padding: 10px; } .ll-grid { min-width: 540px; }
+  .ll-track { grid-template-columns: 78px 1fr; gap: 6px; }
+  .ll-name { flex-direction: column; align-items: stretch; gap: 3px; }
+  .ll-mute { padding: 5px 7px; font-size: 13px; } .ll-name select { padding: 2px; font-size: 12px; }
+  .ll-steps { gap: 3px; } .ll-cell { height: 34px; border-radius: 5px; }
+}

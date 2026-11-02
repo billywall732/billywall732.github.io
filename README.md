@@ -14,6 +14,8 @@ This repo is named `billywall732.github.io`, which makes it the main GitHub Page
 | `/projects/<slug>/` | this repo: one page per project |
 | `/contrail/`, `/contrail/analytics/` | this repo: the Contrail app |
 | `/wallet/` | this repo: the What's in My Wallet? app |
+| `/code-breaker/` | this repo: Krillion Code Breaker (Workshop) |
+| `/loop-lab/` | this repo: Loop Lab (Workshop) |
 | `/snow-surf-report/` | snow-surf-report |
 | `/fantasy-football/` | fantasy-football (built and pushed by fantasy-feetpics) |
 | `/my-budget-ledger/` | my-budget-ledger |
@@ -51,6 +53,8 @@ photos/               your original photos (not committed: big, with location da
 icon.svg              the tab icon
 contrail/             Contrail, the flight and hotel log (app.js, csv.js import, demo-data.js, analytics/, cover/)
 wallet/               What's in My Wallet?, the card tracker (app.js, demo-data.js, cover/)
+code-breaker/         Krillion Code Breaker, a practice companion for krillion.io (app.js, prompts.js)
+loop-lab/             Loop Lab, a 16-step loop maker with Web Audio sounds (no visit counter)
 contrail/about/, wallet/about/   redirect to the apps' project pages
 shared/               what both apps use:
   config.js           every environment value (Firebase, Worker, OAuth client, contact email) in one place

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Krillion Code Breaker · Off the Wall</title>
+  <meta name="description" content="A practice companion for krillion.io's daily dive: practice rounds, a strategy guide and a score log toward 700 points.">
+  <meta property="og:title" content="Krillion Code Breaker · Off the Wall">
+  <meta property="og:description" content="Practice rare answers and track your daily Krillion scores toward 700.">
+  <meta property="og:image" content="/img/code-breaker.webp">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/code-breaker/app.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/code-breaker/"}' async src="/shared/count.js"></script>
+  <script type="module" src="/code-breaker/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the trainer</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="/home/#polished">Projects</a>
+      <a href="/home/#off-the-clock">Off the clock</a>
+      <a href="https://github.com/billywall732" rel="me">GitHub</a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+  <main id="main" class="cb wrap">
+    <header class="cb-head">
+      <p class="eyebrow">Workshop · <a href="/projects/krillion-code-breaker/">about this project</a></p>
+      <h1>Krillion Code Breaker</h1>
+      <p class="cb-lede">Train for <a href="https://krillion.io" rel="noopener">krillion.io</a>’s daily dive: practice finding rare answers, learn the patterns, and log your real scores on the way to a perfect 700.</p>
+      <p class="cb-label" role="note"><b>Practice companion</b>: scores are entered by you, this app does not play krillion.io for you. Not affiliated with krillion.io; the practice prompts and rarity tiers here are my own.</p>
+    </header>
+
+    <nav class="cb-tabs" aria-label="Sections">
+      <div class="cb-tablist" role="tablist">
+        <button role="tab" data-tab="practice" aria-selected="true"><span class="emoji" aria-hidden="true">🤿</span>Practice</button>
+        <button role="tab" data-tab="strategy" aria-selected="false"><span class="emoji" aria-hidden="true">🧠</span>Strategy</button>
+        <button role="tab" data-tab="log" aria-selected="false"><span class="emoji" aria-hidden="true">📝</span>Score log</button>
+        <button role="tab" data-tab="progress" aria-selected="false"><span class="emoji" aria-hidden="true">📈</span>Progress</button>
+        <button role="tab" data-tab="rules" aria-selected="false"><span class="emoji" aria-hidden="true">📜</span>Rules</button>
+      </div>
+    </nav>
+
+    <section class="cb-panel" data-panel="practice" aria-label="Practice"></section>
+    <section class="cb-panel" data-panel="strategy" aria-label="Strategy guide" hidden></section>
+    <section class="cb-panel" data-panel="log" aria-label="Score log" hidden></section>
+    <section class="cb-panel" data-panel="progress" aria-label="Progress" hidden></section>
+    <section class="cb-panel" data-panel="rules" aria-label="Rules and scoring" hidden></section>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Hand-built, no templates. Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+
+  <noscript><p class="wrap">Krillion Code Breaker needs JavaScript.</p></noscript>
+</body>
+</html>

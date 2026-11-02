@@ -40,6 +40,8 @@ if (p) {
     livePreview(),
     h('div', { class: 'detail-grid' },
       section('What it is', h('p', {}, p.blurb), h('ul', { class: 'highlights' }, p.highlights.map((x) => h('li', {}, x)))),
+      // Optional extra sections from the project's notes
+      ...(p.notes || []).map((n) => section(n.title, ...[n.text && h('p', {}, n.text), n.items && h('ul', { class: 'highlights' }, n.items.map((x) => h('li', {}, x)))].filter(Boolean))),
       section('Why I built it', h('p', {}, p.why)),
       section('How it works', h('ol', { class: 'steps' }, p.how.map((x) => h('li', {}, x)))),
       section('Status', h('p', { class: 'detail-status' }, statusPill(p), ' ', p.statusNote)),
