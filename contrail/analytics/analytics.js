@@ -56,29 +56,112 @@ function bars(rows, { unit = '', fmtV = fmt, max = 10 } = {}) {
 function svgBox(w, h, label) { return d3.create('svg').attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img').attr('aria-label', label).attr('class', 'an-svg'); }
 const mobile = () => innerWidth < 640;
 
-// Months between two "YYYY-MM" (inclusive)
-function monthRange(a, b) { const out = []; let [y, m] = a.split('-').map(Number); const [y2, m2] = b.split('-').map(Number); while (y < y2 || (y === y2 && m <= m2)) { out.push(`${y}-${String(m).padStart(2, '0')}`); if (++m > 12) { m = 1; y++; } } return out; }
 
-function monthlyChart(metric) {
+// Activity columns: a month per column in a single year, a quarter per column across all years
+// (monthly counts are too small to compare over several years). Done (flown, stayed) is solid
+// accent; still to come (booked) is a lighter dashed segment on top. A summary row, a dashed
+// average line, the busiest period labeled, and a hover box listing what happened then.
+const UNIT = { flights: ['flight', 'flights'], miles: ['mile', 'miles'], nights: ['night', 'nights'] };
+const per = (metric, n) => `${fmt(n)} ${UNIT[metric][Math.round(n) === 1 ? 0 : 1]}`;
+const QMON = ['Jan–Mar', 'Apr–Jun', 'Jul–Sep', 'Oct–Dec'];
+function activityChart(metric) {
+  const today = new Date().toISOString().slice(0, 10), byQ = YEAR === 'all';
+  const key = (d) => (byQ ? `${d.slice(0, 4)}-Q${Math.ceil(+d.slice(5, 7) / 3)}` : d.slice(0, 7));
+  const label = (k) => (byQ ? `${QMON[+k.slice(-1) - 1]} ${k.slice(0, 4)}` : `${MON[+k.slice(5) - 1]} ${k.slice(0, 4)}`);
+  const pname = byQ ? 'quarter' : 'month';
   const L = legs(), S = stays();
-  const val = { flights: () => L.map((l) => [l.dep?.slice(0, 7) ?? l.t.startLocal.slice(0, 7), 1]), miles: () => L.map((l) => [l.dep?.slice(0, 7) ?? l.t.startLocal.slice(0, 7), l.mi]), nights: () => S.map((s) => [s.checkIn.slice(0, 7), s.nights]) }[metric]();
+  // [date, value, still to come?, what it was]
+  const val = metric === 'nights'
+    ? S.map((s) => [s.checkIn, s.nights, s.checkIn > today, s.name || s.brand || s.city])
+    : L.map((l) => { const d = l.dep || l.t.startLocal; return [d.slice(0, 10), metric === 'miles' ? l.mi : 1, d.slice(0, 10) > today, l.t.name]; });
   if (!val.length) return null;
   const sorted = val.map((v) => v[0]).sort();
-  const months = YEAR === 'all' ? monthRange(sorted[0], sorted[sorted.length - 1]) : MON.map((_, i) => `${YEAR}-${String(i + 1).padStart(2, '0')}`);
-  const sums = new Map(months.map((m) => [m, 0])); val.forEach(([m, v]) => sums.has(m) && sums.set(m, sums.get(m) + v));
-  const w = 1000, h = mobile() ? 340 : 260, pad = { l: 46, r: 10, t: 12, b: 30 };
-  const x = d3.scaleBand().domain(months).range([pad.l, w - pad.r]).padding(0.18);
-  const y = d3.scaleLinear().domain([0, d3.max([...sums.values()]) || 1]).nice().range([h - pad.b, pad.t]);
-  const svg = svgBox(w, h, `${metric} per month`);
-  svg.append('g').attr('class', 'an-grid').selectAll('line').data(y.ticks(4)).join('line').attr('x1', pad.l).attr('x2', w - pad.r).attr('y1', y).attr('y2', y);
-  svg.append('g').attr('class', 'an-axis').selectAll('text').data(y.ticks(4)).join('text').attr('x', pad.l - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').text((d) => d3.format('~s')(d));
-  svg.append('g').selectAll('rect').data(months).join('rect').attr('class', 'an-bar').attr('x', (m) => x(m)).attr('width', x.bandwidth()).attr('y', (m) => y(sums.get(m))).attr('height', (m) => y(0) - y(sums.get(m)))
-    .append('title').text((m) => `${MON[+m.slice(5) - 1]} ${m.slice(0, 4)}: ${fmt(sums.get(m))} ${metric}`);
-  const every = Math.ceil(months.length / (mobile() ? 6 : 14));
-  svg.append('g').attr('class', 'an-axis').selectAll('text').data(months.filter((_, i) => i % every === 0)).join('text').attr('x', (m) => x(m) + x.bandwidth() / 2).attr('y', h - 10).attr('text-anchor', 'middle')
-    .text((m) => (YEAR === 'all' ? `${MON[+m.slice(5) - 1]} ’${m.slice(2, 4)}` : MON[+m.slice(5) - 1]));
-  return svg.node().outerHTML;
+  let periods;
+  if (byQ) { periods = []; const [a, b] = [key(sorted[0]), key(sorted[sorted.length - 1])]; for (let y = +a.slice(0, 4); y <= +b.slice(0, 4); y++) for (let q = 1; q <= 4; q++) { const k = `${y}-Q${q}`; if (k >= a && k <= b) periods.push(k); } }
+  else periods = MON.map((_, i) => `${YEAR}-${String(i + 1).padStart(2, '0')}`);
+  const P = new Map(periods.map((k) => [k, { done: 0, booked: 0, what: new Map() }]));
+  val.forEach(([d, v, future, what]) => { const o = P.get(key(d)); if (!o) return; o[future ? 'booked' : 'done'] += v; if (what) o.what.set(what, (o.what.get(what) || 0) + v); });
+  const tot = (k) => P.get(k).done + P.get(k).booked;
+  const total = periods.reduce((a, k) => a + tot(k), 0), booked = periods.reduce((a, k) => a + P.get(k).booked, 0);
+  // The average runs over periods up to now (all of them if the whole span is in the past)
+  const nowKey = key(today), counted = periods.filter((k) => k <= nowKey);
+  const avg = counted.length ? counted.reduce((a, k) => a + P.get(k).done, 0) / counted.length : 0;
+  const max = d3.max(periods, tot), tops = max ? periods.filter((k) => tot(k) === max) : [];
+  const active = periods.filter((k) => tot(k) > 0).length;
+  const short = (v) => (metric === 'miles' ? d3.format('.2~s')(v) : Number.isInteger(v) ? fmt(v) : v.toFixed(1));
+
+  const narrow = mobile(), w = narrow ? 440 : 1000, h = narrow ? 250 : 270, pad = { l: narrow ? 34 : 46, r: narrow ? 46 : 64, t: 22, b: byQ ? 40 : 26 };
+  const x = d3.scaleBand().domain(periods).range([pad.l, w - pad.r]).paddingInner(periods.length > 24 ? 0.14 : 0.28).paddingOuter(0.1);
+  const y = d3.scaleLinear().domain([0, Math.max(max, avg) || 1]).nice(4).range([h - pad.b, pad.t]);
+  const half = x.step() * x.paddingInner() / 2;
+  // Whole-number steps for flights and nights; miles as 12k
+  const ticks = y.ticks(4).filter((t) => metric === 'miles' || Number.isInteger(t));
+  const svg = svgBox(w, h, `${UNIT[metric][1]} per ${pname}`);
+  svg.append('g').attr('class', 'an-grid').selectAll('line').data(ticks).join('line').attr('x1', pad.l).attr('x2', w - pad.r).attr('y1', y).attr('y2', y);
+  svg.append('g').attr('class', 'an-axis').selectAll('text').data(ticks).join('text').attr('x', pad.l - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').text(metric === 'miles' ? d3.format('~s') : d3.format('d'));
+  // Year boundaries across all years
+  if (byQ) svg.append('g').attr('class', 'an-yeardiv').selectAll('line').data(periods.filter((k, i) => i && k.endsWith('Q1'))).join('line').attr('x1', (k) => x(k) - half).attr('x2', (k) => x(k) - half).attr('y1', pad.t - 10).attr('y2', h - 2);
+  // "So far" marker when there are booked periods after today
+  if (P.has(nowKey) && periods[periods.length - 1] !== nowKey) {
+    const nx = x(nowKey) + x.bandwidth() + half;
+    svg.append('line').attr('class', 'an-now').attr('x1', nx).attr('x2', nx).attr('y1', pad.t - 10).attr('y2', h - pad.b);
+    svg.append('text').attr('class', 'an-axis an-nowlbl').attr('x', nx - 4).attr('y', pad.t - 4).attr('text-anchor', 'end').text('← so far');
+  }
+  const r = Math.min(4, x.bandwidth() / 3), base = y(0);
+  // A column with rounded top corners, square at the baseline
+  const col = (x0, y0, wd, hgt, round) => (hgt <= 0 ? '' : round
+    ? `M${x0},${y0 + hgt}V${y0 + r}Q${x0},${y0} ${x0 + r},${y0}H${x0 + wd - r}Q${x0 + wd},${y0} ${x0 + wd},${y0 + r}V${y0 + hgt}Z`
+    : `M${x0},${y0}h${wd}v${hgt}h${-wd}Z`);
+  const g = svg.append('g');
+  periods.forEach((k) => {
+    const o = P.get(k), x0 = x(k), wd = x.bandwidth();
+    if (!tot(k)) { g.append('rect').attr('class', 'an-zero').attr('x', x0).attr('y', base - 2).attr('width', wd).attr('height', 2); return; }
+    const yDone = y(o.done), yAll = y(tot(k)), gap = o.done && o.booked ? 2 : 0;
+    if (o.done) g.append('path').attr('class', 'an-bar').attr('d', col(x0, yDone, wd, base - yDone, !o.booked));
+    if (o.booked) g.append('path').attr('class', 'an-bar an-booked').attr('d', col(x0 + .75, yAll + .75, wd - 1.5, yDone - yAll - gap - 1.5, true));
+  });
+  // Average, labeled in the right margin
+  if (avg > 0) {
+    svg.append('line').attr('class', 'an-avg').attr('x1', pad.l).attr('x2', w - pad.r + 4).attr('y1', y(avg)).attr('y2', y(avg));
+    svg.append('text').attr('class', 'an-axis an-avglbl').attr('x', w - pad.r + 8).attr('y', y(avg) + 4).text(`avg ${short(avg)}`);
+  }
+  // Label the busiest period (only when one stands out)
+  if (tops.length === 1) svg.append('text').attr('class', 'an-toplbl').attr('x', x(tops[0]) + x.bandwidth() / 2).attr('y', y(max) - 6).attr('text-anchor', 'middle').text(short(max));
+  const ax = svg.append('g').attr('class', 'an-axis');
+  if (byQ) {
+    ax.selectAll('text.q').data(narrow ? periods.filter((k) => /Q[13]$/.test(k)) : periods).join('text').attr('class', 'q').attr('x', (k) => x(k) + x.bandwidth() / 2).attr('y', h - pad.b + 15).attr('text-anchor', 'middle').text((k) => k.slice(-2));
+    const years = [...new Set(periods.map((k) => k.slice(0, 4)))];
+    ax.selectAll('text.yr').data(years).join('text').attr('class', 'yr an-yrlbl').attr('text-anchor', 'middle').attr('y', h - 3)
+      .attr('x', (yr) => { const ks = periods.filter((k) => k.startsWith(yr)); return (x(ks[0]) + x(ks[ks.length - 1]) + x.bandwidth()) / 2; }).text((yr) => yr);
+  } else {
+    ax.selectAll('text').data(periods).join('text').attr('x', (k) => x(k) + x.bandwidth() / 2).attr('y', h - 8).attr('text-anchor', 'middle').text((k) => (narrow ? MON[+k.slice(5) - 1][0] : MON[+k.slice(5) - 1]));
+  }
+  // Hover and tap targets: the full column height and the gaps either side
+  svg.append('g').selectAll('rect').data(periods).join('rect').attr('class', 'an-hit').attr('x', (k) => x(k) - half).attr('width', x.step()).attr('y', pad.t).attr('height', h - pad.b - pad.t)
+    .attr('data-tip', (k) => { const o = P.get(k), items = [...o.what].sort((a, b) => b[1] - a[1]); return JSON.stringify({ t: label(k), v: tot(k) ? per(metric, tot(k)) : `No ${UNIT[metric][1]}`, b: o.booked && o.done ? `${per(metric, o.done)} done · ${per(metric, o.booked)} booked` : o.booked ? 'Booked, still to come' : '', w: items.slice(0, 5).map(([n]) => n), more: Math.max(0, items.length - 5) }); })
+    .attr('aria-label', (k) => `${label(k)}: ${per(metric, tot(k))}`);
+  const busiest = !tops.length ? ['—', `busiest ${pname}`] : tops.length === 1 ? [label(tops[0]), `busiest ${pname}, ${per(metric, max)}`] : [per(metric, max), `most in a ${pname}, ${tops.length} ${pname}s tied`];
+  const summary = [[per(metric, total), YEAR === 'all' ? 'in all' : `in ${YEAR}`], [`${short(avg)} ${UNIT[metric][1]}`, `a ${pname} on average`], busiest, [`${active} of ${periods.length}`, `${pname}s with ${UNIT[metric][1]}`]];
+  return `<div class="an-sum">${summary.map(([v, k]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('')}</div>
+    <div class="an-colchart">${svg.node().outerHTML}</div>
+    <div class="legend an-legend"><span><i class="an-key l2"></i>${metric === 'nights' ? 'Stayed' : 'Flown'}</span>${booked ? '<span><i class="an-key an-key-booked"></i>Booked, still to come</span>' : ''}${avg ? `<span><i class="an-key an-key-avg"></i>${byQ ? 'Quarterly' : 'Monthly'} average so far</span>` : ''}<span>${byQ ? 'Pick a year above for month by month. ' : ''}Point at a column for details.</span></div>`;
 }
+// One shared hover box for the activity columns
+const tip = document.createElement('div'); tip.className = 'an-tip'; tip.hidden = true; document.querySelector('.contrail-app').append(tip);
+function showTip(hit, e) {
+  const d = JSON.parse(hit.dataset.tip);
+  tip.innerHTML = `<b>${esc(d.t)}</b><span class="num">${esc(d.v)}</span>${d.b ? `<small>${esc(d.b)}</small>` : ''}${d.w.length ? `<ul>${d.w.map((k) => `<li>${esc(k)}</li>`).join('')}${d.more ? `<li class="lw">+${d.more} more</li>` : ''}</ul>` : ''}`;
+  tip.hidden = false;
+  const bx = hit.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  const cx = e?.clientX ?? bx.left + bx.width / 2, cy = e?.clientY ?? bx.top + bx.height / 2;
+  tip.style.left = `${Math.min(Math.max(8, cx - tw / 2), innerWidth - tw - 8)}px`;
+  tip.style.top = `${cy - th - 14 < 8 ? cy + 18 : cy - th - 14}px`;
+  document.querySelectorAll('.an-hit.on').forEach((x) => x.classList.remove('on')); hit.classList.add('on');
+}
+const hideTip = () => { tip.hidden = true; document.querySelectorAll('.an-hit.on').forEach((x) => x.classList.remove('on')); };
+document.addEventListener('pointermove', (e) => { const hit = e.target.closest?.('.an-hit'); if (hit) showTip(hit, e); else if (!tip.hidden && e.pointerType === 'mouse') hideTip(); });
+document.addEventListener('pointerdown', (e) => { const hit = e.target.closest?.('.an-hit'); if (hit) showTip(hit, e); else hideTip(); });
+addEventListener('scroll', hideTip, { passive: true });
 function yoyChart() {
   const ys = [...new Set(TRIPS.map((t) => t.startLocal.slice(0, 4)))].sort();
   if (ys.length < 2) return null;
@@ -137,7 +220,7 @@ function choropleth(features, active, label, projection) {
 // ---------- the sections ----------
 const SECTIONS = [
   ['activity', 'Activity over time', () => {
-    const m = ['flights', 'miles', 'nights'].map((k) => [k, monthlyChart(k)]);
+    const m = ['flights', 'miles', 'nights'].map((k) => [k, activityChart(k)]);
     if (!m.some(([, s]) => s)) return empty('Add flights or stays to see your travel month by month.');
     const yoy = yoyChart(), hm = heatmap();
     return `<div class="an-tabs" role="tablist" aria-label="Measure">${m.map(([k], i) => `<button type="button" role="tab" class="tab" data-metric="${k}" aria-selected="${i === 0}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>
