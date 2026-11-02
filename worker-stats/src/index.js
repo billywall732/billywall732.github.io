@@ -4,6 +4,8 @@
 //   GET /summary?site=offthewall  →  { site, generatedAt, ranges: { today, week, month } }
 //   GET /summary?site=fantasy     →  the same, for the league's Fantasy Feetpics site
 //
+// Each range has a trend: views per hour (today) or per day (7 and 30 days), summed over all pages.
+//
 // Only totals leave this Worker: views per page, referrer domains, countries and regions, device
 // and browser counts, entry/exit pages and time-on-page buckets. No IDs, no individual visits,
 // nothing about any one person. Answers are cached for 15 minutes. Nothing is logged.
@@ -27,7 +29,7 @@ export default {
     const token = env[SITES[site]];
     if (!token) return json({ error: 'not set up', detail: `add the ${SITES[site]} secret (see README)` }, 503, cors);
 
-    const cacheKey = new Request(`https://stats.cache/summary/${site}`);
+    const cacheKey = new Request(`https://stats.cache/summary/v3/${site}`);
     const cached = await caches.default.match(cacheKey);
     if (cached) return new Response(cached.body, { headers: { ...Object.fromEntries(cached.headers), ...cors } });
     try {
@@ -65,18 +67,29 @@ async function summary(site, token) {
 
   const ranges = {};
   for (const [name, back] of Object.entries(RANGES)) {
-    const span = { start: day(back), end: day(0) };
-    const total = await api('/stats/total', span);
+    // GoatCounter treats the end date as exclusive and the dates as UTC, while each path's per-day
+    // stats come in the account's time zone. So ask from a day early to tomorrow, and count each
+    // path from its per-day stats, keeping only days inside the range.
+    const span = { start: day(back + 1), end: day(-1) };
     const hits = await api('/stats/hits', { ...span, limit: 200 });
-    const refs = await api('/stats/toprefs', { ...span, limit: 25 }).catch(() => ({ stats: [] }));
-    const locs = await api('/stats/locations', { ...span, limit: 40 }).catch(() => ({ stats: [] }));
-    const r = { start: span.start, end: span.end, views: 0, visitorsEstimate: null, pages: [], referrers: [], countries: [], regions: [], devices: {}, browsers: {}, entry: {}, exit: {}, time: {}, perPage: {} };
+    const refs = await api('/stats/toprefs', { start: day(back), end: day(-1), limit: 25 }).catch(() => ({ stats: [] }));
+    const locs = await api('/stats/locations', { start: day(back), end: day(-1), limit: 40 }).catch(() => ({ stats: [] }));
+    const r = { start: day(back), end: day(0), views: 0, visitorsEstimate: null, pages: [], referrers: [], countries: [], regions: [], devices: {}, browsers: {}, entry: {}, exit: {}, time: {}, perPage: {} };
     const add = (o, k, n) => { o[k] = (o[k] || 0) + n; };
+    const byDay = {}, hours = Array(24).fill(0);
+    const daily = (st) => Number(st.daily) || (st.hourly || []).reduce((a, b) => a + (Number(b) || 0), 0);
+    const inRange = (h) => (h.stats ? h.stats.filter((st) => st.day >= r.start && st.day <= r.end).reduce((a, st) => a + daily(st), 0) : Number(h.count) || 0);
     for (const h of hits.hits || []) {
-      const n = Number(h.count) || 0;
+      const n = inRange(h);
+      if (!n) continue;
       if (!h.event) {
-        r.pages.push({ path: h.path, title: h.title || '', views: n, visitorsEstimate: h.count_unique ?? null, pathId: name === 'month' ? h.path_id : undefined });
+        r.pages.push({ path: h.path, title: h.title || '', views: n, visitorsEstimate: null, pathId: name === 'month' ? h.path_id : undefined });
         r.views += n;
+        // Views per day (and per hour, for Today) across all pages: the trend chart
+        for (const st of h.stats || []) {
+          if (st.day >= r.start && st.day <= r.end) add(byDay, st.day, daily(st));
+          if (name === 'today' && st.day === r.end) (st.hourly || []).forEach((c, i) => { if (i < 24) hours[i] += Number(c) || 0; });
+        }
         continue;
       }
       // Our aggregate events (shared/count.js): client / entry / exit / time
@@ -89,8 +102,10 @@ async function summary(site, token) {
       else if (kind === 'exit') add(r.exit, rest.join(' '), n);
       else if (kind === 'time' && rest.length >= 2) { const b = rest.pop(); const path = rest.join(' '); add((r.time[path] ??= {}), b, n); }
     }
-    r.visitorsEstimate = total.total_unique ?? total.total_utc_unique ?? null;
-    if (!r.views) r.views = Number(total.total) || 0;
+    // Every day in the range, zeros included (a count, never a list of visits)
+    r.trend = name === 'today'
+      ? { unit: 'hour', points: hours.map((views, hour) => ({ hour, views })) }
+      : { unit: 'day', points: Array.from({ length: back + 1 }, (_, i) => day(back - i)).map((d) => ({ day: d, views: byDay[d] || 0 })) };
     // Referrers are sent as an origin only; keep just the host name
     r.referrers = (refs.stats || []).map((x) => ({ domain: hostOf(x.name), views: Number(x.count) || 0 })).filter((x) => x.views);
     r.countries = (locs.stats || []).map((x) => ({ code: x.id || '', name: x.name || x.id || 'Unknown', views: Number(x.count) || 0 })).filter((x) => x.views);
@@ -104,7 +119,7 @@ async function summary(site, token) {
   // Referrer domains for the busiest pages (last 30 days)
   for (const p of ranges.month.pages.sort((a, b) => b.views - a.views).slice(0, 8)) {
     if (p.pathId == null) continue;
-    const pr = await api(`/stats/hits/${p.pathId}`, { start: ranges.month.start, end: ranges.month.end, limit: 8 }).catch(() => ({ refs: [] }));
+    const pr = await api(`/stats/hits/${p.pathId}`, { start: ranges.month.start, end: day(-1), limit: 8 }).catch(() => ({ refs: [] }));
     const list = pr.refs || pr.stats || [];
     (ranges.month.perPage[p.path] ??= { devices: {}, browsers: {} }).referrers = list.map((x) => ({ domain: hostOf(x.name || x.ref), views: Number(x.count) || 0 })).filter((x) => x.views);
   }

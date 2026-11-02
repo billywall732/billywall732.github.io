@@ -16,23 +16,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
-  <link rel="stylesheet" href="/stats/stats.css">
+  <link rel="stylesheet" href="/stats/stats.css?v=2">
   <!-- A fresh copy of the script each visit (GitHub Pages lets browsers keep files for 10 minutes) -->
   <script type="module">import(`/stats/stats.js?t=${Date.now()}`);</script>
 </head>
 <body>
   <main class="wrap stats-page">
-    <p class="eyebrow">Off the Wall · hidden page</p>
-    <h1>Visit counts</h1>
-    <p class="stats-note">Aggregate counts only: views per page, referrer domains, countries and US states, device types and browser families. No IP addresses, no cookies, no individual visitors. Visitor numbers are <b>estimates</b>.</p>
-    <div class="range-tabs site-tabs" role="tablist" aria-label="Site">
-      <button role="tab" data-site="offthewall" aria-selected="true">Off the Wall</button>
-      <button role="tab" data-site="fantasy" aria-selected="false">Fantasy Feetpics (league)</button>
-    </div>
-    <div class="range-tabs" role="tablist" aria-label="Time range">
-      <button role="tab" data-range="today" aria-selected="false">Today</button>
-      <button role="tab" data-range="week" aria-selected="true">Last 7 days</button>
-      <button role="tab" data-range="month" aria-selected="false">Last 30 days</button>
+    <header class="st-head">
+      <div class="st-top">
+        <p class="eyebrow">Off the Wall · hidden page</p>
+        <a class="st-back" href="/">← Back to Off the Wall</a>
+      </div>
+      <h1>Visit counts</h1>
+      <p class="stats-note">Aggregate counts only: views per page, referrer domains, countries and US states, device types and browser families. No IP addresses, no cookies, no individual visitors. Visit numbers are <b>estimates</b>.</p>
+      <p class="st-since">Counts started Nov 1, 2026, with the site’s own counter. Device, browser, entry, exit and time-on-page counts begin then; the league’s earlier views have page and place only.</p>
+    </header>
+    <div class="st-controls">
+      <div class="range-tabs site-tabs" role="tablist" aria-label="Site">
+        <button role="tab" data-site="offthewall" aria-selected="true">Off the Wall</button>
+        <button role="tab" data-site="fantasy" aria-selected="false">Fantasy Feetpics (league)</button>
+      </div>
+      <div class="range-tabs" role="tablist" aria-label="Time range">
+        <button role="tab" data-range="today" aria-selected="false">Today</button>
+        <button role="tab" data-range="week" aria-selected="true">Last 7 days</button>
+        <button role="tab" data-range="month" aria-selected="false">Last 30 days</button>
+      </div>
     </div>
     <div id="stats" aria-live="polite"><p class="stats-note">Loading…</p></div>
   </main>

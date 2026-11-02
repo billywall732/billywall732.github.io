@@ -43,3 +43,13 @@ GoatCounter receives each request the way any website does, so it sees the visit
 5. **Connect the page.** Put that address in `shared/config.js` → `statsUrl`, then commit and push.
 
 The page updates at most every 15 minutes, since the Worker caches its answer.
+
+## How the ranges are counted
+
+Each range (today, 7 days, 30 days) is counted from each page's per-day stats, in the counter's own time zone, so the total, the page rows and the trend line always agree. Today also has views per hour.
+
+GoatCounter treats an API end date as exclusive and the dates as UTC. So the Worker asks up to tomorrow and keeps only the days inside the range. Before this, Today always came back empty.
+
+Referrers, countries and US states come from GoatCounter's own range totals. They can be off by a few hours at the edges of a range.
+
+To redeploy after changing the Worker: `npx wrangler deploy` in this folder.
