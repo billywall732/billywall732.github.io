@@ -203,21 +203,24 @@ img { display: block; max-width: 100%; height: auto; }
 @media (max-width: 380px) { .pill-toggle .pill-state { display: none; } }
 
 /* ---------- Board cursor ---------- */
-/* Trails the real cursor; never replaces it, never catches clicks */
+/* Replaces the cursor while it shows (mouse only); never catches clicks or blocks selecting text */
 
 .board-cursor {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 50;
+  z-index: 2147483000;
   width: 44px;
   height: 40px;
+  /* The board's middle (not the rider's head) sits on the pointer's hotspot */
+  margin: -32px 0 0 -22px;
+  transform-origin: 22px 32px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s;
   will-change: transform;
 }
 .board-cursor.is-on { opacity: 1; }
+html.board-on, html.board-on * { cursor: none !important; }
 .board-cursor svg { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3)); }
 .b-deck { fill: var(--brand); stroke: var(--ink); stroke-width: 1.2; }
 .b-part { fill: var(--ink); }

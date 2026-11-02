@@ -144,10 +144,11 @@ function themeButton() {
 }
 
 // ---------- Board cursor ----------
-// Opt-in, mouse only. A small board trails the pointer and tilts with the way
-// it's moving. The real cursor (arrow, hand, text I-beam) always stays. The
-// animation only runs while the board is catching up, so it stops when the
-// pointer does. Hidden with touch screens and reduced motion.
+// Opt-in, mouse only. The board (with its rider) becomes the cursor: centered
+// on the pointer, moved straight there on every mousemove, and the page's own
+// cursor is hidden while it shows. It leans a little with sideways movement,
+// except with reduced motion. Using the keyboard brings the normal cursor back
+// until the mouse moves again. Not offered on touch screens.
 
 const BOARDS = [
   { name: 'off', label: 'Off' },
@@ -199,36 +200,29 @@ function boardCursor() {
   const btn = $('.board-toggle');
   if (!btn) return;
   const mouse = matchMedia('(hover: hover) and (pointer: fine)');
-  const allowed = () => mouse.matches && !reducedMotion.matches;
+  // Mouse only. With reduced motion the board still works, it just doesn't lean
+  const allowed = () => mouse.matches;
 
   const board = h('div', { class: 'board-cursor', 'aria-hidden': 'true' });
+  const root = document.documentElement;
   let current = 'off';
-  let pos = null; // where the board is drawn
-  let target = null; // where it's heading: just behind the pointer
-  let tilt = 0;
-  let lean = 0; // the tilt the pointer's movement asks for
-  let frame = 0;
+  let last = null; // the previous pointer position, for the lean
+  let level = 0; // a timer that levels the board out once the pointer stops
 
-  function step() {
-    frame = 0;
-    pos.x += (target.x - pos.x) * 0.22;
-    pos.y += (target.y - pos.y) * 0.22;
-    lean *= 0.85;
-    tilt += (lean - tilt) * 0.2;
-    board.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) rotate(${tilt.toFixed(2)}deg)`;
-    const settled = Math.abs(target.x - pos.x) < 0.3 && Math.abs(target.y - pos.y) < 0.3 && Math.abs(tilt) < 0.3;
-    if (!settled) frame = requestAnimationFrame(step);
-  }
+  // Straight to the pointer on every move, no easing; CSS puts the board's center on the hotspot
   function onMove(e) {
-    if (e.pointerType && e.pointerType !== 'mouse') { board.classList.remove('is-on'); return; }
-    const next = { x: e.clientX + 16, y: e.clientY + 8 };
-    if (!pos) pos = { ...next };
-    if (target) lean = Math.max(-28, Math.min(28, lean + (next.x - target.x) * 1.4 + (next.y - target.y) * 0.5));
-    target = next;
+    if (e.pointerType && e.pointerType !== 'mouse') { hide(); return; }
+    const tilt = reducedMotion.matches || !last ? 0 : Math.max(-20, Math.min(20, (e.clientX - last.x) * 1.6));
+    last = { x: e.clientX, y: e.clientY };
+    board.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) rotate(${tilt.toFixed(1)}deg)`;
     board.classList.add('is-on');
-    if (!frame) frame = requestAnimationFrame(step);
+    root.classList.add('board-on');
+    clearTimeout(level);
+    const { x, y } = last;
+    if (tilt) level = setTimeout(() => { board.style.transform = `translate3d(${x}px, ${y}px, 0)`; }, 90);
   }
-  const hide = () => board.classList.remove('is-on');
+  // Back to the normal cursor: when the pointer leaves the page, and as soon as someone uses the keyboard
+  function hide() { clearTimeout(level); board.classList.remove('is-on'); root.classList.remove('board-on'); last = null; }
 
   function set(name, save = true) {
     current = allowed() ? name : 'off';
@@ -242,17 +236,18 @@ function boardCursor() {
     if (save) store.set('otw-board', current);
     if (current === 'off') {
       document.removeEventListener('pointermove', onMove);
-      document.documentElement.removeEventListener('pointerleave', hide);
-      cancelAnimationFrame(frame);
-      frame = 0;
+      root.removeEventListener('pointerleave', hide);
+      document.removeEventListener('keydown', hide);
+      clearTimeout(level);
+      hide();
       board.remove();
-      pos = target = null;
       return;
     }
     board.innerHTML = withRider(current);
     if (!board.isConnected) document.body.append(board);
     document.addEventListener('pointermove', onMove, { passive: true });
-    document.documentElement.addEventListener('pointerleave', hide);
+    root.addEventListener('pointerleave', hide);
+    document.addEventListener('keydown', hide);
   }
 
   btn.addEventListener('click', () => {
