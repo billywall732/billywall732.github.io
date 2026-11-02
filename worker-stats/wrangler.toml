@@ -11,5 +11,5 @@ workers_dev = true
 enabled = false
 
 [vars]
-SITE = "offthewall"
+# Each counter's read-only key is a secret: GOATCOUNTER_TOKEN (offthewall), GOATCOUNTER_TOKEN_FANTASY (fantasy)
 ALLOWED_ORIGINS = "https://offthewall.dev"

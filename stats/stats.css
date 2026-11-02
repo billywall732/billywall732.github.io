@@ -4,6 +4,8 @@
 .stats-page .eyebrow { margin: 0; }
 .stats-note { margin: 0; color: var(--muted); max-width: 70ch; }
 .range-tabs { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.range-tabs.site-tabs button { font-size: 15px; }
+.range-tabs.site-tabs button[aria-selected="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
 .range-tabs button { font: 600 14px/1 var(--sans); padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
 .range-tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }

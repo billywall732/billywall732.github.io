@@ -1,6 +1,10 @@
 # Visit counts: the stats Worker
 
-The hidden page at **https://offthewall.dev/stats/** shows aggregate visit counts. This Cloudflare Worker reads them from the `offthewall` GoatCounter account and hands the page totals only. The GoatCounter key stays with the Worker and never appears on any page.
+The hidden page at **https://offthewall.dev/stats/** shows aggregate visit counts, with a toggle between two GoatCounter accounts:
+- **Off the Wall** (`offthewall`): the portfolio, its apps and Fantasy Football.
+- **Fantasy Feetpics** (`fantasy`): the league's own site. `/stats/#fantasy` opens it directly.
+
+This Cloudflare Worker reads both accounts and hands the page totals only. The GoatCounter key stays with the Worker and never appears on any page.
 
 ## What is counted, and what isn't
 
@@ -32,6 +36,10 @@ GoatCounter receives each request the way any website does, so it sees the visit
    npx wrangler deploy
    ```
    Paste the key when asked. The deploy prints the address, like `https://otw-stats.offthewall-dev.workers.dev`.
-4. **Connect the page.** Put that address in `shared/config.js` → `statsUrl`, then commit and push.
+4. **The league's counter** (fantasy.goatcounter.com): repeat steps 1–2 there, with the same data-collection settings and a new **Read statistics** key. Then:
+   ```
+   npx wrangler secret put GOATCOUNTER_TOKEN_FANTASY
+   ```
+5. **Connect the page.** Put that address in `shared/config.js` → `statsUrl`, then commit and push.
 
 The page updates at most every 15 minutes, since the Worker caches its answer.

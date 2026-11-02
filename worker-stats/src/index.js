@@ -1,7 +1,8 @@
-// Off the Wall's stats Worker: reads the offthewall GoatCounter account with a read-only key (a
-// Worker secret, never on any page) and returns aggregate counts for the hidden /stats/ page.
+// Off the Wall's stats Worker: reads a GoatCounter account with a read-only key (a Worker secret,
+// never on any page) and returns aggregate counts for the hidden /stats/ page.
 //
-//   GET /summary  →  { generatedAt, ranges: { today, week, month } }
+//   GET /summary?site=offthewall  →  { site, generatedAt, ranges: { today, week, month } }
+//   GET /summary?site=fantasy     →  the same, for the league's Fantasy Feetpics site
 //
 // Only totals leave this Worker: views per page, referrer domains, countries and regions, device
 // and browser counts, entry/exit pages and time-on-page buckets. No IDs, no individual visits,
@@ -9,6 +10,8 @@
 
 const RANGES = { today: 0, week: 6, month: 29 }; // days before today, inclusive
 const CACHE_SEC = 15 * 60;
+// GoatCounter site → the Worker secret holding its read-only key
+const SITES = { offthewall: 'GOATCOUNTER_TOKEN', fantasy: 'GOATCOUNTER_TOKEN_FANTASY' };
 
 export default {
   async fetch(request, env, ctx) {
@@ -19,11 +22,16 @@ export default {
     if (url.pathname !== '/summary' || request.method !== 'GET') return json({ error: 'not found' }, 404, cors || {});
     if (!cors) return json({ error: 'origin' }, 403, {});
 
-    const cacheKey = new Request(`https://stats.cache/summary`);
+    const site = url.searchParams.get('site') || 'offthewall';
+    if (!SITES[site]) return json({ error: 'unknown site' }, 404, cors);
+    const token = env[SITES[site]];
+    if (!token) return json({ error: 'not set up', detail: `add the ${SITES[site]} secret (see README)` }, 503, cors);
+
+    const cacheKey = new Request(`https://stats.cache/summary/${site}`);
     const cached = await caches.default.match(cacheKey);
     if (cached) return new Response(cached.body, { headers: { ...Object.fromEntries(cached.headers), ...cors } });
     try {
-      const body = JSON.stringify(await summary(env));
+      const body = JSON.stringify({ site, ...(await summary(site, token)) });
       ctx.waitUntil(caches.default.put(cacheKey, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${CACHE_SEC}` } })));
       return new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...cors } });
     } catch (e) {
@@ -32,7 +40,7 @@ export default {
   },
 };
 
-async function summary(env) {
+async function summary(site, token) {
   // GoatCounter's API allows only a few requests a second: one at a time, a short gap between them,
   // and when it says "429 Too Many Requests", wait as long as it asks and try again.
   const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -41,8 +49,8 @@ async function summary(env) {
     for (let attempt = 0; attempt < 6; attempt++) {
       const wait = last + 300 - Date.now(); if (wait > 0) await pause(wait);
       last = Date.now();
-      const res = await fetch(`https://${env.SITE}.goatcounter.com/api/v0${path}?${new URLSearchParams(params)}`, {
-        headers: { Authorization: `Bearer ${env.GOATCOUNTER_TOKEN}`, 'Content-Type': 'application/json' },
+      const res = await fetch(`https://${site}.goatcounter.com/api/v0${path}?${new URLSearchParams(params)}`, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
       if (res.status === 429) { await pause(Math.min(10, Number(res.headers.get('X-Rate-Limit-Reset')) || 1) * 1000 + 200); continue; }
       if (!res.ok) throw new Error(`GoatCounter ${res.status} for ${path}`);

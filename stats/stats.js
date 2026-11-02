@@ -13,7 +13,14 @@ const DEVICE = { phone: 'Phone', tablet: 'Tablet', laptop: 'Laptop or desktop' }
 
 // Friendly names for paths
 const APPS = { 'snow-surf-report': 'Snow and Surf Report', 'fantasy-football': 'Fantasy Football', 'my-budget-ledger': 'Budget Ledger', contrail: 'Contrail', wallet: 'What’s in My Wallet?' };
+// The league site counts its cover as /cover and each tab as /<tab> (/standings, /ice…)
+const LEAGUE_TABS = { standings: 'Standings', matchups: 'Matchups', ice: 'Ice', power: 'Power', teams: 'Teams', wire: 'Wire & Trades', draft: 'Draft', awards: 'Awards', history: 'History', rules: 'League Rules' };
 function pageName(path) {
+  if (SITE === 'fantasy') {
+    if (path === '/cover' || path === '/') return 'Cover';
+    const tab = path.replace(/^\//, '');
+    return LEAGUE_TABS[tab] ? `${LEAGUE_TABS[tab]} tab` : path;
+  }
   if (path === '/') return 'Cover';
   const m = path.match(/^\/home\/(?:#(.+))?$/);
   if (m) return m[1] ? `Home · ${m[1]} tab` : 'Home';
@@ -38,6 +45,10 @@ function typical(buckets = {}) {
 }
 
 let DATA = null, RANGE = 'week';
+// Which counter: Off the Wall, or the league's Fantasy Feetpics. The address remembers it (#fantasy).
+const SITE_NAMES = { offthewall: 'Off the Wall', fantasy: 'Fantasy Feetpics (league)' };
+let SITE = location.hash === '#fantasy' ? 'fantasy' : 'offthewall';
+const loaded = {};
 function render() {
   const r = DATA.ranges[RANGE], all = DATA.ranges;
   document.querySelectorAll('[data-range]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.range === RANGE)));
@@ -79,17 +90,32 @@ function render() {
     <p class="stats-note">Counts from ${esc(r.start)} to ${esc(r.end)} (${esc(DATA.timezone)}), updated ${new Date(DATA.generatedAt).toLocaleString()} and at most every 15 minutes.</p>`;
 }
 
-document.addEventListener('click', (e) => { const b = e.target.closest('[data-range]'); if (b && DATA) { RANGE = b.dataset.range; render(); } });
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-range]'); if (b && DATA) { RANGE = b.dataset.range; render(); return; }
+  const s = e.target.closest('[data-site]'); if (s && s.dataset.site !== SITE) { SITE = s.dataset.site; history.replaceState(null, '', SITE === 'fantasy' ? '#fantasy' : location.pathname); load(); }
+});
 
-if (!config.statsUrl) {
-  $('#stats').innerHTML = '<p class="stats-note">Not connected yet: set <code>statsUrl</code> in <code>shared/config.js</code> to the stats Worker’s address (see <code>worker-stats/README.md</code>).</p>';
-} else {
+addEventListener('hashchange', () => { const want = location.hash === '#fantasy' ? 'fantasy' : 'offthewall'; if (want !== SITE) { SITE = want; load(); } });
+
+async function load() {
+  document.querySelectorAll('[data-site]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.site === SITE)));
+  document.title = `Visit counts · ${SITE_NAMES[SITE]}`;
+  if (!config.statsUrl) {
+    $('#stats').innerHTML = '<p class="stats-note">Not connected yet: set <code>statsUrl</code> in <code>shared/config.js</code> to the stats Worker’s address (see <code>worker-stats/README.md</code>).</p>';
+    return;
+  }
+  if (loaded[SITE]) { DATA = loaded[SITE]; render(); return; }
+  DATA = null;
+  $('#stats').innerHTML = `<p class="stats-note">Loading ${esc(SITE_NAMES[SITE])}…</p>`;
+  const want = SITE;
   try {
-    const res = await fetch(`${config.statsUrl.replace(/\/$/, '')}/summary`);
-    DATA = await res.json();
-    if (!res.ok || DATA.error) throw new Error([DATA.error || res.status, DATA.detail].filter(Boolean).join(': '));
-    render();
+    const res = await fetch(`${config.statsUrl.replace(/\/$/, '')}/summary?site=${want}`);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error([data.error || res.status, data.detail].filter(Boolean).join(': '));
+    loaded[want] = data;
+    if (want === SITE) { DATA = data; render(); }
   } catch (e) {
-    $('#stats').innerHTML = `<p class="stats-note">Couldn’t load the counts (${esc(e.message)}). Try again in a minute.</p>`;
+    if (want === SITE) $('#stats').innerHTML = `<p class="stats-note">Couldn’t load the counts for ${esc(SITE_NAMES[want])} (${esc(e.message)}). Try again in a minute.</p>`;
   }
 }
+load();
