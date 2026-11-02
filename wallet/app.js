@@ -33,7 +33,8 @@ const PROGRAMS = {
 const PERK_KINDS = ["Lounge access","Travel protection","Purchase & return protection","Elite status","Insurance","Foreign transaction","Other"];
 const PERIODS = { monthly: "Monthly", quarterly: "Quarterly", semiannual: "Every 6 months", annual: "Yearly" };
 const COLORS = ["#1e3a5f","#0f4c45","#5b1f2e","#2d2d34","#7a5a1a","#3b2a63","#8a8f98","#b0743a","#174f8a","#0b0b0d"];
-const TABS = [["overview","Overview"],["cards","Cards"],["matrix","Multipliers"],["perks","Perks & credits"],["timeline","Timeline & strategy"],["travel","Travel profile"],["research","Research"],["data","Settings & data"]];
+// [key, label, emoji]: short labels so every tab and its emoji fit on one row (the panels keep the full names)
+const TABS = [["overview","Overview","🧭"],["cards","Cards","💳"],["matrix","Multipliers","📈"],["perks","Perks","🎁"],["timeline","Timeline","🗓️"],["travel","Travel","✈️"],["research","Research","🔎"],["data","Settings","⚙️"]];
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 // Common no-fee or lower-fee product-change targets, matched on issuer + card name. Suggestions only; issuers change these.
 const DOWNGRADES = [
@@ -382,7 +383,10 @@ function events() {
 let tab = "overview";
 try { const h = location.hash.slice(1); if (TABS.some(t => t[0] === h)) tab = h; } catch {}
 function renderTabs() {
-  $("#tabs").innerHTML = TABS.map(([k, l]) => `<button role="tab" aria-selected="${k === tab}" data-tab="${k}">${l}</button>`).join("");
+  $("#tabs").innerHTML = TABS.map(([k, l, e]) => `<button role="tab" aria-selected="${k === tab}" data-tab="${k}"><span class="emoji" aria-hidden="true">${e}</span>${l}</button>`).join("");
+  // Keep the active tab in view when the row scrolls sideways, without moving the page
+  const bar = $("#tabs"), on = bar.querySelector("[aria-selected=true]");
+  if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth - 24)) bar.scrollLeft = on.offsetLeft - 8;
 }
 function renderProfiles() {
   const opts = (multiPeople() ? [["all", "Everyone"]] : []).concat(S.profiles.map(p => [p.id, p.name]));
@@ -397,7 +401,7 @@ function render() {
   v.innerHTML = ({ overview: vOverview, cards: vCards, matrix: vMatrix, perks: vPerks, timeline: vTimeline, travel: vTravel, research: vResearch, data: vData })[tab]();
   if (tab === "research") wireResearch();
   aiOff();
-  try { document.documentElement.style.setProperty("--tabs-h", $("#tabs").offsetHeight + "px"); document.body.classList.toggle("on-tl", tab === "timeline"); } catch {}
+  try { document.documentElement.style.setProperty("--tabs-h", $("nav.tabs").offsetHeight + "px"); document.body.classList.toggle("on-tl", tab === "timeline"); } catch {}
   if (tab === "timeline") { const w = $(".tl-wrap"), svg = w && w.querySelector("svg[data-today]"); if (svg && svg.scrollWidth > w.clientWidth) w.scrollLeft = Math.max(0, +svg.dataset.today - w.clientWidth / 2); }
 }
 function exampleBanner() {
@@ -1115,6 +1119,8 @@ async function askDowngrade(c) {
 let toastT;
 function toast(msg) { let t = $("#toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); $(".wallet-app").appendChild(t); } t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
 function setTab(k) { tab = k; try { history.replaceState(null, "", "#" + k); } catch {} render(); window.scrollTo(0, 0); }
+// Typing or following a #tab address switches tabs too
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h !== tab && TABS.some(t => t[0] === h)) { tab = h; render(); } });
 const armed = new Set();
 function twoStep(btn, key, label) {
   if (armed.has(key)) { armed.delete(key); return true; }

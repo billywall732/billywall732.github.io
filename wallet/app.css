@@ -37,9 +37,24 @@
 .wallet-app .dot{width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3);}
 .wallet-app .dot.ok{background: var(--good);}
 .wallet-app .dot.local{background: var(--warn);}
-.wallet-app nav.tabs{position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; border-bottom: 1px solid var(--line); margin-bottom: 20px; scrollbar-width: none;}
-.wallet-app nav.tabs button{border: 0; background: none; padding: 8px 12px; border-radius: 8px; color: var(--ink-2); font-weight: 500; white-space: nowrap;}
-.wallet-app nav.tabs button[aria-selected="true"]{background: var(--ink); color: var(--bg);}
+/* Section tabs: same language as Fantasy Football (all-caps bold links, accent underline on the active one, utility pills on the right) */
+.wallet-app nav.tabs{position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in oklab, var(--bg) 95%, transparent); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); margin-bottom: 20px;}
+.wallet-app nav.tabs .tabgroup{position: relative; display: flex; gap: 1px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none;}
+.wallet-app nav.tabs .tabgroup::-webkit-scrollbar{display: none;}
+.wallet-app nav.tabs .tabgroup button{border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 12px 7px 9px; font-family: var(--f-display); font-size: 16px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; transition: color .2s;}
+.wallet-app nav.tabs .tabgroup button:hover{color: var(--ink);}
+.wallet-app nav.tabs .tabgroup button{display: inline-flex; align-items: center; gap: 6px;}
+.wallet-app nav.tabs .emoji{font-size: 16px; line-height: 1; filter: grayscale(.7); transition: filter .2s, transform .2s;}
+.wallet-app nav.tabs .tabgroup button:hover .emoji{filter: none; transform: scale(1.15) rotate(-6deg);}
+.wallet-app nav.tabs .tabgroup button[aria-selected="true"] .emoji{filter: none;}
+@media (prefers-reduced-motion: reduce){.wallet-app nav.tabs .emoji{transition: none;} .wallet-app nav.tabs .tabgroup button:hover .emoji{transform: none;}}
+.wallet-app nav.tabs .tabgroup button[aria-selected="true"]{color: var(--ink); border-bottom-color: var(--accent);}
+.wallet-app .tabtools{display: flex; gap: 6px; flex: none;}
+.wallet-app .utilpill{display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-family: var(--f-body); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;}
+.wallet-app .utilpill:hover{border-color: var(--accent);}
+/* Narrower screens: the tab row scrolls sideways, with a fade at the edge as the hint */
+@media (max-width: 1200px){.wallet-app nav.tabs .tabgroup{-webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px;}}
+@media (max-width: 640px){.wallet-app nav.tabs .tabgroup button{font-size: 14px; padding-inline: 6px; gap: 4px;} .wallet-app nav.tabs .emoji{font-size: 14px;} .wallet-app .utilpill{padding: 4px 9px; font-size: 12px;} .wallet-app .pill-more{display: none;}}
 .wallet-app .btn{border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; border-radius: 8px; font-weight: 500; font-size: .9rem; display: inline-flex; align-items: center; gap: 6px;}
 .wallet-app .btn:hover{border-color: var(--ink-3);}
 .wallet-app .btn.primary{background: var(--accent); border-color: var(--accent); color: var(--on-accent);}

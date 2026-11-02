@@ -50,16 +50,21 @@
         <div class="chip-mark" aria-hidden="true"></div>
         <div>
           <h1>What's in My Wallet?</h1>
-          <div class="muted" style="font-size:.88rem">Every card you carry, and when to keep it, call or downgrade. <a href="/wallet/cover/">Cover</a></div>
+          <div class="muted" style="font-size:.88rem">Every card you carry, and when to keep it, call or downgrade.</div>
         </div>
       </div>
       <div class="row">
         <span class="save-state" id="saveState"><span class="dot"></span><span>Loading…</span></span>
-        <button class="btn primary" id="addCardTop">+ Add card</button>
       </div>
     </header>
     <div class="profiles" id="profileBar" aria-label="Whose cards"></div>
-    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <nav class="tabs" aria-label="Sections">
+      <div class="tabgroup" role="tablist" id="tabs"></div>
+      <div class="tabtools">
+        <a class="utilpill" href="/wallet/cover/" title="Back to the cover page">Cover</a>
+        <button class="utilpill" id="addCardTop" type="button" aria-label="Add card">+<span class="pill-more"> Add</span> card</button>
+      </div>
+    </nav>
     <div id="view"></div>
   </div>
   <div id="modalRoot"></div>
