@@ -30,13 +30,24 @@ function pageName(path) {
   const rest = path.slice(app.length + 2);
   return APPS[app] ? `${APPS[app]}${rest ? ` · ${rest.replace(/^app\.html#?/, '').replace(/\/$/, '') || 'app'}` : ''}` : path;
 }
-const bars = (rows, unit, max = 10) => {
+const bars = (rows, unit, max = 10, none = 'Nothing yet.') => {
   rows = rows.filter((r) => r[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, max);
-  if (!rows.length) return '<p class="empty">Nothing yet.</p>';
+  if (!rows.length) return `<p class="empty">${none}</p>`;
   const top = Math.max(...rows.map((r) => r[1]));
   return `<ul class="bars">${rows.map(([k, n]) => `<li><span title="${esc(k)}">${esc(k)}</span><i style="--w:${Math.round(n / top * 100)}%"></i><b>${fmt(n)}</b></li>`).join('')}</ul>${unit ? `<p class="sub" style="margin:6px 0 0">${unit}</p>` : ''}`;
 };
 const panel = (title, sub, body) => `<section class="stat-panel"><h2>${title}</h2>${sub ? `<p class="sub">${sub}</p>` : ''}${body}</section>`;
+// Device, browser, entry, exit and time counts come from the site's own counter (shared/count.js),
+// which started on Nov 1, 2026, so older visits don't have them
+const NEW_COUNTER = 'None yet: these counts started on Nov 1, 2026, with the site’s own counter.';
+// Referrers: one line per domain. Visits recorded before the counter sent domains only came in as
+// full addresses, and links from the site's own pages (old or new address) are moves within the site.
+const OWN = new Set(['offthewall.dev', 'www.offthewall.dev', 'billywall732.github.io']);
+function mergeRefs(list = []) {
+  const m = new Map();
+  for (const x of list) { const d = OWN.has(x.domain) ? '(within the site)' : x.domain; m.set(d, (m.get(d) || 0) + x.views); }
+  return [...m];
+}
 // The middle bucket a page's time falls in (a rough "typical time on page")
 function typical(buckets = {}) {
   const total = Object.values(buckets).reduce((a, b) => a + b, 0); if (!total) return '—';
@@ -62,13 +73,15 @@ function render() {
     return `<div class="detail">
       <span>Devices (${RANGE_LABEL[RANGE]}): ${list(cur.devices, DEVICE)}</span>
       <span>Browsers (${RANGE_LABEL[RANGE]}): ${list(cur.browsers)}</span>
-      <span>Referrer domains (last 30 days): ${(pp.referrers || []).map((x) => `${esc(x.domain)} ${fmt(x.views)}`).join(' · ') || '—'}</span>
+      <span>Referrer domains (last 30 days): ${mergeRefs(pp.referrers).sort((a, b) => b[1] - a[1]).map(([d, n]) => `${esc(d)} ${fmt(n)}`).join(' · ') || '—'}</span>
       <span>Time on page (${RANGE_LABEL[RANGE]}): ${BUCKETS.map((b) => (r.time[path]?.[b] ? `${b} ${fmt(r.time[path][b])}` : '')).filter(Boolean).join(' · ') || '—'}</span></div>`;
   };
   $('#stats').innerHTML = `
     <div class="stat-cards">
       <div class="stat-card"><b>${fmt(r.views)}</b><span>Page views ${RANGE_LABEL[RANGE]}</span></div>
-      <div class="stat-card"><b>${r.visitorsEstimate == null ? '—' : '≈ ' + fmt(r.visitorsEstimate)}</b><span>Visitors (estimate: no cookies, so repeat visits can't be told apart exactly)</span></div>
+      ${r.visitorsEstimate == null
+        ? (() => { const top = [...r.pages].sort((a, b) => b.views - a.views)[0]; return `<div class="stat-card"><b class="small">${top ? esc(pageName(top.path)) : '—'}</b><span>Busiest page${top ? `, ${fmt(top.views)} views` : ''}</span></div>`; })()
+        : `<div class="stat-card"><b>≈ ${fmt(r.visitorsEstimate)}</b><span>Visitors (estimate: no cookies, so repeat visits can't be told apart exactly)</span></div>`}
       <div class="stat-card"><b>${fmt(Object.values(r.entry).reduce((a, b) => a + b, 0))}</b><span>Visits started (entry pages)</span></div>
       <div class="stat-card"><b>${typical(timeAll)}</b><span>Typical time on a page</span></div>
     </div>
@@ -78,14 +91,14 @@ function render() {
       </tbody></table></div></section>
     <div class="stat-grid">
       ${panel('Top pages', `Views, ${RANGE_LABEL[RANGE]}`, bars(r.pages.map((p) => [pageName(p.path), p.views])))}
-      ${panel('Top referrer domains', 'Domain only, never the full address', bars(r.referrers.map((x) => [x.domain, x.views])))}
+      ${panel('Top referrer domains', 'Domain only, never the full address', bars(mergeRefs(r.referrers)))}
       ${panel('Countries', 'From the visitor’s network, worked out by GoatCounter (which keeps no IP addresses)', bars(r.countries.map((x) => [x.name, x.views]), '', 15))}
       ${panel('US states', 'The finest place detail kept', bars(r.regions.map((x) => [x.name, x.views]), '', 15))}
-      ${panel('Devices', 'Phone, tablet, or laptop/desktop', bars(Object.entries(r.devices).map(([k, n]) => [DEVICE[k] || k, n])))}
-      ${panel('Browsers', 'Browser family only, no versions', bars(Object.entries(r.browsers)))}
-      ${panel('Entry pages', 'Where visits start', bars(Object.entries(r.entry).map(([k, n]) => [pageName(k), n])))}
-      ${panel('Exit pages', 'Where visits end (an estimate)', bars(Object.entries(r.exit).map(([k, n]) => [pageName(k), n])))}
-      ${panel('Time on page', 'All pages, counted only while the page is on screen', bars(BUCKETS.map((b) => [b, timeAll[b] || 0]).filter(([, n]) => n).map((x) => x), '', 6))}
+      ${panel('Devices', 'Phone, tablet, or laptop/desktop', bars(Object.entries(r.devices).map(([k, n]) => [DEVICE[k] || k, n]), '', 10, NEW_COUNTER))}
+      ${panel('Browsers', 'Browser family only, no versions', bars(Object.entries(r.browsers), '', 10, NEW_COUNTER))}
+      ${panel('Entry pages', 'Where visits start', bars(Object.entries(r.entry).map(([k, n]) => [pageName(k), n]), '', 10, NEW_COUNTER))}
+      ${panel('Exit pages', 'Where visits end (an estimate)', bars(Object.entries(r.exit).map(([k, n]) => [pageName(k), n]), '', 10, NEW_COUNTER))}
+      ${panel('Time on page', 'All pages, counted only while the page is on screen', bars(BUCKETS.map((b) => [b, timeAll[b] || 0]), '', 6, NEW_COUNTER))}
     </div>
     <p class="stats-note">Counts from ${esc(r.start)} to ${esc(r.end)} (${esc(DATA.timezone)}), updated ${new Date(DATA.generatedAt).toLocaleString()} and at most every 15 minutes.</p>`;
 }

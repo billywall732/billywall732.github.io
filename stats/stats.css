@@ -30,3 +30,4 @@
 .page-table .detail { display: grid; gap: 4px; padding: 6px 0 2px; color: var(--muted); font-weight: 400; font-size: 13px; }
 .table-scroll { overflow-x: auto; }
 .empty { color: var(--muted); margin: 0; }
+.stat-card b.small { font-size: 22px; line-height: 1.2; overflow-wrap: anywhere; }
