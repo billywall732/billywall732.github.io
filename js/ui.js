@@ -48,7 +48,7 @@ const TAB = { live: 'polished', rough: 'rough', workshop: 'workshop' };
 export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'polished'}`;
 
 // Open App / Learn More / See the Code. Workshop projects get "Coming soon" and
-// "Follow along" instead of links that go nowhere.
+// "Follow along" instead of links that go nowhere; follow: false hides "Follow along".
 export function actions(p, { learnMore = true } = {}) {
   return h('div', { class: 'project-actions' },
     p.url
@@ -57,7 +57,8 @@ export function actions(p, { learnMore = true } = {}) {
     learnMore ? h('a', { class: 'button small', href: projectHref(p) }, 'Learn More', h('span', { class: 'sr' }, ` about ${p.name}`)) : null,
     p.code
       ? h('a', { class: 'button small ghost', href: p.code }, 'See the Code')
-      : h('a', { class: 'button small ghost', href: contact.github, title: 'The code goes up on GitHub when it’s ready' }, 'Follow along ', h('span', { 'aria-hidden': 'true' }, '↗')));
+      : p.follow === false ? null
+        : h('a', { class: 'button small ghost', href: contact.github, title: 'The code goes up on GitHub when it’s ready' }, 'Follow along ', h('span', { 'aria-hidden': 'true' }, '↗')));
 }
 
 // A screenshot in a little browser window, or a drawing for work in progress

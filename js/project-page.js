@@ -6,6 +6,8 @@ import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, 
 const main = $('main');
 const i = projects.findIndex((p) => p.slug === main.dataset.slug);
 const p = projects[i];
+// The home page section each status is listed under
+const SECTION = { live: 'Polished Projects', rough: 'Rough Around the Edges', workshop: 'In the Workshop' };
 
 function section(title, ...body) {
   const id = title.toLowerCase().replace(/[^a-z]+/g, '-');
@@ -47,9 +49,10 @@ if (p) {
       section('Status', h('p', { class: 'detail-status' }, statusPill(p), ' ', p.statusNote)),
       section('Built with', h('ul', { class: 'tags' }, p.tags.map((t) => h('li', {}, t)))),
       section('What’s next', h('ul', { class: 'highlights' }, p.next.map((x) => h('li', {}, x))))),
+    // Each link names the project and the section it's in (the tab it's listed on at /home/)
     h('nav', { class: 'detail-pager', 'aria-label': 'More projects' },
-      h('a', { href: projectHref(prev), style: accentStyle(prev) }, h('span', {}, '← Previous'), h('strong', {}, prev.name)),
-      h('a', { href: projectHref(next), style: accentStyle(next) }, h('span', {}, 'Next →'), h('strong', {}, next.name))));
+      h('a', { href: projectHref(prev), style: accentStyle(prev) }, h('span', {}, `← Previous · ${SECTION[prev.status]}`), h('strong', {}, prev.name)),
+      h('a', { href: projectHref(next), style: accentStyle(next) }, h('span', {}, `${SECTION[next.status]} · Next →`), h('strong', {}, next.name))));
 } else {
   main.replaceChildren(h('a', { class: 'back', href: '/home/#polished' }, '← All projects'), h('h1', {}, 'That project wandered off.'));
 }

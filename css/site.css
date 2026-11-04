@@ -267,7 +267,9 @@ html.board-on, html.board-on * { cursor: none !important; }
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--rule);
 }
-.tablist { display: flex; gap: 2px; margin-block: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+/* The row sits 1px lower, so the active tab's underline covers the bar's own bottom line
+   instead of stacking on top of it (one underline, not two) */
+.tablist { display: flex; gap: 2px; margin-block: 0 -1px; position: relative; list-style: none; overflow-x: auto; scrollbar-width: none; }
 .tablist::-webkit-scrollbar { display: none; }
 .tablist a {
   display: inline-flex;
@@ -280,7 +282,8 @@ html.board-on, html.board-on * { cursor: none !important; }
   text-decoration: none;
   white-space: nowrap;
   border-bottom: 3px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
+  /* The underline moves at once: no fade, so two tabs are never underlined together */
+  transition: color 0.2s;
 }
 .tablist li:first-child a { padding-left: 2px; }
 .tab-emoji { font-size: 16px; filter: grayscale(0.7); transition: filter 0.2s, transform 0.2s; }

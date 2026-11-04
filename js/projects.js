@@ -23,6 +23,7 @@
 //   tags        what it's built with
 //   url         where it lives ('/my-repo/' for another GitHub Pages repo), or null
 //   code        its GitHub repo, or null
+//   follow      false hides the "Follow along" link (shown when there's no repo yet)
 //   image       a screenshot of its cover page in img/ (1280 x 800), or null
 //   art         when there's no image: 'chart', 'trivia', 'snowboard', 'wedding', 'dive' or 'steps'
 //
@@ -214,6 +215,7 @@ export const projects = [
     tags: ['Cloudflare Workers', 'Live prices', 'Google Drive'],
     url: null,
     code: null,
+    follow: false, // no repo yet
     image: null,
     art: 'chart',
   },
@@ -245,6 +247,7 @@ export const projects = [
     tags: ['JavaScript', 'Daily puzzles'],
     url: null,
     code: null,
+    follow: false, // no repo yet
     image: null,
     art: 'trivia',
   },
