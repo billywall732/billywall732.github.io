@@ -1,5 +1,7 @@
 // Off the Wall's visit counter. A small stand-in for GoatCounter's count.js that sends less:
-// aggregate counts only, no cookies, nothing stored in the browser.
+// aggregate counts only, no cookies, no IDs. The only thing kept in the browser is the time the
+// current visit started, in this tab's sessionStorage (gone when the tab closes, never sent), so
+// the visit's length can be counted in a bucket when it ends.
 //
 // Load it like GoatCounter's script (same attributes, so pages only change the src):
 //   <script data-goatcounter="https://offthewall.goatcounter.com/count"
@@ -15,6 +17,11 @@
 //       "entry <path>"                      the first page of a visit (arrived from elsewhere)
 //       "time <path> <bucket>"              time on the page, in buckets (0-10s … 10m+)
 //       "exit <path>"                       leaving the site from this page (an estimate)
+//       "visit <bucket>"                    the visit's length when it ends (<30s, 30s-1m, 1-5m, 5m+)
+//       "scroll <path> <0|25|50|75|100>"    how far down the page this view got, in quarters
+//       "out <domain>"                      a click to another site: its domain only, never the address
+//       "flow <from> > <to>"                one move between two pages of the site (paths only)
+//       "screen <phone|tablet|desktop>"     the window's width, in three sizes
 // The device and browser are worked out here, so GoatCounter needn't keep browser versions.
 // GoatCounter receives the request (and so the visitor's IP and browser header, as any web request
 // does), uses the IP only to look up the country and region, and doesn't store either.
@@ -49,6 +56,25 @@
 
   const BUCKETS = [[10, '0-10s'], [30, '10-30s'], [60, '30-60s'], [180, '1-3m'], [600, '3-10m'], [Infinity, '10m+']];
   const bucket = (s) => BUCKETS.find(([max]) => s < max)[1];
+  const VISIT = [[30, '<30s'], [60, '30s-1m'], [300, '1-5m'], [Infinity, '5m+']];
+  const screenSize = () => (innerWidth < 600 ? 'phone' : innerWidth < 1024 ? 'tablet' : 'desktop');
+
+  // The visit's start time, kept in this tab only (see the top of this file)
+  const VISIT_KEY = 'otw-visit-start';
+  const visitStart = (reset) => {
+    try {
+      if (reset || !sessionStorage.getItem(VISIT_KEY)) sessionStorage.setItem(VISIT_KEY, String(Date.now()));
+      return Number(sessionStorage.getItem(VISIT_KEY));
+    } catch { return 0; } // storage blocked: no visit length
+  };
+
+  // How far down the page this view got (0 to 1)
+  let deepest = 0;
+  const depthNow = () => {
+    const h = Math.max(document.documentElement.scrollHeight, document.body ? document.body.scrollHeight : 0);
+    return h <= innerHeight ? 1 : Math.min(1, (scrollY + innerHeight) / h);
+  };
+  addEventListener('scroll', () => { deepest = Math.max(deepest, depthNow()); }, { passive: true });
 
   let current = null, shownAt = 0, visible = 0, first = true, leavingWithin = false;
   // Time on page counts only while the page is on screen
@@ -56,24 +82,41 @@
   function finishPage(exit) {
     if (!current) return;
     event(`time ${current} ${bucket(onScreen() / 1000)}`);
-    if (exit) event(`exit ${current}`);
+    deepest = Math.max(deepest, depthNow());
+    event(`scroll ${current} ${[100, 75, 50, 25].find((q) => deepest >= q / 100 - 0.02) ?? 0}`);
+    if (exit) {
+      event(`exit ${current}`);
+      const start = visitStart(false);
+      if (start) { event(`visit ${VISIT.find(([max]) => (Date.now() - start) / 1000 < max)[1]}`); try { sessionStorage.removeItem(VISIT_KEY); } catch { /* fine */ } }
+    }
   }
   function count(vars = {}) {
     const path = cleanPath(vars.path || settings.path);
     if (path === current) return;
-    finishPage(false); // switching tabs within a page: the last tab's time
-    current = path; visible = 0; shownAt = Date.now();
+    // A move between two pages of the site: from the page before (a tab here, or the same-site
+    // page that linked here, by its path only)
+    let from = current;
+    if (!from && internalArrival) { try { from = cleanPath(new URL(document.referrer).pathname); } catch { from = null; } }
+    finishPage(false); // switching tabs within a page: the last tab's time and scroll
+    current = path; visible = 0; shownAt = Date.now(); deepest = 0;
     send({ p: path, t: vars.title || document.title, r: first ? referrer : '' });
     event(`client ${device} ${browser} ${path}`);
-    if (first && !internalArrival) event(`entry ${path}`);
+    event(`screen ${screenSize()}`);
+    if (from && from !== path) event(`flow ${from} > ${path}`);
+    if (first && !internalArrival) { event(`entry ${path}`); visitStart(true); } else if (first) visitStart(false);
     first = false;
   }
 
-  // Leaving within the site: a click on a same-site link just before the page goes away
+  // Leaving within the site: a click on a same-site link just before the page goes away.
+  // A click to another site counts its domain only.
   document.addEventListener('click', (e) => {
     const a = e.target.closest && e.target.closest('a[href]');
     if (!a) return;
-    try { const u = new URL(a.href, location.href); leavingWithin = u.host === location.host && u.protocol.startsWith('http'); } catch { leavingWithin = false; }
+    try {
+      const u = new URL(a.href, location.href);
+      leavingWithin = u.host === location.host && u.protocol.startsWith('http');
+      if (!leavingWithin && u.protocol.startsWith('http')) event(`out ${u.hostname.toLowerCase()}`);
+    } catch { leavingWithin = false; }
     setTimeout(() => { leavingWithin = false; }, 3000);
   }, true);
   document.addEventListener('visibilitychange', () => {

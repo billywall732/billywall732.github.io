@@ -10,6 +10,15 @@ workers_dev = true
 [observability]
 enabled = false
 
+# The summaries, worked out ahead of time and saved here (aggregate counts only)
+[[kv_namespaces]]
+binding = "STATS"
+id = "476c71c916e142b094241973cecbcb73"
+
+# Every 10 minutes: refresh one site's saved summary (the older of the two)
+[triggers]
+crons = ["*/10 * * * *"]
+
 [vars]
 # Each counter's read-only key is a secret: GOATCOUNTER_TOKEN (offthewall), GOATCOUNTER_TOKEN_FANTASY (fantasy)
 ALLOWED_ORIGINS = "https://offthewall.dev"

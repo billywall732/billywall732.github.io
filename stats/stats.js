@@ -57,11 +57,11 @@ const dayShort = (d) => dayDate(d).toLocaleDateString('en-US', { month: 'short',
 const hourName = (h) => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`;
 const hourSpan = (h) => `${hourName(h)}–${hourName((h + 1) % 24)}`;
 
-// Bar list with counts and shares
-function bars(rows, { max = 8, none = NONE, name = (k) => k } = {}) {
-  rows = topOf(rows);
+// Bar list with counts and shares (biggest first, or in the given order for buckets)
+function bars(rows, { max = 8, none = NONE, name = (k) => k, keepOrder = false } = {}) {
+  rows = keepOrder ? (rows.some((r) => r[1] > 0) ? rows : []) : topOf(rows);
   if (!rows.length) return `<p class="empty">${none}</p>`;
-  const total = rows.reduce((a, r) => a + r[1], 0), top = rows[0][1];
+  const total = rows.reduce((a, r) => a + r[1], 0), top = Math.max(...rows.map((r) => r[1]));
   const shown = rows.slice(0, max);
   return `<ul class="bars">${shown.map(([k, n]) => `<li><span class="bl" title="${esc(name(k))}">${esc(name(k))}</span><i style="--w:${Math.max(2, Math.round(n / top * 100))}%"></i><b>${fmt(n)}</b><em>${pct(n, total)}</em></li>`).join('')}</ul>${rows.length > max ? `<p class="sub more">+${rows.length - max} more</p>` : ''}`;
 }
@@ -171,7 +171,43 @@ function entryExit(r) {
   ${timed ? bars(BUCKETS.map((b) => [b, time[b] || 0]), { max: 6 }) : ''}`;
 }
 
+// ---------- Audience: counts and buckets only ----------
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const VISIT_BUCKETS = [['<30s', 'Under 30 seconds'], ['30s-1m', '30 seconds to 1 minute'], ['1-5m', '1 to 5 minutes'], ['5m+', '5 minutes or more']];
+const SCREENS = { phone: 'Phone (under 600px wide)', tablet: 'Tablet (600–1023px)', desktop: 'Desktop (1024px and up)' };
+// Views by hour: 24 small columns, labeled every 3 hours
+function hourColumns(byHour) {
+  const max = Math.max(...byHour, 0);
+  if (!max) return `<p class="empty">${EMPTY}</p>`;
+  return `<div class="hours" role="img" aria-label="Views by hour of day: ${byHour.map((n, h) => `${hourName(h)} ${n}`).join(', ')}">
+    ${byHour.map((n, h) => `<div class="hcol" title="${hourSpan(h)}: ${plural(n, 'view')}"><i style="--h:${n ? Math.max(4, Math.round(n / max * 100)) : 0}%"></i><span>${h % 3 === 0 ? hourName(h) : ''}</span></div>`).join('')}
+  </div>`;
+}
+// Scroll depth: the share of views that got at least 25 / 50 / 75 / 100% down the page
+function scrollReach(scroll) {
+  const total = sumOf(scroll);
+  if (!total) return `<p class="empty">${NONE}</p>`;
+  const atLeast = (q) => Object.entries(scroll).filter(([k]) => Number(k) >= q).reduce((a, [, n]) => a + n, 0);
+  return `<ul class="bars">${[25, 50, 75, 100].map((q) => { const n = atLeast(q); return `<li><span class="bl">Reached ${q}%</span><i style="--w:${Math.max(2, Math.round(n / total * 100))}%"></i><b>${fmt(n)}</b><em>${pct(n, total)}</em></li>`; }).join('')}</ul>
+    <p class="sub more">Of ${plural(total, 'measured view')}</p>`;
+}
+function audience(r) {
+  if (!r.byHour) return `<p class="stats-note">These need the updated stats Worker.</p>`;
+  const none = r.views ? NONE : EMPTY;
+  const flows = Object.entries(r.flows || {}).map(([k, n]) => { const [a, b] = k.split(' > '); return [`${pageName(a)} → ${pageName(b)}`, n]; });
+  return `<div class="stat-grid">
+    ${panel('Views by hour of day', `All pages and apps (${esc(DATA.timezone)} time)`, hourColumns(r.byHour), 'wide')}
+    ${panel('Views by day of week', '', bars(WEEKDAYS.map((d, i) => [d, r.byWeekday[i]]), { none: EMPTY, keepOrder: true, max: 7 }))}
+    ${panel('Visit length', 'From arriving to leaving the site, in buckets', bars(VISIT_BUCKETS.map(([k, l]) => [l, r.visit?.[k] || 0]), { none, keepOrder: true }))}
+    ${panel('Scroll depth', 'How far down a page each view got', scrollReach(r.scroll || {}))}
+    ${panel('Outbound clicks', 'Clicks to other sites: the domain only, never the address', bars(Object.entries(r.outbound || {}), { none }))}
+    ${panel('Page to page', 'Moves from one page to the next, counted together (never one person’s path)', bars(flows, { none, max: 10 }), 'wide')}
+    ${panel('Screen size', 'The window’s width, in three sizes', bars(Object.entries(r.screens || {}), { none, name: (k) => SCREENS[k] || k }))}
+  </div>`;
+}
+
 let DATA = null, RANGE = 'week';
+let NOTICE = ''; // a message above the numbers (e.g. "showing saved numbers")
 // Which counter: Off the Wall, or the league's Fantasy Feetpics. The address remembers it (#fantasy).
 const SITE_NAMES = { offthewall: 'Off the Wall', fantasy: 'Fantasy Feetpics (league)' };
 let SITE = location.hash === '#fantasy' ? 'fantasy' : 'offthewall';
@@ -212,7 +248,7 @@ function render() {
     : `<p class="empty">${EMPTY}</p>`;
 
   const none = r.views ? NONE : EMPTY;
-  $('#stats').innerHTML = `
+  $('#stats').innerHTML = `${NOTICE}
     <div class="stat-cards">${cards}</div>
     <section class="stat-panel trend-panel"><h2>Views per ${hourly ? 'hour' : 'day'}</h2><p class="sub">${hourly ? 'Today so far' : `${dayShort(r.start)} to ${dayShort(r.end)}`}, all pages and apps (${esc(DATA.timezone)} time)</p>
       <div class="trend-wrap">${pts ? trendSvg(pts, width) : '<p class="empty">Views by day need the updated stats Worker.</p>'}
@@ -227,7 +263,10 @@ function render() {
       ${panel('Browsers', 'Browser family only, no versions', bars(Object.entries(r.browsers), { none }))}
       ${panel('Entry and exit', 'Where visits start and end, and how long a page stays on screen', entryExit(r))}
     </div>
-    <p class="stats-note">Counts from ${esc(dayShort(r.start))} to ${esc(dayShort(r.end))} (${esc(DATA.timezone)}), updated ${new Date(DATA.generatedAt).toLocaleString()} and at most every 15 minutes.</p>`;
+    <h2 class="st-section">Audience</h2>
+    <p class="stats-note">Counts and buckets only. Visit length, scroll depth, outbound clicks, page-to-page moves and screen size started Nov 3, 2026.</p>
+    ${audience(r)}
+    <p class="stats-note">Counts from ${esc(dayShort(r.start))} to ${esc(dayShort(r.end))} (${esc(DATA.timezone)}), worked out ${new Date(DATA.generatedAt).toLocaleString()}. They refresh about every 20 minutes.</p>`;
 }
 
 document.addEventListener('click', (e) => {
@@ -244,18 +283,39 @@ async function load() {
     $('#stats').innerHTML = '<p class="stats-note">Not connected yet: set <code>statsUrl</code> in <code>shared/config.js</code> to the stats Worker’s address (see <code>worker-stats/README.md</code>).</p>';
     return;
   }
-  if (loaded[SITE]) { DATA = loaded[SITE]; render(); return; }
-  DATA = null;
-  $('#stats').innerHTML = `<p class="stats-note">Loading ${esc(SITE_NAMES[SITE])}…</p>`;
-  const want = SITE;
+  if (loaded[SITE]) { DATA = loaded[SITE]; NOTICE = ''; render(); return; }
+  const want = SITE, copy = savedCopy(want);
+  // The last numbers this browser got show straight away, marked, while the new ones load
+  if (copy) { DATA = copy.data; NOTICE = notice('loading', copy); render(); }
+  else { DATA = null; $('#stats').innerHTML = `<p class="stats-note">Loading ${esc(SITE_NAMES[want])}…</p>`; }
+  const stop = new AbortController(), timer = setTimeout(() => stop.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch(`${config.statsUrl.replace(/\/$/, '')}/summary?site=${want}`);
+    const res = await fetch(`${config.statsUrl.replace(/\/$/, '')}/summary?site=${want}`, { signal: stop.signal });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error([data.error || res.status, data.detail].filter(Boolean).join(': '));
-    loaded[want] = data;
-    if (want === SITE) { DATA = data; render(); }
+    loaded[want] = data; saveCopy(want, data);
+    if (want === SITE) { DATA = data; NOTICE = ''; render(); }
   } catch (e) {
-    if (want === SITE) $('#stats').innerHTML = `<p class="stats-note">Couldn’t load the counts for ${esc(SITE_NAMES[want])} (${esc(e.message)}). Try again in a minute.</p>`;
-  }
+    if (want !== SITE) return;
+    const why = e.name === 'AbortError' ? `no answer within ${TIMEOUT_MS / 1000} seconds` : e.message;
+    if (copy) { NOTICE = notice('failed', copy, why); render(); }
+    else $('#stats').innerHTML = `<div class="st-notice warn" role="alert"><b>Couldn’t load the counts for ${esc(SITE_NAMES[want])}</b> (${esc(why)}). <button type="button" class="st-retry" data-act="retry">Try again</button></div>`;
+  } finally { clearTimeout(timer); }
 }
+
+// ---------- Loading: a time limit, and the last numbers kept in this browser ----------
+// The saved copy is the same aggregate summary the page shows (counts only), kept per site in
+// this browser so a slow or failed load still shows something, clearly marked with its time.
+const TIMEOUT_MS = 10000;
+const copyKey = (site) => `otw-stats-copy-${site}`;
+function saveCopy(site, data) { try { localStorage.setItem(copyKey(site), JSON.stringify({ savedAt: Date.now(), data })); } catch { /* private window */ } }
+function savedCopy(site) { try { const c = JSON.parse(localStorage.getItem(copyKey(site))); return c?.data?.ranges ? c : null; } catch { return null; } }
+function notice(kind, copy, why = '') {
+  const when = new Date(copy.data.generatedAt).toLocaleString();
+  return kind === 'loading'
+    ? `<div class="st-notice" role="status">Showing the numbers saved in this browser (worked out ${esc(when)}) while the latest load…</div>`
+    : `<div class="st-notice warn" role="alert"><b>Couldn’t load the latest counts</b> (${esc(why)}). Showing the numbers saved in this browser, worked out ${esc(when)}. <button type="button" class="st-retry" data-act="retry">Try again</button></div>`;
+}
+document.addEventListener('click', (e) => { if (e.target.closest('[data-act="retry"]')) { delete loaded[SITE]; load(); } });
+
 load();

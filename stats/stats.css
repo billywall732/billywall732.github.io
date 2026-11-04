@@ -99,3 +99,17 @@
   .page-table th.n, .page-table td.n { width: auto; }
   .vbar { grid-template-columns: 44px 2.4em 2.6em; gap: 6px; }
 }
+
+/* Notices: showing saved numbers, or a load that failed */
+.st-notice { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--surface); font-size: 14px; color: var(--ink-2); }
+.st-notice.warn { border-color: color-mix(in srgb, var(--brand) 60%, var(--rule)); background: color-mix(in srgb, var(--brand) 10%, var(--surface)); color: var(--ink); }
+.st-retry { margin-left: 6px; font: 600 13px var(--sans); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); cursor: pointer; }
+
+/* Audience */
+.st-section { margin: 14px 0 0; font-size: 26px; }
+.stat-grid .stat-panel.wide { grid-column: span 2; }
+@media (max-width: 640px) { .stat-grid .stat-panel.wide { grid-column: auto; } }
+.hours { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 3px; align-items: end; height: 150px; padding-top: 6px; }
+.hcol { display: grid; grid-template-rows: 1fr auto; height: 100%; min-width: 0; }
+.hcol i { align-self: end; height: var(--h); min-height: 0; border-radius: 3px 3px 0 0; background: var(--brand); }
+.hcol span { font-size: 10px; color: var(--muted); text-align: left; white-space: nowrap; height: 14px; line-height: 14px; overflow: visible; }

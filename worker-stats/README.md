@@ -16,9 +16,14 @@ The site's own counter (`shared/count.js`) sends GoatCounter only these:
   - device type (phone / tablet / laptop) and browser family, with no versions;
   - entry page;
   - time on page, in buckets;
-  - an estimated exit page.
+  - an estimated exit page;
+  - the visit's length when it ends, in buckets (under 30 s, 30 s–1 min, 1–5 min, 5 min+);
+  - how far down a page each view scrolled, in quarters;
+  - clicks to other sites, by domain only;
+  - moves from one page of the site to another (path to path, one step at a time, counted together);
+  - the window size, as phone / tablet / desktop.
 
-It doesn't use cookies and stores nothing in the browser.
+It doesn't use cookies, IDs or fingerprints. The only thing it keeps in the browser is the time the current visit started, in that tab's sessionStorage: it's never sent, and it's gone when the tab closes.
 
 GoatCounter receives each request the way any website does, so it sees the visitor's IP address and browser header. It uses the IP only to look up the country and region (US state), and stores neither.
 
@@ -42,7 +47,13 @@ GoatCounter receives each request the way any website does, so it sees the visit
    ```
 5. **Connect the page.** Put that address in `shared/config.js` → `statsUrl`, then commit and push.
 
-The page updates at most every 15 minutes, since the Worker caches its answer.
+## How the page stays fast
+
+The Worker works the summaries out ahead of time. Every 10 minutes a scheduled run refreshes one site (the one refreshed longest ago) and saves its summary in the Workers KV namespace `STATS` (see `wrangler.toml`). The page reads that saved copy in one request, well under a second. If a copy is over 20 minutes old, the request also starts a refresh in the background. Only when there is no copy at all does it ask GoatCounter on the spot (about 7 seconds).
+
+The page waits at most 10 seconds. If the Worker doesn't answer or fails, it shows the last numbers it loaded in that browser, marked with when they were worked out, plus a Try again button.
+
+The KV namespace was created with `npx wrangler kv namespace create STATS`. To redeploy after a change: `npx wrangler deploy` in this folder.
 
 ## How the ranges are counted
 
