@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About · Off the Wall</title>
+  <meta name="description" content="Who builds Off the Wall, why, and what the site and its apps are made with.">
+  <meta property="og:title" content="About · Off the Wall">
+  <meta property="og:description" content="Who builds Off the Wall, why, and what the site and its apps are made with.">
+  <meta property="og:image" content="https://offthewall.dev/img/og-card.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://offthewall.dev/img/og-card.jpg">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data) -->
+  <script data-goatcounter="https://offthewall.goatcounter.com/count" async src="/shared/count.js"></script>
+  <script type="module">import { setUpPage } from '/js/ui.js'; setUpPage();</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="cover-link" href="/">Cover</a>
+      <a href="https://www.linkedin.com/in/william~wall" target="_blank" rel="me noopener">LinkedIn<span class="sr"> (opens in a new tab)</span></a>
+      <a href="https://github.com/billywall732" target="_blank" rel="me noopener">GitHub<span class="sr"> (opens in a new tab)</span></a>
+      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
+      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    </nav>
+  </header>
+
+  <main id="main" class="detail about wrap">
+    <a class="back" href="/home/"><span aria-hidden="true">← </span>Back to Off the Wall</a>
+    <header class="detail-head">
+      <h1>About</h1>
+      <p class="detail-lede">Hi, I’m Billy. I build things for fun, and this is where they live.</p>
+      <ul class="about-links" aria-label="Find me">
+        <li><a class="button small" href="https://www.linkedin.com/in/william~wall" target="_blank" rel="me noopener">LinkedIn <span aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a></li>
+        <li><a class="button small" href="https://github.com/billywall732" target="_blank" rel="me noopener">GitHub <span aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a></li>
+      </ul>
+    </header>
+
+    <div class="about-grid">
+      <section class="detail-section" aria-labelledby="what-i-do">
+        <h2 id="what-i-do">What I do</h2>
+        <p>I’m a network engineer at AT&amp;T, with experience across RAN wireless and wireline. Day to day, I automate tasks for teams, manage cloud databases, and build cool things.</p>
+      </section>
+
+      <section class="detail-section" aria-labelledby="why">
+        <h2 id="why">Why I built this</h2>
+        <p>I like to build, experiment and tinker.</p>
+        <p>It started because I wanted to build my own wedding website. Then it spiralled:</p>
+        <ul class="highlights">
+          <li>daily games</li>
+          <li>tools for my hobbies: snowboarding, surfing and mountain biking</li>
+          <li>a home for my fantasy football league</li>
+          <li>apps to keep my finances in check</li>
+          <li>ways to game credit cards and travel</li>
+          <li>and more ideas in the works</li>
+        </ul>
+      </section>
+
+      <section class="detail-section about-stack" aria-labelledby="stack">
+        <h2 id="stack">What it’s built with</h2>
+        <dl>
+          <dt>The site</dt>
+          <dd>HTML, CSS and plain JavaScript (no framework), hosted on GitHub Pages. A small Node script builds the project pages. Anonymous visit counts with GoatCounter, summed up by a Cloudflare Worker.</dd>
+          <dt>Snow and Surf Report</dt>
+          <dd>JavaScript. GitHub Actions fetches forecasts every hour from Open-Meteo, NOAA (tides and buoys) and USDA SNOTEL. Firebase (Google sign-in and Firestore) for saved settings, with email and push-notification alerts.</dd>
+          <dt>Fantasy Football</dt>
+          <dd>A Node build from the ESPN fantasy league data, rebuilt on a schedule by GitHub Actions. A Cloudflare Worker runs the Refresh now button.</dd>
+          <dt>Budget Ledger</dt>
+          <dd>One HTML page with JavaScript. Google sign-in and Google Drive to save the ledger, IndexedDB in the browser, and hand-drawn SVG charts.</dd>
+          <dt>Contrail</dt>
+          <dd>JavaScript with D3 and TopoJSON maps, airport data from OurAirports, and OpenStreetMap’s Nominatim to find hotels on the map. The demo runs on sample data.</dd>
+          <dt>What’s in My Wallet?</dt>
+          <dd>JavaScript, with rules that work out which card to use and when to keep or downgrade one. The demo runs on sample data.</dd>
+          <dt>Portfolio Ledger <span class="about-note">(in progress)</span></dt>
+          <dd>JavaScript, with Google sign-in and Google Drive for saving, and a Cloudflare Worker that fetches prices from Finnhub and CoinGecko.</dd>
+          <dt>In the workshop</dt>
+          <dd>Loop Lab makes its sounds with the Web Audio API. Krillion Code Breaker is plain JavaScript and SVG.</dd>
+        </dl>
+      </section>
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall · <a href="/about/">About</a></p>
+      <p>Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+</body>
+</html>
