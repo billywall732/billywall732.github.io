@@ -26,6 +26,7 @@ const page = (p) => `<!doctype html>
   <meta property="og:description" content="${esc(p.tagline)}">
   <meta property="og:image" content="https://offthewall.dev${p.image ?? '/img/og-card.jpg'}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://offthewall.dev${p.image ?? '/img/og-card.jpg'}">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
