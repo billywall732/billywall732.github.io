@@ -667,6 +667,11 @@ html.board-on, html.board-on * { cursor: none !important; }
   .about-stack dd { margin-bottom: 12px; }
 }
 .detail-status .status { margin-right: 4px; }
+.detail-status .status-sep { margin: 0 4px 0 0; color: var(--muted); }
+/* /home/: the plain "About →" link under the opening tab's intro */
+.home-about { margin: 6px 0 0; font-size: 15px; }
+.home-about a { color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
+.home-about a:hover { color: var(--ink); }
 .steps { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; counter-reset: step; font-size: 15px; color: var(--ink-2); }
 .steps li { position: relative; padding-left: 36px; counter-increment: step; }
 .steps li::before {
