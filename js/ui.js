@@ -89,6 +89,19 @@ const ART = {
     <circle class="a-dot" cx="60" cy="40" r="3"/><circle class="a-dot" cx="230" cy="150" r="3"/><circle class="a-dot" cx="250" cy="30" r="2"/>`,
   wedding: `<circle class="a-ring" cx="125" cy="98" r="44"/><circle class="a-ring" cx="175" cy="98" r="44"/>
     <path class="a-solid" d="M150 30 l9 -9 a6 6 0 0 1 9 9 l-18 18 l-18 -18 a6 6 0 0 1 9 -9 z"/>`,
+  // A dive: the surface, a path down past depth marks, and something rare at the bottom
+  dive: `<path class="a-line" d="M20 34 q20 -12 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/>
+    <path class="a-line" d="M92 52 C120 90 100 120 150 150" stroke-dasharray="2 12"/>
+    ${[70, 110, 150].map((y) => `<path class="a-line" d="M240 ${y}h26"/>`).join('')}
+    <circle class="a-fill" cx="92" cy="52" r="11"/>
+    <path class="a-solid" d="M150 138 l14 12 l-14 12 l-14 -12z"/>
+    <circle class="a-dot" cx="196" cy="96" r="3"/><circle class="a-dot" cx="60" cy="128" r="2.5"/><circle class="a-dot" cx="212" cy="160" r="2"/>`,
+  // A step grid: four rows of eight steps, a few switched on, and the playhead
+  steps: `${[0, 1, 2, 3].flatMap((r) => [0, 1, 2, 3, 4, 5, 6, 7].map((c) => {
+    const on = [[0, 0], [0, 4], [1, 2], [1, 6], [2, 0], [2, 3], [2, 5], [3, 7]].some(([a, b]) => a === r && b === c);
+    return `<rect class="${on ? 'a-solid' : 'a-line'}" x="${44 + c * 28}" y="${30 + r * 34}" width="20" height="24" rx="5"${on ? '' : ' style="stroke-width:2.5"'}/>`;
+  })).join('')}
+    <path class="a-line" d="M124 18v150"/>`,
 };
 
 function placeholder(art = 'chart') {

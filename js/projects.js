@@ -24,7 +24,7 @@
 //   url         where it lives ('/my-repo/' for another GitHub Pages repo), or null
 //   code        its GitHub repo, or null
 //   image       a screenshot of its cover page in img/ (1280 x 800), or null
-//   art         when there's no image: 'chart', 'trivia', 'snowboard' or 'wedding'
+//   art         when there's no image: 'chart', 'trivia', 'snowboard', 'wedding', 'dive' or 'steps'
 //
 // Polished and rough projects show as big cards, in the order below; the first
 // polished one is the widest. Workshop projects go in the compact list.
@@ -361,8 +361,8 @@ export const projects = [
     tags: ['JavaScript', 'Daily puzzles', 'SVG'],
     url: '/code-breaker/',
     code: null,
-    image: '/img/code-breaker.webp',
-    art: 'trivia',
+    image: null,
+    art: 'dive',
   },
   {
     slug: 'loop-lab',
@@ -392,8 +392,8 @@ export const projects = [
     tags: ['JavaScript', 'Web Audio'],
     url: '/loop-lab/',
     code: null,
-    image: '/img/loop-lab.webp',
-    art: 'chart',
+    image: null,
+    art: 'steps',
   },
 ];
 

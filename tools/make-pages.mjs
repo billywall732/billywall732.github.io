@@ -24,8 +24,11 @@ const page = (p) => `<!doctype html>
   <meta name="description" content="${esc(p.tagline)}">
   <meta property="og:title" content="${esc(p.name)} · Off the Wall">
   <meta property="og:description" content="${esc(p.tagline)}">
-  <meta property="og:image" content="${p.image ?? '/img/snow-surf.webp'}">
+  <meta property="og:image" content="https://offthewall.dev${p.image ?? '/img/og-card.jpg'}">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#121110">
   <!-- This file is made by tools/make-pages.mjs; edit js/projects.js instead -->
   <script>
