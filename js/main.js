@@ -116,12 +116,28 @@ function drawPlay() {
   playBtn.setAttribute('aria-label', playing ? 'Pause the slideshow' : 'Play the slideshow');
 }
 
+// Frame a photo on its people. The photos are portrait and fill the frame's width, so only the
+// top and bottom are ever cut: pick the slice that centers the people, but never starts below
+// the top person's head. Worked out for the frame's current shape (square, or 4:3 on phones).
+function frameOn(img) {
+  const [center, head] = (img.dataset.focus || '0.5,0').split(',').map(Number);
+  const frame = img.parentElement.getBoundingClientRect();
+  const shown = frame.width ? Math.min(1, frame.height / (frame.width * (1400 / 1050))) : 0.75; // share of the photo's height on screen
+  if (shown >= 1) { img.style.objectPosition = '50% 50%'; return; }
+  const top = Math.max(0, Math.min(1 - shown, center - shown / 2, head - 0.05));
+  img.style.objectPosition = `50% ${(top / (1 - shown) * 100).toFixed(1)}%`;
+}
+// Again whenever the frame changes size (including when the Off the Clock tab first shows)
+new ResizeObserver(() => layers.forEach((l) => l.dataset.focus && frameOn(l))).observe(layers[0].parentElement);
+
 function go(i, byHand = false) {
   at = (i + photos.length) % photos.length;
   const p = photos[at];
   const [front, back] = layers[0].classList.contains('is-on') ? layers : [layers[1], layers[0]];
   back.src = `/img/clock/${p.id}.webp`;
   back.alt = p.alt;
+  back.dataset.focus = (p.focus ?? [0.5, 0]).join(',');
+  frameOn(back);
   const swap = () => {
     back.classList.add('is-on');
     front.classList.remove('is-on');

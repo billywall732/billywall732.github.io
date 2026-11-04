@@ -191,12 +191,16 @@ img { display: block; max-width: 100%; height: auto; }
     linear-gradient(currentColor, currentColor) 50% 0 / 1.5px 100% no-repeat,
     linear-gradient(currentColor, currentColor) 0 50% / 100% 1.5px no-repeat;
 }
-@media (max-width: 760px) { .nav nav a[href='/home/#off-the-clock'] { display: none; } }
+/* Phones: the logo tile alone, and tighter links, so Cover, LinkedIn and GitHub all fit on one line */
 @media (max-width: 600px) {
   .brand-name { display: none; }
-  .nav nav a { padding-inline: 9px; }
-  /* Room for "Cover"; GitHub is still in the hero and the footer */
-  .nav nav a[href='https://github.com/billywall732'] { display: none; }
+  .nav { gap: 8px; }
+  .nav nav { gap: 0; }
+  .nav nav a { padding-inline: 8px; font-size: 14.5px; }
+}
+@media (max-width: 380px) {
+  .nav nav a { padding-inline: 6px; font-size: 14px; }
+  .pill-toggle { margin-left: 2px; }
 }
 @media (max-width: 420px) { .board-toggle .pill-name { display: none; } }
 /* Narrow mouse windows: the toggles go icon-only (their labels still say the state) */
@@ -558,9 +562,14 @@ html.board-on, html.board-on * { cursor: none !important; }
 .carousel-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; opacity: 0; transition: opacity 1.2s ease; }
 .carousel-img.is-on { opacity: 1; animation: drift 7.5s ease-out both; }
 @keyframes drift { from { transform: scale(1.0); } to { transform: scale(1.07); } }
-.carousel-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 12px; }
-.carousel-caption { font: 700 17px/1.25 var(--display); }
-.carousel-controls { display: inline-flex; align-items: center; gap: 6px; }
+/* The caption has a fixed two-line space and the arrows sit on their own row below it, so a long
+   or short caption never moves the arrows */
+.carousel-bar { display: grid; grid-template-rows: auto auto; gap: 8px; margin-top: 12px; }
+.carousel-caption {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  height: 2.5em; font: 700 17px/1.25 var(--display);
+}
+.carousel-controls { display: flex; align-items: center; gap: 6px; }
 .carousel-count { min-width: 4.2em; font: 600 13px/1 var(--label); color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 .carousel-btn {
   display: grid;

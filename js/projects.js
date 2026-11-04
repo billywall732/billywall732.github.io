@@ -418,29 +418,31 @@ export const hobbies = [
 // and run, from the repo folder:
 //   ffmpeg -i photos/Name.jpeg -map_metadata -1 -vf "scale='if(gt(iw,ih),min(1400,iw),-2)':'if(gt(iw,ih),-2,min(1400,ih))'" -c:v libwebp -quality 72 img/clock/name.webp
 // -map_metadata -1 strips the location and camera data from the photo.
+// focus: [where the people are, where the top person's head is], as fractions of the photo's
+// height (0 top, 1 bottom). The carousel frames each photo on the people, keeping that head in view.
 export const clockPhotos = [
-  { id: 'snowboarding', caption: 'Snowboarding', alt: 'Snowboarding down a groomed run with snowy peaks behind' },
-  { id: 'mountain-biking', caption: 'Mountain biking', alt: 'A selfie with a mountain bike on one shoulder, green canyons behind' },
-  { id: 'surfing', caption: 'Surfing', alt: 'Carrying a surfboard down the beach in a wetsuit' },
-  { id: 'golfing', caption: 'Golf (mostly the cart)', alt: 'A selfie in a golf cart on the course' },
-  { id: 'lobstering', caption: 'Lobstering', alt: 'Diving headfirst toward the sea floor in clear blue water' },
-  { id: 'kayaking', caption: 'Kayaking', alt: 'Two people paddling a red kayak with an American flag paddle' },
-  { id: 'hiking-peak', caption: 'Hiking', alt: 'Two hikers sitting on a rocky summit above the clouds' },
-  { id: 'horses', caption: 'Horseback riding', alt: 'Riding a horse along a bluff above the ocean' },
-  { id: 'ski-mountain', caption: 'Snowboarding', alt: 'A chairlift climbing toward snowy mountain peaks' },
-  { id: 'sea-cave-kayaking', caption: 'Sea cave kayaking', alt: 'Two kayakers cheering under the orange rock of a sea cave' },
-  { id: 'skydiving', caption: 'Skydiving', alt: 'A parachute coming in to land over a green field' },
-  { id: 'atv', caption: 'Dune riding', alt: 'Riding a yellow ATV on sand dunes' },
-  { id: 'mtb-crash', caption: 'Mountain biking, the other half', alt: 'Sitting on a rocky trail next to a fallen mountain bike' },
-  { id: 'stand-up-paddle', caption: 'Stand-up paddling', alt: 'Paddleboarding down a turquoise river through mangroves' },
-  { id: 'archery-group', caption: 'Archery with the crew', alt: 'A group selfie at an archery range, bows in hand' },
-  { id: 'hiking-dog', caption: 'Hiking with a trail buddy', alt: 'A hiker crouching to pet a dog on a dry hillside trail' },
-  { id: 'river-kayaking', caption: 'River kayaking', alt: 'Kayaking down a river past trees with a flag paddle' },
-  { id: 'horsebackriding', caption: 'Horseback riding', alt: 'A selfie on horseback at sunset with another rider behind' },
-  { id: 'hiking', caption: 'Hiking', alt: 'Hikers on a trail above a sea of clouds' },
-  { id: 'scuba-diving', caption: 'Scuba diving', alt: 'A diver far below in deep green-blue water' },
-  { id: 'mountains', caption: 'Road trip', alt: 'A highway leading toward snowy mountains' },
-  { id: 'billy', caption: 'Off the clock, officially', alt: 'Standing on a balcony above palm trees with a drink' },
+  { id: 'snowboarding', focus: [0.66, 0.34], caption: 'Snowboarding', alt: 'Snowboarding down a groomed run with snowy peaks behind' },
+  { id: 'mountain-biking', focus: [0.62, 0.45], caption: 'Mountain biking', alt: 'A selfie with a mountain bike on one shoulder, green canyons behind' },
+  { id: 'surfing', focus: [0.63, 0.42], caption: 'Surfing', alt: 'Carrying a surfboard down the beach in a wetsuit' },
+  { id: 'golfing', focus: [0.58, 0.33], caption: 'Golf (mostly the cart)', alt: 'A selfie in a golf cart on the course' },
+  { id: 'lobstering', focus: [0.5, 0.25], caption: 'Lobstering', alt: 'Diving headfirst toward the sea floor in clear blue water' },
+  { id: 'kayaking', focus: [0.55, 0.33], caption: 'Kayaking', alt: 'Two people paddling a red kayak with an American flag paddle' },
+  { id: 'hiking-peak', focus: [0.67, 0.59], caption: 'Hiking', alt: 'Two hikers sitting on a rocky summit above the clouds' },
+  { id: 'horses', focus: [0.52, 0.07], caption: 'Horseback riding', alt: 'Riding a horse along a bluff above the ocean' },
+  { id: 'ski-mountain', focus: [0.55, 0.3], caption: 'Snowboarding', alt: 'A chairlift climbing toward snowy mountain peaks' },
+  { id: 'sea-cave-kayaking', focus: [0.8, 0.6], caption: 'Sea cave kayaking', alt: 'Two kayakers cheering under the orange rock of a sea cave' },
+  { id: 'skydiving', focus: [0.5, 0.4], caption: 'Skydiving', alt: 'A parachute coming in to land over a green field' },
+  { id: 'atv', focus: [0.62, 0.34], caption: 'Dune riding', alt: 'Riding a yellow ATV on sand dunes' },
+  { id: 'mtb-crash', focus: [0.55, 0.28], caption: 'Mountain biking, the other half', alt: 'Sitting on a rocky trail next to a fallen mountain bike' },
+  { id: 'stand-up-paddle', focus: [0.53, 0.47], caption: 'Stand-up paddling', alt: 'Paddleboarding down a turquoise river through mangroves' },
+  { id: 'archery-group', focus: [0.6, 0.25], caption: 'Archery with the crew', alt: 'A group selfie at an archery range, bows in hand' },
+  { id: 'hiking-dog', focus: [0.6, 0.42], caption: 'Hiking with a trail buddy', alt: 'A hiker crouching to pet a dog on a dry hillside trail' },
+  { id: 'river-kayaking', focus: [0.82, 0.65], caption: 'River kayaking', alt: 'Kayaking down a river past trees with a flag paddle' },
+  { id: 'horsebackriding', focus: [0.62, 0.36], caption: 'Horseback riding', alt: 'A selfie on horseback at sunset with another rider behind' },
+  { id: 'hiking', focus: [0.65, 0.51], caption: 'Hiking', alt: 'Hikers on a trail above a sea of clouds' },
+  { id: 'scuba-diving', focus: [0.72, 0.62], caption: 'Scuba diving', alt: 'A diver far below in deep green-blue water' },
+  { id: 'mountains', focus: [0.65, 0.45], caption: 'Road trip', alt: 'A highway leading toward snowy mountains' },
+  { id: 'billy', focus: [0.62, 0.32], caption: 'Off the clock, officially', alt: 'Standing on a balcony above palm trees with a drink' },
 ];
 
 // The footer strip
