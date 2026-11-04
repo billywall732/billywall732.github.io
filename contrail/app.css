@@ -47,6 +47,15 @@ body.noscroll{overflow:hidden}
 .contrail-app .stat:last-child{border-right:0}
 .contrail-app .stat b{font-family:var(--f-display);font-size:32px;font-weight:600;line-height:1}
 .contrail-app .stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+/* Overview totals: always two full rows. --cols is half the number of cards (set by renderStats);
+   with an odd count the first card ("Showing") takes two slots. Hairlines between cards come
+   from the 1px gaps. Phones: two columns, same rule. */
+.contrail-app .stats.balanced{grid-template-columns:repeat(var(--cols,6),minmax(0,1fr));gap:1px;background:var(--line);overflow:hidden}
+.contrail-app .stats.balanced .stat{border-right:0;background:var(--surface);min-width:0}
+.contrail-app .stats.balanced.odd .stat:first-child{grid-column:span 2}
+.contrail-app .stats.balanced .stat b{overflow-wrap:anywhere}
+@media (max-width:1100px){.contrail-app .stats.balanced .stat{padding:10px 12px}.contrail-app .stats.balanced .stat b{font-size:26px}}
+@media (max-width:640px){.contrail-app .stats.balanced{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .contrail-app .next{display:grid;grid-template-columns:auto 1fr auto;gap:8px 20px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--tc,var(--t-later));border-radius:6px;padding:16px 20px}
 .contrail-app .next .route{font-family:var(--f-display);font-size:34px;font-weight:700;letter-spacing:.04em;line-height:1}
 .contrail-app .next .route i{font-style:normal;color:var(--tc);padding:0 6px}
@@ -328,3 +337,5 @@ body.noscroll{overflow:hidden}
 .contrail-app .chip.purpose{display:inline-block;padding:2px 7px;border-radius:3px;background:none;gap:0}
 .contrail-app .chips{align-items:center}
 @media (max-width:640px){.contrail-app .tabscroll{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);padding-right:24px}.contrail-app .pagetabs :is([role=tab],.tablink){font-size:15px;padding-inline:7px;gap:4px}.contrail-app .pagetabs .emoji{font-size:14px}.contrail-app .utilpill{padding:4px 9px;font-size:12px}.contrail-app .pill-more{display:none}}
+/* Stays filters: one row above the totals, list and map */
+.contrail-app .stayfilt{justify-content:flex-start;gap:8px 16px;margin:4px 0}

@@ -124,9 +124,12 @@ const REGION_LABEL = { all: 'USA & international', us: 'USA only', intl: 'Intern
 const isIntl = (t) => t.legs.some((l) => A(l.o).cc !== 'United States' || A(l.d).cc !== 'United States');
 const inRegion = (t) => REGION === 'all' || (REGION === 'intl') === isIntl(t);
 const stayInRegion = (st) => REGION === 'all' || (REGION === 'intl') === (String(st.country || 'United States').trim() !== 'United States');
-const inYear = (t) => (YEARS.size === 0 || YEARS.has(t.startLocal.slice(0, 4))) && inRegion(t);
-const filtered = () => YEARS.size > 0 || REGION !== 'all';
-const yearLabel = () => [YEARS.size === 0 ? (REGION === 'all' ? 'All years' : '') : [...YEARS].sort().join(', '), REGION === 'all' ? '' : REGION_LABEL[REGION]].filter(Boolean).join(' · ');
+// Airline: trips with at least one flight on it ('all' = any airline)
+let AIRLINE = 'all';
+const onAirline = (t) => AIRLINE === 'all' || t.legs.some((l) => l.airline === AIRLINE);
+const inYear = (t) => (YEARS.size === 0 || YEARS.has(t.startLocal.slice(0, 4))) && inRegion(t) && onAirline(t);
+const filtered = () => YEARS.size > 0 || REGION !== 'all' || AIRLINE !== 'all';
+const yearLabel = () => [YEARS.size === 0 ? (REGION === 'all' && AIRLINE === 'all' ? 'All years' : '') : [...YEARS].sort().join(', '), REGION === 'all' ? '' : REGION_LABEL[REGION], AIRLINE === 'all' ? '' : airlineName(AIRLINE)].filter(Boolean).join(' · ');
 function renderStats() {
   const past = pastList().filter(inYear), up = upList().filter(inYear);
   const pl = past.flatMap((t) => t.legs), ul = up.flatMap((t) => t.legs);
@@ -146,7 +149,11 @@ function renderStats() {
   if (sn) items.push([sn, 'Nights in stays']);
   const yl = yearLabel();
   const fs = $id('filtSum'); if (fs) fs.textContent = filtered() ? yl : '';
-  $id('stats').innerHTML = `<div class="stat"><b>${yl}</b><span>Showing</span></div>` + items.map(([v, k]) => `<div class="stat"><b class="num">${v}</b><span>${k}</span></div>`).join('');
+  const cf = $id('clearFilt'); if (cf) cf.hidden = !filtered();
+  const el = $id('stats'), n = items.length + 1; // + "Showing"
+  // Two full rows: half as many columns as cards (an odd count gives "Showing" two slots)
+  el.classList.add('balanced'); el.classList.toggle('odd', n % 2 === 1); el.style.setProperty('--cols', Math.ceil(n / 2));
+  el.innerHTML = `<div class="stat"><b>${yl}</b><span>Showing</span></div>` + items.map(([v, k]) => `<div class="stat"><b class="num">${v}</b><span>${k}</span></div>`).join('');
 }
 
 function renderLegend() {
@@ -782,19 +789,42 @@ function stayLoc(s) {
   return null;
 }
 let smRegion = null, smZoom = null, smProj = null, smT = d3.zoomIdentity, picking = false;
+// Stays filters (Stays tab: list, totals and map together): hotel type (the stay's brand) and how it was paid
+const STAY_F = { type: 'all', pay: 'all' };
+const stayFiltered = () => STAY_F.type !== 'all' || STAY_F.pay !== 'all';
+const shownStays = () => STAYS.filter((s) => (STAY_F.type === 'all' || (s.brand || 'Other') === STAY_F.type) && (STAY_F.pay === 'all' || (s.pay || 'none') === STAY_F.pay));
+function renderStayFilters() {
+  // Options come only from the stays you have
+  const types = [...new Set(STAYS.map((s) => s.brand || 'Other'))].sort();
+  const pays = [...new Set(STAYS.map((s) => s.pay || 'none'))].sort((a, b) => String(PAY_LABEL[a] || a).localeCompare(PAY_LABEL[b] || b));
+  if (!types.includes(STAY_F.type)) STAY_F.type = 'all';
+  if (!pays.includes(STAY_F.pay)) STAY_F.pay = 'all';
+  $id('stayTypeSel').innerHTML = `<option value="all">All types</option>` + types.map((t) => `<option${t === STAY_F.type ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  $id('stayPaySel').innerHTML = `<option value="all">Any payment</option>` + pays.map((p) => `<option value="${esc(p)}"${p === STAY_F.pay ? ' selected' : ''}>${esc(p === 'none' ? 'Not recorded' : PAY_LABEL[p] || p)}</option>`).join('');
+  $id('stayClear').hidden = !stayFiltered();
+  const n = shownStays().length;
+  $id('stayCount').textContent = stayFiltered() ? `Showing ${n} of ${STAYS.length} stays` : '';
+}
 function renderStayMap() {
   const svgS = d3.select('#stayMap'); if (svgS.empty()) return;
-  const placed = STAYS.map((s) => ({ s, loc: stayLoc(s) })).filter((x) => x.loc), missing = STAYS.filter((s) => !stayLoc(s));
+  const SH = shownStays();
+  const placed = SH.map((s) => ({ s, loc: stayLoc(s) })).filter((x) => x.loc), missing = SH.filter((s) => !stayLoc(s));
   const isUSs = (x) => String(x.s.country || 'United States').trim() === 'United States';
   const regions = [['all', 'All'], ...(placed.some(isUSs) ? [['us', 'USA']] : []), ...(placed.some((x) => !isUSs(x)) ? [['abroad', 'Abroad']] : [])];
-  if (!regions.some((r) => r[0] === smRegion)) smRegion = regions.length > 2 && placed.filter(isUSs).length >= placed.length / 2 ? 'us' : 'all';
-  $id('smRegion').innerHTML = regions.length > 2 ? regions.map(([k, l]) => `<button type="button" class="tab" data-smr="${k}" aria-selected="${k === smRegion}">${l}</button>`).join('') : '';
-  const shown = placed.filter((x) => smRegion === 'all' || (smRegion === 'us') === isUSs(x));
+  // The map area you picked (or the starting one) is kept while filters narrow the stays, so
+  // clearing them brings the same view back
+  const fallback = regions.length > 2 && placed.filter(isUSs).length >= placed.length / 2 ? 'us' : 'all';
+  if (smRegion == null && !stayFiltered()) smRegion = fallback;
+  const reg = regions.some((r) => r[0] === smRegion) ? smRegion : fallback;
+  $id('smRegion').innerHTML = regions.length > 2 ? regions.map(([k, l]) => `<button type="button" class="tab" data-smr="${k}" aria-selected="${k === reg}">${l}</button>`).join('') : '';
+  const shown = placed.filter((x) => reg === 'all' || (reg === 'us') === isUSs(x));
   const groups = []; shown.forEach((x) => { const g = groups.find((q) => Math.abs(q.lat - x.loc.lat) < 0.02 && Math.abs(q.lon - x.loc.lon) < 0.02); if (g) g.items.push(x); else groups.push({ lat: x.loc.lat, lon: x.loc.lon, items: [x] }); });
   groups.forEach((g) => { g.nights = g.items.reduce((a, x) => a + (+x.s.nights || 0), 0); g.rental = g.items.every((x) => RENTAL.has(x.s.brand)); g.approx = g.items.every((x) => x.loc.how === 'approx'); g.city = String(g.items[0].s.city || '').split(',')[0]; });
   const mob = window.innerWidth < 640, Wm = mob ? 520 : 1000, Hm = mob ? 560 : 480; svgS.attr('viewBox', `0 0 ${Wm} ${Hm}`);
   const pr = d3.geoNaturalEarth1(), path = d3.geoPath(pr); smProj = pr;
-  const pts = { type: 'MultiPoint', coordinates: (groups.length ? groups : [{ lon: -118.4, lat: 33.9 }, { lon: -74, lat: 40.7 }]).map((g) => [g.lon, g.lat]) };
+  // A single place (e.g. after filtering) has no extent to fit, so frame a few degrees around it
+  const fitAt = groups.length === 1 ? [-4, 4].flatMap((d) => [{ lon: groups[0].lon + d, lat: groups[0].lat + d / 2 }]) : groups;
+  const pts = { type: 'MultiPoint', coordinates: (fitAt.length ? fitAt : [{ lon: -118.4, lat: 33.9 }, { lon: -74, lat: 40.7 }]).map((g) => [g.lon, g.lat]) };
   const lons = pts.coordinates.map((c) => c[0]); pr.rotate([lons.some((l) => l > 100) && lons.some((l) => l < -60) ? 150 : -d3.mean(lons), 0]);
   pr.fitExtent([[mob ? 30 : 60, 50], [Wm - (mob ? 120 : 170), Hm - 40]], pts);
   if (pr.scale() > 2600) { pr.scale(2600); const c = pr([d3.mean(lons), d3.mean(pts.coordinates.map((q) => q[1]))]); const t = pr.translate(); pr.translate([t[0] + Wm / 2 - c[0], t[1] + Hm / 2 - c[1]]); }
@@ -841,18 +871,21 @@ $id('smIn').addEventListener('click', () => { if (smZoom) d3.select('#stayMap').
 $id('smOut').addEventListener('click', () => { if (smZoom) d3.select('#stayMap').transition().duration(250).call(smZoom.scaleBy, 1 / 1.8); });
 function renderStays() {
   $id('staysState').textContent = store.mode === 'demo' ? 'Demo · not saved' : 'Saved to your account';
-  const nights = STAYS.reduce((a, s) => a + (+s.nights || 0), 0);
-  const hotelN = STAYS.filter((s) => !RENTAL.has(s.brand)).reduce((a, s) => a + (+s.nights || 0), 0);
-  const portal = STAYS.filter((s) => /Travel$/.test(s.booked || '')).length;
-  const pts = STAYS.filter((s) => s.pay !== 'other').reduce((a, s) => a + (+s.payPoints || 0), 0);
-  const items = [[STAYS.length, 'Stays'], [nights, 'Nights'], [hotelN, 'Hotel nights'], [nights - hotelN, 'Rental nights'], [portal, 'Booked via card portals']];
+  renderStayFilters();
+  const SH = shownStays(); // after the hotel-type and payment filters
+  const nights = SH.reduce((a, s) => a + (+s.nights || 0), 0);
+  const hotelN = SH.filter((s) => !RENTAL.has(s.brand)).reduce((a, s) => a + (+s.nights || 0), 0);
+  const portal = SH.filter((s) => /Travel$/.test(s.booked || '')).length;
+  const pts = SH.filter((s) => s.pay !== 'other').reduce((a, s) => a + (+s.payPoints || 0), 0);
+  const items = [[SH.length, 'Stays'], [nights, 'Nights'], [hotelN, 'Hotel nights'], [nights - hotelN, 'Rental nights'], [portal, 'Booked via card portals']];
   if (pts) items.push([pts >= 1e5 ? Math.round(pts / 1000) + 'k' : pts.toLocaleString(), 'Points used']);
   $id('stayStats').innerHTML = items.map(([v, k]) => `<div class="stat"><b class="num">${v}</b><span>${k}</span></div>`).join('');
-  $id('stayBrands').innerHTML = `<span class="eyebrow">Nights by brand</span>${barsHTML(stayCount(STAYS, (s) => s.brand))}`;
-  $id('stayChannels').innerHTML = `<span class="eyebrow">Nights by how it was booked</span>${barsHTML(stayCount(STAYS, (s) => s.booked || 'Not set'))}`;
+  $id('stayBrands').innerHTML = `<span class="eyebrow">Nights by brand</span>${barsHTML(stayCount(SH, (s) => s.brand))}`;
+  $id('stayChannels').innerHTML = `<span class="eyebrow">Nights by how it was booked</span>${barsHTML(stayCount(SH, (s) => s.booked || 'Not set'))}`;
   let html = '', yr = null;
   if (!STAYS.length) html = `<div class="panel empty-card"><b>No stays yet.</b><span class="lw">Add hotels and rentals to see them on the map and in your stats.</span></div>`;
-  STAYS.forEach((s) => {
+  else if (!SH.length) html = `<div class="panel empty-card"><b>No stays match these filters.</b><span class="lw">Clear the filters above to see every stay.</span></div>`;
+  SH.forEach((s) => {
     const y = String(s.checkIn).slice(0, 4); if (y !== yr) { yr = y; html += `<div class="year">${y}</div>`; }
     const t = s.trip && tripById(s.trip);
     const tr = t ? tierOf(t) : null;
@@ -1061,6 +1094,10 @@ function renderYearChips() {
   [...YEARS].forEach((y) => { if (!allYears.includes(y)) YEARS.delete(y); });
   chipsYears = allYears;
   $id('yearChips').innerHTML = `<button type="button" class="yr" data-y="all" aria-pressed="${YEARS.size === 0}">All</button>` + allYears.map((y) => `<button type="button" class="yr" data-y="${y}" aria-pressed="${YEARS.has(y)}">${y}</button>`).join('');
+  // Airlines: only the ones in your flights, by name
+  const codes = [...new Set(TRIPS.flatMap((t) => t.legs.map((l) => l.airline)).filter(Boolean))].sort((a, b) => airlineName(a).localeCompare(airlineName(b)));
+  if (AIRLINE !== 'all' && !codes.includes(AIRLINE)) AIRLINE = 'all';
+  $id('airlineSel').innerHTML = `<option value="all">All airlines</option>` + codes.map((c) => `<option value="${esc(c)}"${c === AIRLINE ? ' selected' : ''}>${esc(airlineName(c))}</option>`).join('');
 }
 function renderAll() {
   // In the demo each page starts fresh, so tell the analytics page when the sample data is gone
@@ -1093,6 +1130,21 @@ function renderAll() {
     drawRegion(); renderStats(); renderTrips(); draw();
   });
   drawRegion();
+  { const sa = prefs.get('airline'); if (sa) AIRLINE = sa; }
+  // Stays filters
+  $id('stayTypeSel').addEventListener('change', (e) => { STAY_F.type = e.target.value; renderStays(); });
+  $id('stayPaySel').addEventListener('change', (e) => { STAY_F.pay = e.target.value; renderStays(); });
+  $id('stayClear').addEventListener('click', () => { STAY_F.type = STAY_F.pay = 'all'; renderStays(); });
+  $id('airlineSel').addEventListener('change', (e) => {
+    AIRLINE = e.target.value; prefs.set('airline', AIRLINE); selTrip = null; editing = null;
+    renderStats(); renderTrips(); draw();
+  });
+  // Clear filters: every year, both regions, any airline
+  $id('clearFilt').addEventListener('click', () => {
+    YEARS.clear(); REGION = 'all'; AIRLINE = 'all';
+    prefs.set('years', '[]'); prefs.set('region', 'all'); prefs.set('airline', 'all'); selTrip = null; editing = null;
+    renderYearChips(); drawRegion(); renderStats(); renderTrips(); draw();
+  });
   const ft = $id('filtToggle'), fp = $id('filtPanel');
   const setFilt = (on) => { fp.hidden = !on; ft.setAttribute('aria-expanded', on); prefs.set('filters', on ? 'open' : 'closed'); if (mapbox.classList.contains('expanded')) requestAnimationFrame(draw); };
   ft.addEventListener('click', () => setFilt(fp.hidden));
