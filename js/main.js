@@ -1,8 +1,9 @@
-// The home page at /home/: four tabs built from js/projects.js, each shown as
-// its own page. The address picks the tab (#polished, #rough, #workshop,
-// #off-the-clock), so every tab can be linked to and the back button works.
-import { clockPhotos, hobbies, projects } from './projects.js';
-import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, spotlight, statusPill } from './ui.js';
+// The home page at /home/: two sections built from js/projects.js, three tabs each, and every
+// tab shown as its own page. Workshop: #polished, #rough, #workshop. Off the Clock: #story,
+// #toolkit, #hobbies (#off-the-clock opens Story). The address picks the tab, so every tab can
+// be linked to and the back button works.
+import { clockPhotos, hobbies, projects, toolkit } from './projects.js';
+import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, slider, spotlight, statusPill } from './ui.js';
 
 const byStatus = (s) => projects.filter((p) => p.status === s);
 
@@ -47,7 +48,13 @@ $('.workshop-list').replaceChildren(...(workshop.length ? workshop.map((p) => h(
     h('span', { class: 'workshop-status' }, p.statusNote),
     h('span', { class: 'workshop-more' }, 'Learn more ', h('span', { 'aria-hidden': 'true' }, '→'))))) : [empty('The bench is clear.')]));
 
-// ---------- Off the clock: proudly mediocre at ----------
+// ---------- Off the clock, Toolkit: each app's tools, as checked in its code ----------
+
+$('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length).map((p) => h('section', { class: 'kit', style: accentStyle(p), 'aria-labelledby': `kit-${p.slug}` },
+  h('h3', { id: `kit-${p.slug}` }, h('a', { href: projectHref(p) }, p.name)),
+  h('ul', { class: 'kit-tools' }, toolkit[p.slug].map((t) => h('li', {}, t))))));
+
+// ---------- Off the clock, Hobbies: proudly mediocre at ----------
 
 // Each block with photos is a button that puts its photo in the carousel
 const VERDICT = ['', 'A hazard', 'Survives', 'Solidly mediocre', 'Suspiciously decent', 'Lying'];
@@ -96,13 +103,13 @@ const playBtn = button('is-play', '', '', () => { playing = !playing; drawPlay()
 const live = h('p', { class: 'sr', 'aria-live': 'polite' });
 carousel.replaceChildren(
   h('div', { class: 'carousel-frame' }, ...layers),
+  // One row that never changes height: previous, the caption (two lines at most), count, play, next
   h('figcaption', { class: 'carousel-bar' },
+    button('is-prev', 'Previous photo', '←', () => go(at - 1, true)),
     caption,
-    h('span', { class: 'carousel-controls' },
-      button('is-prev', 'Previous photo', '←', () => go(at - 1, true)),
-      count,
-      playBtn,
-      button('is-next', 'Next photo', '→', () => go(at + 1, true)))),
+    count,
+    playBtn,
+    button('is-next', 'Next photo', '→', () => go(at + 1, true))),
   live);
 
 // Fixed strings, so innerHTML is safe
@@ -186,15 +193,24 @@ new IntersectionObserver((entries, seen) => {
   if (!layers.some((l) => l.src)) go(0);
 }).observe(carousel);
 
-// ---------- Tabs ----------
+// ---------- Sections and tabs ----------
+// One row of tabs under the section title shows the open section's three tabs, with a single
+// indicator that slides to the chosen one. The top bar's Workshop and Off the Clock links say
+// which section is open.
 
+const SECTIONS = {
+  work: { title: 'Workshop', views: ['polished', 'rough', 'workshop'] },
+  clock: { title: 'Off the Clock', views: ['story', 'toolkit', 'hobbies'] },
+};
 const tabs = [...document.querySelectorAll('.tablist a')];
 for (const t of tabs) {
   const count = $('.tab-count', t);
   const n = { polished: 'live', rough: 'rough', workshop: 'workshop' }[t.dataset.view];
   if (count && n) count.textContent = byStatus(n).length;
 }
-const OLD = { work: 'polished' }; // links from before the tabs
+const OLD = { work: 'polished', 'off-the-clock': 'story' }; // links from before (and the Off the Clock link)
+const sectionOf = (view) => Object.keys(SECTIONS).find((k) => SECTIONS[k].views.includes(view));
+const indicator = slider($('.tablist'));
 
 function viewFromHash() {
   const id = decodeURIComponent(location.hash.slice(1));
@@ -202,20 +218,28 @@ function viewFromHash() {
   return tabs.some((t) => t.dataset.view === name) ? name : 'polished';
 }
 
+let shownSection = null;
 function show(name, { scroll = false } = {}) {
+  const section = sectionOf(name);
   for (const t of tabs) {
     const on = t.dataset.view === name;
+    t.parentElement.hidden = sectionOf(t.dataset.view) !== section;
     if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
     const view = $(`#view-${t.dataset.view}`);
     view.hidden = !on;
     if (on) {
-      document.title = `${$('h1', view).textContent} · Off the Wall`;
+      document.title = `${$('.view-title', view).textContent} · ${SECTIONS[section].title} · Off the Wall`;
       // On a phone the row scrolls sideways: center the open tab in it
       const row = t.closest('.tablist');
       const [a, b] = [t.getBoundingClientRect(), row.getBoundingClientRect()];
       row.scrollLeft += a.left + a.width / 2 - (b.left + b.width / 2);
     }
   }
+  $('#section-title').textContent = SECTIONS[section].title;
+  markNav(section);
+  // Switching section jumps the indicator; within a section it slides
+  indicator.place(tabs.find((t) => t.dataset.view === name), { instant: section !== shownSection });
+  shownSection = section;
   // If the visitor had scrolled down, bring the new page's top into view under the tabs
   const nav = $('.tabs');
   if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
@@ -232,5 +256,11 @@ function countView(name) {
 
 window.addEventListener('hashchange', () => show(viewFromHash(), { scroll: true }));
 show(viewFromHash());
+
+if (document.documentElement.classList.contains('wipe-in')) {
+  const done = () => document.documentElement.classList.remove('wipe-in');
+  for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, done, { once: true });
+  setTimeout(done, 700);
+}
 
 setUpPage();

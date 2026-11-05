@@ -87,6 +87,13 @@
 
 /* ---------- Base ---------- */
 
+/* The paint for the cover-to-page wipe: brick lines on orange, and drips for its edge */
+:root {
+  --splat: #ff6a1f;
+  --paint-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='56'%3E%3Cpath d='M0 1.5h120M0 29.5h120M1.5 0v28M61.5 0v28M31.5 28v28M91.5 28v28' stroke='%23c94a0e' stroke-opacity='.5' stroke-width='3' fill='none'/%3E%3C/svg%3E");
+  --drips: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='38'%3E%3Cpath fill='%23ff6a1f' d='M0 38V30h18V16a6 6 0 0 1 12 0v14h40V6a5 5 0 0 1 10 0v24h50V20a7 7 0 0 1 14 0v10h60V12a6 6 0 0 1 12 0v18h24v8z'/%3E%3C/svg%3E");
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
@@ -134,15 +141,15 @@ img { display: block; max-width: 100%; height: auto; }
 .button.accent:hover { box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 45%, var(--ink)); }
 .button.ghost { background: transparent; border-color: var(--rule); }
 .button.ghost:hover { border-color: var(--ink); }
-.button.small { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.button.small { min-height: 44px; padding: 0 16px; font-size: 14px; }
 /* "Coming soon": looks like a button, does nothing */
 .button.is-soon { color: var(--muted); background: transparent; border: 1.5px dashed var(--rule); cursor: default; }
 .button.is-soon:hover { transform: none; box-shadow: none; }
 
 /* ---------- Nav ---------- */
 
-.nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 700 18px/1 var(--display); }
+.nav { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; min-width: 44px; min-height: 44px; text-decoration: none; font: 700 18px/1 var(--display); }
 .brand-mark {
   display: grid;
   place-items: center;
@@ -154,32 +161,68 @@ img { display: block; max-width: 100%; height: auto; }
   box-shadow: inset 0 -3px 0 var(--brick-2);
   transform: rotate(-6deg);
 }
-.nav nav { display: flex; align-items: center; gap: 4px; }
-.nav nav a { padding: 8px 12px; font-size: 15px; font-weight: 550; text-decoration: none; color: var(--ink-2); border-radius: 999px; }
-.nav nav a:hover { color: var(--ink); background: var(--surface-2); }
+/* Top bar: Cover, Workshop, Off the Clock, Contact, then the two icon toggles. The page you're on
+   stands forward in full color; the rest sit back a little. */
+.site-menu { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 2px; }
+.site-menu a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: 15px; font-weight: 550; text-decoration: none; color: var(--ink-2); border-radius: 10px; }
+.site-menu a:hover { color: var(--ink); background: var(--surface-2); }
+.site-menu a[aria-current='page'] { color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--brand); border-radius: 0; }
+.nav-toggles { display: inline-flex; gap: 6px; margin-left: 8px; }
 
-/* The color-mode and board buttons: one button each, showing what's on now */
-.pill-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  margin-left: 6px;
-  padding: 0 14px 0 10px;
-  font: 600 13.5px/1 var(--sans);
+/* The board and color-mode toggles: icon only (the state is in a visually hidden label) */
+.icon-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-radius: 999px;
+  border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
-.pill-toggle:hover { border-color: var(--ink); background: var(--surface-2); }
-.pill-name { color: var(--muted); }
+.icon-toggle:hover { border-color: var(--ink); background: var(--surface-2); }
 .board-icon { display: grid; place-items: center; width: 28px; height: 16px; }
 .board-icon svg { width: 100%; height: 100%; overflow: visible; }
-.board-toggle[data-board='off'] .board-icon svg { width: 14px; }
 .board-toggle:not([data-board='off']) { border-color: color-mix(in srgb, var(--brand) 60%, var(--rule)); }
+/* Off: a board, crossed out */
+.b-ghost { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 3; }
+.b-slash { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+
+/* The menu button (phones) and its three bars, which turn into an X while it's open */
+.menu-toggle { display: none; place-items: center; width: 44px; height: 44px; margin-left: auto; padding: 0; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; cursor: pointer; }
+.menu-bars { display: grid; gap: 4px; width: 18px; }
+.menu-bars i { display: block; height: 2px; background: currentColor; border-radius: 2px; transition: transform 0.2s, opacity 0.2s; }
+.nav.is-open .menu-bars i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.nav.is-open .menu-bars i:nth-child(2) { opacity: 0; }
+.nav.is-open .menu-bars i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+@media (max-width: 760px) {
+  .nav.has-menu .menu-toggle { display: grid; }
+  .nav.has-menu .site-menu { display: none; }
+  .nav.has-menu.is-open .site-menu {
+    position: absolute;
+    top: calc(100% - 12px);
+    left: 0;
+    right: 0;
+    z-index: 60;
+    display: grid;
+    justify-content: stretch;
+    gap: 0;
+    margin-inline: 16px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    box-shadow: var(--shadow-hover);
+  }
+  .nav.has-menu.is-open .site-menu a { min-height: 48px; padding: 0 14px; font-size: 16px; border-radius: 8px; }
+  .nav.has-menu.is-open .site-menu a[aria-current='page'] { box-shadow: inset 3px 0 0 var(--brand); }
+  .nav.has-menu.is-open .nav-toggles { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin: 6px 0 0; padding-top: 6px; border-top: 1px solid var(--rule); }
+  .nav.has-menu.is-open .icon-toggle { width: 100%; height: 48px; }
+}
 /* Small drawn icons: a moon, a sun, a grid */
 .ti { position: relative; flex: none; width: 14px; height: 14px; color: var(--brand); }
 .ti-dark { border-radius: 50%; box-shadow: inset -4px -2px 0 0 currentColor; transform: rotate(-20deg); }
@@ -191,20 +234,11 @@ img { display: block; max-width: 100%; height: auto; }
     linear-gradient(currentColor, currentColor) 50% 0 / 1.5px 100% no-repeat,
     linear-gradient(currentColor, currentColor) 0 50% / 100% 1.5px no-repeat;
 }
-/* Phones: the logo tile alone, and tighter links, so Cover, LinkedIn and GitHub all fit on one line */
+/* Phones: the brand mark alone next to the menu button */
 @media (max-width: 600px) {
   .brand-name { display: none; }
   .nav { gap: 8px; }
-  .nav nav { gap: 0; }
-  .nav nav a { padding-inline: 8px; font-size: 14.5px; }
 }
-@media (max-width: 380px) {
-  .nav nav a { padding-inline: 6px; font-size: 14px; }
-  .pill-toggle { margin-left: 2px; }
-}
-@media (max-width: 420px) { .board-toggle .pill-name { display: none; } }
-/* Narrow mouse windows: the toggles go icon-only (their labels still say the state) */
-@media (max-width: 380px) { .pill-toggle .pill-state { display: none; } }
 
 /* ---------- Board cursor ---------- */
 /* Replaces the cursor while it shows (mouse only); never catches clicks or blocks selecting text */
@@ -275,25 +309,44 @@ html.board-on, html.board-on * { cursor: none !important; }
    instead of stacking on top of it (one underline, not two) */
 .tablist { display: flex; gap: 2px; margin-block: 0 -1px; position: relative; list-style: none; overflow-x: auto; scrollbar-width: none; }
 .tablist::-webkit-scrollbar { display: none; }
+/* One indicator slides under the chosen tab (js/ui.js slider); the chosen tab comes forward in
+   full weight and color and the rest step back */
 .tablist a {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 14px 11px;
+  min-height: 48px;
+  padding: 12px 14px;
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--muted);
   text-decoration: none;
   white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  /* The underline moves at once: no fade, so two tabs are never underlined together */
-  transition: color 0.2s;
+  opacity: 0.85;
+  transition: color 0.2s, opacity 0.2s;
+}
+/* The bold copy holds the width, so the chosen tab getting bolder never moves the row */
+.tab-label { display: inline-grid; }
+.tab-label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 800; }
+.tablist .slide-ind {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 3px;
+  background: var(--brand);
+  transform-origin: 0 0;
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
+  pointer-events: none;
 }
 .tablist li:first-child a { padding-left: 2px; }
 .tab-emoji { font-size: 16px; filter: grayscale(0.7); transition: filter 0.2s, transform 0.2s; }
 .tablist a:hover { color: var(--ink); }
 .tablist a:hover .tab-emoji { filter: none; transform: scale(1.15) rotate(-6deg); }
-.tablist a[aria-current='page'] { color: var(--ink); border-bottom-color: var(--brand); }
+.tablist a[aria-current='page'] { color: var(--ink); font-weight: 800; opacity: 1; }
+/* Without JavaScript there's no indicator: underline the chosen tab instead */
+.tablist:not(:has(.slide-ind)) a[aria-current='page'] { box-shadow: inset 0 -3px 0 var(--brand); }
 .tablist a[aria-current='page'] .tab-emoji { filter: none; }
 .tab-count { min-width: 20px; padding: 1px 6px; font-size: 12px; font-weight: 700; text-align: center; color: var(--ink-2); background: var(--surface-2); border-radius: 999px; }
 .tab-count:empty { display: none; }
@@ -304,9 +357,11 @@ html.board-on, html.board-on * { cursor: none !important; }
   .tablist { -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); }
 }
 
-/* Each tab's page: a big title, a line under it, then its content */
+/* The section's name above its tabs, then each tab's page: a title, a line under it, its content */
+.section-head { padding-top: 8px; padding-bottom: 6px; }
+.section-head h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 800; letter-spacing: -0.035em; }
 .view { padding-top: 40px; }
-.view h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 800; }
+.view .view-title { font-size: clamp(30px, 5vw, 48px); font-weight: 800; }
 .view-lede { margin: 10px 0 28px; font-size: 18px; color: var(--ink-2); }
 .view-empty { padding: 28px; color: var(--muted); text-align: center; border: 1.5px dashed var(--rule); border-radius: var(--radius); }
 
@@ -457,7 +512,7 @@ html.board-on, html.board-on * { cursor: none !important; }
 .status.is-workshop { color: var(--workshop); background: color-mix(in srgb, var(--workshop) 16%, transparent); }
 .status.is-rough { color: var(--rough); background: color-mix(in srgb, var(--rough) 15%, transparent); }
 .project h2 { font-size: 28px; font-weight: 750; }
-.project h2 a { text-decoration: none; }
+.project h2 a { display: inline-block; padding-block: 8px; margin-block: -8px; text-decoration: none; } /* a 44px tap target, same layout */
 .project h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .blurb { margin: 10px 0 0; color: var(--ink-2); }
 .highlights { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; font-size: 14.5px; }
@@ -562,20 +617,19 @@ html.board-on, html.board-on * { cursor: none !important; }
 .carousel-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; opacity: 0; transition: opacity 1.2s ease; }
 .carousel-img.is-on { opacity: 1; animation: drift 7.5s ease-out both; }
 @keyframes drift { from { transform: scale(1.0); } to { transform: scale(1.07); } }
-/* The caption has a fixed two-line space and the arrows sit on their own row below it, so a long
-   or short caption never moves the arrows */
-.carousel-bar { display: grid; grid-template-rows: auto auto; gap: 8px; margin-top: 12px; }
+/* One row under the photo, always the same height: previous, the caption (two lines at most,
+   centered in a fixed box), the count, play, next. A long or short caption never moves anything. */
+.carousel-bar { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px 44px; align-items: center; gap: 8px; height: 48px; margin-top: 12px; }
 .carousel-caption {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
-  height: 2.5em; font: 700 17px/1.25 var(--display);
+  max-height: 2.5em; font: 700 16px/1.25 var(--display); text-align: center;
 }
-.carousel-controls { display: flex; align-items: center; gap: 6px; }
-.carousel-count { min-width: 4.2em; font: 600 13px/1 var(--label); color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.carousel-count { min-width: 3.4em; font: 600 13px/1 var(--label); color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
 .carousel-btn {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   font: 700 15px/1 var(--sans);
   color: var(--ink);
@@ -669,8 +723,8 @@ html.board-on, html.board-on * { cursor: none !important; }
 .detail-status .status { margin-right: 4px; }
 .detail-status .status-sep { margin: 0 4px 0 0; color: var(--muted); }
 /* /home/: the plain "About →" link under the opening tab's intro */
-.home-about { margin: 6px 0 0; font-size: 15px; }
-.home-about a { color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
+.home-about { margin: -6px 0 6px; font-size: 15px; }
+.home-about a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
 .home-about a:hover { color: var(--ink); }
 .steps { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; counter-reset: step; font-size: 15px; color: var(--ink-2); }
 .steps li { position: relative; padding-left: 36px; counter-increment: step; }
@@ -694,6 +748,92 @@ html.board-on, html.board-on * { cursor: none !important; }
 .detail-pager a:hover { border-color: var(--accent); }
 .detail-pager span { font-size: 13px; color: var(--muted); }
 .detail-pager strong { font: 700 18px/1.25 var(--display); }
+
+/* ---------- Off the Clock: Story ---------- */
+
+.story { max-width: 40em; margin-top: 18px; }
+.story p { margin: 0 0 16px; font-size: 18px; color: var(--ink-2); }
+.story .story-job { font: 650 clamp(21px, 2.6vw, 26px)/1.35 var(--display); letter-spacing: -0.01em; color: var(--ink); }
+
+/* ---------- Off the Clock: Toolkit ---------- */
+/* Each app's tools as bubbles with a neon outline in the app's color and a soft, still glow
+   (never animated). Light mode keeps the glow faint and the text dark enough to read. */
+
+.toolkit { display: grid; gap: 28px; }
+@media (min-width: 900px) { .toolkit { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px; } }
+.kit h3 { font-size: 21px; font-weight: 750; }
+.kit h3 a { text-decoration: none; }
+.kit h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.kit-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.kit-tools li {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--accent) 55%, var(--ink));
+  border: 1.5px solid var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 45%, transparent), inset 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+:root[data-theme='light'] .kit-tools li {
+  color: color-mix(in srgb, var(--accent) 35%, var(--ink));
+  background: var(--surface);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+:root[data-theme='blueprint'] .kit-tools li { color: var(--ink); font-family: var(--label); }
+@media (prefers-reduced-motion: reduce) { .kit-tools li { box-shadow: none; } }
+
+/* ---------- Contact (/contact/) ---------- */
+/* Three big orange pills, centered, with lettering like the cover's Wall: white letters on bricks.
+   These are the only big pills on the site. */
+
+.contact { display: grid; justify-items: center; padding-block: 32px 24px; text-align: center; }
+.contact h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 800; letter-spacing: -0.035em; }
+.contact-lede { max-width: 30em; margin: 14px 0 0; font-size: clamp(17px, 2vw, 20px); color: var(--ink-2); }
+.contact-buttons { display: grid; gap: 18px; width: min(100%, 460px); margin: 36px 0 0; padding: 0; list-style: none; }
+.big-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  padding: 10px 28px;
+  text-decoration: none;
+  background: var(--splat);
+  border-radius: 999px;
+  box-shadow: inset 0 -5px 0 #c94a0e, 0 5px 0 var(--ink);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.big-pill:hover { transform: translateY(-2px); box-shadow: inset 0 -5px 0 #c94a0e, 0 7px 0 var(--ink); }
+.big-pill:active { transform: translateY(2px); box-shadow: inset 0 -5px 0 #c94a0e, 0 2px 0 var(--ink); }
+.tiles { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.tiles .t {
+  display: inline-block;
+  padding: 0.02em 0.12em 0.06em;
+  font: 800 clamp(22px, 3vw, 28px)/1.05 var(--display);
+  color: #fff;
+  background: #e6521a; /* a shade deeper than the pill, like the cover's bricks (3.7:1 for large text) */
+  border-radius: 0.12em;
+  box-shadow: inset 0 -0.07em 0 #b8400d;
+  transform: rotate(var(--r, 0deg));
+}
+.tiles .t:nth-child(4n + 1) { --r: -3deg; }
+.tiles .t:nth-child(4n + 2) { --r: 2deg; }
+.tiles .t:nth-child(4n + 3) { --r: -1deg; }
+.tiles .t:nth-child(4n) { --r: 2.5deg; }
+.tiles .gap { width: 0.35em; }
+@media (max-width: 600px) { .big-pill { min-height: 64px; } }
+
+/* ---------- Arriving from the cover: its paint rolls off the page ---------- */
+
+html.wipe-in body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--paint-tile) 0 0 / 120px 56px, var(--splat);
+  animation: wipe-off 0.45s cubic-bezier(0.65, 0, 0.35, 1) 0.05s both;
+  pointer-events: none;
+}
+@keyframes wipe-off { to { transform: translateY(-100%); } }
 
 /* ---------- Motion ---------- */
 
@@ -720,7 +860,6 @@ html.board-on, html.board-on * { cursor: none !important; }
 :root[data-theme='blueprint'] .tablist a,
 :root[data-theme='blueprint'] .frame-url,
 :root[data-theme='blueprint'] .footer,
-:root[data-theme='blueprint'] .pill-toggle,
 :root[data-theme='blueprint'] .note { font-family: var(--label); }
 :root[data-theme='blueprint'] .tags li { background: none; border: 1px dashed var(--rule); }
 :root[data-theme='blueprint'] .brick { box-shadow: inset 0 -0.07em 0 var(--brick-2), 0 0 0 2px var(--bg), 0 0 0 3.5px var(--ink); }
@@ -730,4 +869,4 @@ html.board-on, html.board-on * { cursor: none !important; }
 :root[data-theme='blueprint'] .carousel-frame { box-shadow: none; border-style: dashed; }
 :root[data-theme='blueprint'] .carousel-count { font-family: var(--label); }
 :root[data-theme='blueprint'] .mediocre-bar i.on { background: var(--ink); border-color: var(--ink); }
-:root[data-theme='blueprint'] .tablist a[aria-current='page'] { border-bottom-style: double; }
+:root[data-theme='blueprint'] .tablist .slide-ind { background: var(--ink); }

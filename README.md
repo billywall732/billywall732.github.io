@@ -24,7 +24,7 @@ When a custom domain is added to **this** repo (Settings → Pages → Custom do
 
 ## Add or change a project
 
-Everything shown comes from **`js/projects.js`**: the home page tabs, each project's page, the "Currently tinkering with" line, the hobbies and the contact links.
+Everything shown comes from **`js/projects.js`**: the home page tabs, each project's page, the Toolkit lists, the "Currently tinkering with" line, the hobbies and the contact links.
 
 1. Turn on GitHub Pages in the new project's repo (it then lives at `/<repo-name>/`).
 2. Add a screenshot to `img/` (1280 × 800 works best, `.webp` or `.png`).
@@ -37,15 +37,16 @@ Step 4 is only needed when you add or remove a project, or change a slug, name o
 ## Files
 
 ```
-index.html            the cover at / (brick wall, paint splat, four buttons); it never moves on by itself
+index.html            the cover at / (brick wall, paint splat, three buttons: Workshop, Off the Clock, GitHub); it never moves on by itself
 home/index.html       the home page at /home/ (its header and footer are copied into the project pages)
 projects/<slug>/      project pages, made by tools/make-pages.mjs; don't edit by hand
 css/site.css          styles: dark, light and blueprint modes via CSS variables
 css/cover.css         the cover's styles, including the brick texture (a tiny SVG tile per mode)
-js/cover.js           points the cover's "Contact" button at contact.email
+js/cover.js           the cover's opening, its buttons' sliding indicator, the bricks that answer a mouse, and the paint wipe into /home/
 js/projects.js        the data: edit this to change what's shown
 js/ui.js              shared: color-mode and board-cursor buttons, footer strip, card bits
-js/main.js            the home page: four tabs (#polished, #rough, #workshop, #off-the-clock)
+js/main.js            the home page: Workshop (#polished, #rough, #workshop) and Off the Clock (#story, #toolkit, #hobbies)
+contact/              the Contact page: three big buttons (email, GitHub, LinkedIn)
 js/project-page.js    a project's page
 tools/make-pages.mjs  writes projects/<slug>/index.html for each project
 img/                  project screenshots; img/clock/ has the Off the Clock photos
@@ -66,9 +67,15 @@ tools/build-airports.mjs  rebuilds shared/data/airports.json (see the file for h
 reference/            the original claude.ai apps; not committed (Contrail's has real trips)
 ```
 
-The **home page** has four tabs, each shown as its own page: Polished Projects, Rough Around the Edges, In the Workshop and Off the Clock. The address picks the tab (`/home/#rough`), so each can be linked to, and old `/home/#work` links open Polished Projects.
+The **home page** has two sections, each with three tabs shown as their own pages. **Workshop**: Polished Projects, Rough Around the Edges and In the Workshop. **Off the Clock**: Story, Toolkit and Hobbies. The address picks the tab (`/home/#rough`), so each can be linked to; `/home/#off-the-clock` opens Story, and old `/home/#work` links open Polished Projects. One indicator slides under the chosen tab.
 
-The **Off the Clock** tab shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
+The **top bar** (copied into every page by `tools/make-pages.mjs`) is Cover, Workshop, Off the Clock, Contact and two icon-only toggles. On phones it folds into a menu button.
+
+The **cover** plays a short opening once per visit (under a second; any key or tap ends it). Its Workshop and Off the Clock buttons roll a paint wipe into `/home/`, which rolls off on arrival. With reduced motion, from a deep link or on back/forward there's no animation at all, and every link works without JavaScript.
+
+**Toolkit** lists the tools each app is built with (`toolkit` in `js/projects.js`). Only list a tool you can point to in that app's code; the file says where each one was checked.
+
+The **Hobbies** tab (Off the Clock) shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
 
 The **Board** button in the header (mouse only, hidden with reduced motion) cycles skateboard → snowboard → surfboard → off. The normal cursor always stays; the board just trails it.
 

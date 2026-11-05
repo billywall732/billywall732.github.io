@@ -208,8 +208,8 @@ function audience(r) {
 
 let DATA = null, RANGE = 'week';
 let NOTICE = ''; // a message above the numbers (e.g. "showing saved numbers")
-// Which counter: Off the Wall, or the league's Fantasy Feetpics. The address remembers it (#fantasy).
-const SITE_NAMES = { offthewall: 'Off the Wall', fantasy: 'Fantasy Feetpics (league)' };
+// Which counter: Off the Wall, or the league's Fantasy Football site. The address remembers it (#fantasy).
+const SITE_NAMES = { offthewall: 'Off the Wall', fantasy: 'Fantasy Football (league)' };
 let SITE = location.hash === '#fantasy' ? 'fantasy' : 'offthewall';
 const loaded = {};
 function render() {

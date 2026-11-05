@@ -23,6 +23,14 @@
   <script>
     document.documentElement.dataset.theme = 'dark';
     try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+    // The opening (the wall settles, then the words arrive): once per visit, never on back/forward,
+    // never with reduced motion. js/cover.js ends it early on any key or tap.
+    try {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (!sessionStorage.getItem('otw-cover-seen') && !(nav && nav.type === 'back_forward') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('cover-intro');
+      }
+    } catch {}
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +42,9 @@
   <script type="module" src="/js/cover.js"></script>
 </head>
 <body class="cover-page">
+  <!-- The wall is its own layer, so it can settle in and (with a mouse) move a touch under the cursor -->
+  <div class="wall" aria-hidden="true"><div class="wall-bricks"></div></div>
+  <div class="wall-shade" aria-hidden="true"></div>
   <main class="cover">
     <div class="cover-stack">
       <h1 class="title cover-title">
@@ -70,11 +81,11 @@
       <p class="cover-name">Billy Wall</p>
       <p class="eyebrow cover-role">Chief Vibing Officer (CVO)</p>
 
+      <!-- One connected control: a single indicator slides to the button you point at (js/cover.js) -->
       <nav class="cover-actions" aria-label="Start here">
-        <a class="button primary" href="/home/#polished">Projects</a>
-        <a class="button" href="/home/#off-the-clock">Off the Clock</a>
-        <a class="button" href="https://github.com/billywall732" rel="me">GitHub <span aria-hidden="true">↗</span></a>
-        <a class="button say-hello" href="mailto:WallWorks732@gmail.com">Contact</a>
+        <a class="seg" href="/home/#polished" data-wipe><span class="seg-label" data-text="Workshop">Workshop</span></a>
+        <a class="seg" href="/home/#off-the-clock" data-wipe><span class="seg-label" data-text="Off the Clock">Off the Clock</span></a>
+        <a class="seg" href="https://github.com/billywall732" target="_blank" rel="me noopener"><span class="seg-label" data-text="GitHub ↗"><span>GitHub <span aria-hidden="true">↗</span></span></span><span class="sr"> (opens in a new tab)</span></a>
       </nav>
     </div>
   </main>

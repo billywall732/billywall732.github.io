@@ -1,4 +1,4 @@
-/* The cover (/): a brick wall, an orange paint splat, the title and four ways in.
+/* The cover (/): a brick wall, an orange paint splat, the title and three ways in.
    Loaded after site.css, so it reuses the theme colors, .title, .brick, .note and .button.
    The brick texture is a tiny SVG tile (mortar lines and a faint tint per brick) drawn
    over a base color, so it costs a few KB instead of a photo. */
@@ -10,6 +10,7 @@
   --wall-shade: rgba(0, 0, 0, 0.6); /* the vignette at the edges */
   --cover-note: var(--brand);
   --cover-glow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  --lamp: rgba(255, 196, 160, 0.1); /* the bricks under the cursor brighten by this much */
 }
 :root[data-theme='light'] {
   --wall: #e4d6c4; /* painted brick */
@@ -17,6 +18,7 @@
   --wall-shade: rgba(120, 80, 50, 0.22);
   --cover-note: #a63509;
   --cover-glow: 0 1px 8px rgba(255, 250, 240, 0.9);
+  --lamp: rgba(255, 255, 255, 0.42);
 }
 :root[data-theme='blueprint'] {
   --wall: var(--bg); /* the wall, drawn as plans */
@@ -24,6 +26,7 @@
   --wall-shade: rgba(6, 26, 56, 0.55);
   --cover-note: #ffc59e;
   --cover-glow: 0 2px 10px rgba(6, 26, 56, 0.8);
+  --lamp: rgba(255, 255, 255, 0.08);
 }
 
 /* The paint is the same orange in every mode, and the title on it is always near-black */
@@ -38,13 +41,41 @@
   min-height: 100vh;
   min-height: 100svh;
   overflow-x: hidden;
-  background-color: var(--wall);
-  background-image: radial-gradient(ellipse at center, transparent 35%, var(--wall-shade) 100%), var(--wall-tile);
-  background-size: 100% 100%, 240px 112px;
-  background-position: center, center;
+  background: var(--wall);
+}
+
+/* The wall: its own fixed layer (moved only with transforms), a vignette over it, and with a
+   mouse a "lamp" of brighter bricks under the cursor (js/cover.js) */
+.wall { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.wall-bricks { position: absolute; inset: -24px; background: var(--wall-tile) 0 0 / 240px 112px; will-change: transform; }
+.wall-shade { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, var(--wall-shade) 100%); }
+.wall-lamp {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 340px;
+  height: 340px;
+  overflow: hidden;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.35s;
+  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent);
+  mask-image: radial-gradient(closest-side, #000 30%, transparent);
+  will-change: transform;
+}
+.wall-lamp.is-on { opacity: 1; }
+.wall-lamp-bricks {
+  position: absolute;
+  top: -24px;
+  left: -24px;
+  width: calc(100vw + 48px);
+  height: calc(100vh + 48px);
+  background: linear-gradient(var(--lamp), var(--lamp)), var(--wall-tile) 0 0 / 240px 112px, var(--wall);
 }
 
 .cover {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   min-height: 100vh;
@@ -106,24 +137,103 @@
   text-shadow: var(--cover-glow);
 }
 
-/* ---------- Ways in ---------- */
+/* ---------- Ways in: one connected control ---------- */
+/* Three buttons on one solid bar (so they read on the bricks). A single indicator slides behind
+   whichever one you point at; that one comes forward in full weight and color, the rest step back.
+   Without JavaScript, Workshop wears the color and the others light up on hover. */
 
 .cover-actions {
+  position: relative;
+  isolation: isolate;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
   margin-top: 32px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--ink);
 }
-/* Solid buttons, so they read on the bricks */
-.cover-actions .button:not(.primary) { background: var(--surface); }
-:root[data-theme='blueprint'] .cover-actions .button:not(.primary) { background: var(--bg); }
+:root[data-theme='blueprint'] .cover-actions { background: var(--bg); box-shadow: none; }
+.seg {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 24px;
+  font: 600 16px/1 var(--sans);
+  color: var(--ink-2);
+  text-decoration: none;
+  border-radius: 10px;
+  opacity: 0.78;
+  transition: color 0.2s, opacity 0.2s;
+}
+/* The bold copy holds the width, so the chosen button getting bolder never nudges the row */
+.seg-label { display: inline-grid; }
+.seg-label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 800; }
+.seg.is-picked, .cover-actions:not(.is-live) .seg:first-child { font-weight: 800; color: var(--brand-ink); opacity: 1; }
+.cover-actions:not(.is-live) .seg:first-child { background: var(--brand); }
+.cover-actions:not(.is-live) .seg:hover { opacity: 1; color: var(--ink); }
+.cover-actions .slide-ind {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  width: 1px;
+  height: 1px;
+  background: var(--brand);
+  transform-origin: 0 0;
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
+  pointer-events: none;
+}
 
 @media (max-width: 520px) {
-  .cover-actions { flex-direction: column; align-items: stretch; width: min(100%, 320px); }
-  .cover-actions .button { justify-content: center; min-height: 50px; }
+  .cover-actions { flex-direction: column; width: min(100%, 320px); }
+  .seg { width: 100%; }
 }
+
+/* ---------- The opening: the wall settles in, then the words (all done in under a second) ---------- */
+
+.cover-intro .wall-bricks { animation: wall-settle 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.cover-intro .wall-shade { animation: fade-in 0.5s ease-out both; }
+.cover-intro .splat { animation-delay: 0.22s; }
+.cover-intro .cover-stack > * { animation: rise 0.32s ease-out both; }
+.cover-intro .cover-title .title-top,
+.cover-intro .cover-title .title-wall { animation: rise 0.32s ease-out 0.3s both; }
+.cover-intro .cover-title { animation: none; }
+.cover-intro .cover-note { animation-delay: 0.44s; }
+.cover-intro .cover-name { animation-delay: 0.5s; }
+.cover-intro .cover-role { animation-delay: 0.56s; }
+.cover-intro .cover-actions { animation-delay: 0.62s; }
+@keyframes wall-settle { from { opacity: 0; transform: translate3d(0, -14px, 0) scale(1.05); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+/* ---------- The paint wipe into a page (js/cover.js; js/main.js rolls it off the other side) ---------- */
+
+.wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--paint-tile) 0 0 / 120px 56px, var(--splat);
+  animation: wipe-up 0.42s cubic-bezier(0.65, 0, 0.35, 1) both;
+  pointer-events: none;
+}
+/* Drips along its leading (top) edge */
+.wipe::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 38px;
+  background: var(--drips) 0 100% / 240px 38px repeat-x;
+}
+@keyframes wipe-up { from { transform: translateY(calc(100% + 40px)); } to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .splat { animation: none; }
+  .seg, .cover-actions .slide-ind { transition: none; }
 }

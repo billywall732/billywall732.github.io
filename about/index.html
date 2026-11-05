@@ -34,12 +34,16 @@
       <span class="brand-mark" aria-hidden="true">W</span>
       <span class="brand-name">Off the Wall</span>
     </a>
-    <nav aria-label="Main">
-      <a class="cover-link" href="/">Cover</a>
-      <a href="https://www.linkedin.com/in/william~wall" target="_blank" rel="me noopener">LinkedIn<span class="sr"> (opens in a new tab)</span></a>
-      <a href="https://github.com/billywall732" target="_blank" rel="me noopener">GitHub<span class="sr"> (opens in a new tab)</span></a>
-      <button type="button" class="pill-toggle board-toggle" aria-label="Board cursor" hidden><span class="board-icon" aria-hidden="true"></span><span class="pill-name" aria-hidden="true">Board</span><span class="pill-state" aria-hidden="true">Off</span></button>
-      <button type="button" class="pill-toggle theme-toggle" aria-label="Color mode"><span class="ti ti-dark" aria-hidden="true"></span><span class="pill-state" aria-hidden="true">Dark</span></button>
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-menu" hidden><span class="menu-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr">Menu</span></button>
+    <nav id="site-menu" class="site-menu" aria-label="Main">
+      <a href="/">Cover</a>
+      <a href="/home/#polished" data-section="work">Workshop</a>
+      <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
+      <a href="/contact/">Contact</a>
+      <span class="nav-toggles">
+        <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
+        <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
+      </span>
     </nav>
   </header>
 

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact · Off the Wall</title>
+  <meta name="description" content="Email Billy Wall, or find him on GitHub and LinkedIn.">
+  <meta property="og:title" content="Contact · Off the Wall">
+  <meta property="og:description" content="Email Billy Wall, or find him on GitHub and LinkedIn.">
+  <meta property="og:image" content="https://offthewall.dev/img/og-card.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://offthewall.dev/img/og-card.jpg">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module">import { setUpPage } from '/js/ui.js'; setUpPage();</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-menu" hidden><span class="menu-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr">Menu</span></button>
+    <nav id="site-menu" class="site-menu" aria-label="Main">
+      <a href="/">Cover</a>
+      <a href="/home/#polished" data-section="work">Workshop</a>
+      <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
+      <a href="/contact/">Contact</a>
+      <span class="nav-toggles">
+        <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
+        <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
+      </span>
+    </nav>
+  </header>
+
+  <!-- Three big buttons. Each word is spelled in tiles, like the cover's "Wall"; the tiles are
+       hidden from screen readers, which read the plain name instead. -->
+  <main id="main" class="contact wrap">
+    <h1>Contact</h1>
+    <p class="contact-lede">Found a bug, got an idea, or just want to say hi? Here’s where to find me</p>
+    <ul class="contact-buttons">
+      <li>
+        <a class="big-pill" href="mailto:WallWorks732@gmail.com">
+          <span class="sr">Contact Me (email)</span>
+          <span class="tiles" aria-hidden="true"><span class="t">C</span><span class="t">o</span><span class="t">n</span><span class="t">t</span><span class="t">a</span><span class="t">c</span><span class="t">t</span><span class="gap"></span><span class="t">M</span><span class="t">e</span></span>
+        </a>
+      </li>
+      <li>
+        <a class="big-pill" href="https://github.com/billywall732" target="_blank" rel="me noopener">
+          <span class="sr">GitHub (opens in a new tab)</span>
+          <span class="tiles" aria-hidden="true"><span class="t">G</span><span class="t">i</span><span class="t">t</span><span class="t">H</span><span class="t">u</span><span class="t">b</span></span>
+        </a>
+      </li>
+      <li>
+        <a class="big-pill" href="https://www.linkedin.com/in/william~wall" target="_blank" rel="me noopener">
+          <span class="sr">LinkedIn (opens in a new tab)</span>
+          <span class="tiles" aria-hidden="true"><span class="t">L</span><span class="t">i</span><span class="t">n</span><span class="t">k</span><span class="t">e</span><span class="t">d</span><span class="t">I</span><span class="t">n</span></span>
+        </a>
+      </li>
+    </ul>
+  </main>
+
+  <footer class="wrap">
+    <section class="steal" aria-labelledby="steal-title"></section>
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall · <a href="/about/">About</a></p>
+      <p>Anonymous visit counts, no cookies.</p>
+    </div>
+  </footer>
+</body>
+</html>

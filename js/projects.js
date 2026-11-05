@@ -400,6 +400,30 @@ export const projects = [
   },
 ];
 
+// The Toolkit tab (Off the Clock): what each app is built with, by slug. Only tools found in
+// that app's own code (its repo, or its folder here) belong in a list; a project with no code
+// yet (Quizzical, Shred Lab, Happily Ever Wall) has no list. Where each one was checked:
+//   snow-surf-report: scripts/lib/sources (Open-Meteo incl. marine, NDBC, CO-OPS, SNOTEL),
+//     js/account.js (Firebase Auth, Firestore), js/alerts.js + scripts/email (Web Push,
+//     Nodemailer), .github/workflows/update-report.yml (Actions, Pages), scripts/*.mjs (Node)
+//   fantasy-feetpics: fetch.mjs (ESPN, Google Sheets), notify.mjs (Nodemailer), worker-refresh
+//     (a Cloudflare Worker calling the GitHub API), .github/workflows/deploy.yml (Actions, Pages)
+//   my-budget-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS, SVG charts, Web Share)
+//   portfolio-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS), worker/src (Finnhub, CoinGecko)
+//   contrail/: d3 + topojson + world-atlas/us-atlas, Nominatim (app.js), OurAirports (tools/build-airports.mjs)
+//   wallet/: navigator.clipboard, saveFile (Blob downloads), localStorage
+//   code-breaker/: an SVG score chart, localStorage. loop-lab/: Web Audio, localStorage
+export const toolkit = {
+  'snow-and-surf-report': ['Open-Meteo', 'NOAA buoys (NDBC)', 'NOAA Tides & Currents', 'USDA SNOTEL', 'Firebase Auth', 'Firestore', 'Web Push', 'Nodemailer', 'Node.js', 'GitHub Actions', 'GitHub Pages'],
+  'fantasy-football': ['ESPN Fantasy API', 'Google Sheets', 'Node.js', 'Nodemailer', 'Cloudflare Workers', 'GitHub API', 'GitHub Actions', 'GitHub Pages'],
+  'budget-ledger': ['Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
+  contrail: ['D3', 'TopoJSON', 'world-atlas & us-atlas', 'OpenStreetMap Nominatim', 'OurAirports', 'Clipboard API'],
+  wallet: ['Clipboard API', 'File downloads (Blob)', 'localStorage'],
+  'portfolio-ledger': ['Google Sign-In', 'Google Drive API', 'Cloudflare Workers', 'Finnhub', 'CoinGecko', 'IndexedDB', 'SheetJS'],
+  'krillion-code-breaker': ['SVG charts', 'localStorage'],
+  'loop-lab': ['Web Audio API', 'localStorage'],
+};
+
 // "Off the clock". rating is how good I am, out of 5. photos are the ones in
 // clockPhotos below that tapping the block shows (tap again for the next one).
 export const hobbies = [

@@ -144,9 +144,8 @@ function themeButton() {
     document.documentElement.dataset.theme = t.name;
     document.querySelector('meta[name="theme-color"]').content = t.color;
     $('.ti', btn).className = `ti ti-${t.name}`;
-    $('.pill-state', btn).textContent = t.label;
-    btn.setAttribute('aria-label', `Color mode: ${t.label}. Switch to ${THEMES[(THEMES.indexOf(t) + 1) % THEMES.length].label}`);
-    btn.title = 'Switch color mode';
+    $('.sr', btn).textContent = `Color mode: ${t.label}. Switch to ${THEMES[(THEMES.indexOf(t) + 1) % THEMES.length].label}`;
+    btn.title = `Color mode: ${t.label}`;
   };
   btn.addEventListener('click', () => {
     const i = THEMES.findIndex((x) => x.name === document.documentElement.dataset.theme);
@@ -172,7 +171,7 @@ const BOARDS = [
 ];
 // Fixed strings, so innerHTML is safe
 const BOARD_SVG = {
-  off: '<svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.5L9.5 19z" class="b-off"/></svg>',
+  off: '<svg viewBox="0 0 48 18"><rect x="2" y="4" width="44" height="10" rx="5" class="b-ghost"/><path d="M9 17L39 1" class="b-slash"/></svg>',
   skate: '<svg viewBox="0 0 48 18"><rect x="2" y="3" width="44" height="6" rx="3" class="b-deck"/><circle cx="12" cy="13" r="3" class="b-part"/><circle cx="36" cy="13" r="3" class="b-part"/></svg>',
   snow: '<svg viewBox="0 0 48 18"><rect x="1" y="4" width="46" height="10" rx="5" class="b-deck"/><rect x="14" y="5.5" width="4" height="7" rx="1" class="b-part"/><rect x="30" y="5.5" width="4" height="7" rx="1" class="b-part"/></svg>',
   surf: '<svg viewBox="0 0 48 18"><path d="M2 9C11 2 33 1.5 46 9 33 16.5 11 16 2 9z" class="b-deck"/><path d="M6 9h36" class="b-line"/><path d="M8 9l-3 5h4z" class="b-part"/></svg>',
@@ -243,10 +242,9 @@ function boardCursor() {
     const b = BOARDS.find((x) => x.name === current);
     const next = BOARDS[(BOARDS.indexOf(b) + 1) % BOARDS.length];
     btn.dataset.board = current;
-    btn.setAttribute('aria-label', `Board cursor: ${b.label}. Switch to ${next.label}`);
-    btn.title = 'Board cursor';
+    $('.sr', btn).textContent = `Board cursor: ${b.label}. Switch to ${next.label}`;
+    btn.title = `Board cursor: ${b.label}`;
     $('.board-icon', btn).innerHTML = BOARD_SVG[current];
-    $('.pill-state', btn).textContent = b.label;
     if (save) store.set('otw-board', current);
     if (current === 'off') {
       document.removeEventListener('pointermove', onMove);
@@ -277,6 +275,63 @@ function boardCursor() {
   sync();
 }
 
+// ---------- One sliding indicator for a row of choices ----------
+// The indicator is a 1px element scaled to cover (or underline) the chosen item, so it only ever
+// moves with transforms. 'bar' underlines (tabs); 'block' fills behind (the cover's buttons).
+
+export function slider(box, { mode = 'bar' } = {}) {
+  const ind = box.querySelector(':scope > .slide-ind') ?? box.appendChild(h(box.tagName === 'UL' ? 'li' : 'span', { class: 'slide-ind', 'aria-hidden': 'true', role: 'presentation' }));
+  let target = null;
+  function place(el, { instant = false } = {}) {
+    target = el;
+    if (!el || !el.offsetWidth) { ind.style.opacity = '0'; return; }
+    const x = el.offsetLeft, y = el.offsetTop, w = el.offsetWidth, ht = el.offsetHeight;
+    if (instant || reducedMotion.matches) { ind.style.transition = 'none'; requestAnimationFrame(() => { ind.style.transition = ''; }); }
+    ind.style.transform = mode === 'bar'
+      ? `translate(${x}px, ${y + ht - 3}px) scaleX(${w})`
+      : `translate(${x}px, ${y}px) scale(${w}, ${ht})`;
+    ind.style.opacity = '1';
+  }
+  new ResizeObserver(() => place(target, { instant: true })).observe(box);
+  return { place, get target() { return target; } };
+}
+
+// ---------- Phones: the top bar folds into a menu ----------
+// The brand mark and a menu button; the button opens the same links and toggles as rows. It
+// closes on a choice, a tap outside, or Escape, and focus goes back to the button. Without
+// JavaScript the links simply wrap, so nothing is ever out of reach.
+
+function siteMenu() {
+  const header = $('.nav');
+  const btn = $('.menu-toggle', header ?? undefined);
+  const menu = $('.site-menu', header ?? undefined);
+  if (!header || !btn || !menu) return;
+  header.classList.add('has-menu');
+  btn.hidden = false;
+  const open = () => header.classList.contains('is-open');
+  function set(on, { focus = true } = {}) {
+    header.classList.toggle('is-open', on);
+    btn.setAttribute('aria-expanded', String(on));
+    $('.sr', btn).textContent = on ? 'Close menu' : 'Menu';
+    if (!on && focus) btn.focus();
+  }
+  btn.addEventListener('click', () => set(!open()));
+  menu.addEventListener('click', (e) => { if (e.target.closest('a') && open()) set(false); });
+  // On the click (not pointerdown), so the browser's own focus change for the tap happens first
+  document.addEventListener('click', (e) => { if (open() && !header.contains(e.target)) set(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open()) set(false); });
+  // Wider than a phone again: close it quietly
+  matchMedia('(min-width: 761px)').addEventListener?.('change', (m) => { if (m.matches && open()) set(false, { focus: false }); });
+}
+
+// Which top-bar link is the page you're on (the home page marks its own section, in js/main.js)
+export function markNav(section) {
+  for (const a of document.querySelectorAll('.site-menu a')) {
+    const here = section ? a.dataset.section === section : !a.dataset.section && a.pathname === location.pathname && a.pathname !== '/';
+    if (here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  }
+}
+
 // ---------- Footer strip ----------
 
 function stealStrip() {
@@ -304,6 +359,8 @@ function stealStrip() {
 export function setUpPage() {
   themeButton();
   boardCursor();
+  siteMenu();
+  if (!document.querySelector('.tabs')) markNav();
   stealStrip();
   $('.year').textContent = new Date().getFullYear();
 
