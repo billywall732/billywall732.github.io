@@ -332,32 +332,20 @@ export function markNav(section) {
   }
 }
 
-// ---------- Footer strip ----------
+// ---------- Footer: "Currently tinkering with" ----------
+// One plain line above the footer, naming the projects in the workshop.
 
-function stealStrip() {
-  const slot = $('.steal');
-  if (!slot) return;
+function tinkeringLine() {
+  const slot = $('.tinkering');
   const tinkering = projects.filter((p) => p.status === 'workshop');
-  // The About page ends on the "Currently tinkering with" line alone: no callout, no buttons
-  const plain = Boolean($('main.about'));
-  if (plain) {
-    slot.classList.add('is-plain');
-    slot.removeAttribute('aria-labelledby');
-  }
-  slot.replaceChildren(...[
-    plain ? null : h('div', { class: 'steal-main' },
-      h('h2', { id: 'steal-title' }, 'Steal this idea'),
-      h('p', {}, 'Found a bug or got an idea?'),
-      h('div', { class: 'steal-actions' },
-        contact.email ? h('a', { class: 'button small', href: `mailto:${contact.email}` }, 'Email me') : null,
-        h('a', { class: 'button small', href: contact.issues }, 'Open an issue ', h('span', { 'aria-hidden': 'true' }, '↗')),
-        h('a', { class: 'button small ghost', href: contact.github, rel: 'me' }, 'GitHub ', h('span', { 'aria-hidden': 'true' }, '↗')))),
-    tinkering.length ? h('p', { class: 'tinkering' },
-      h('span', { class: 'tinkering-label' }, 'Currently tinkering with:'), ' ',
-      tinkering.flatMap((p, i) => [
-        i ? (i === tinkering.length - 1 ? ' and ' : ', ') : null,
-        h('a', { href: projectHref(p), style: accentStyle(p) }, p.name),
-      ])) : null].filter(Boolean)); // replaceChildren would print a null as text
+  if (!slot) return;
+  if (!tinkering.length) { slot.remove(); return; }
+  slot.replaceChildren(
+    h('span', { class: 'tinkering-label' }, 'Currently tinkering with:'), ' ',
+    ...tinkering.flatMap((p, i) => [
+      i ? (i === tinkering.length - 1 ? ' and ' : ', ') : null,
+      h('a', { href: projectHref(p) }, p.name),
+    ]).filter(Boolean));
 }
 
 // ---------- Everything every page needs ----------
@@ -367,7 +355,7 @@ export function setUpPage() {
   boardCursor();
   siteMenu();
   if (!document.querySelector('.tabs')) markNav();
-  stealStrip();
+  tinkeringLine();
   $('.year').textContent = new Date().getFullYear();
 
   // Fade things in as they scroll into view

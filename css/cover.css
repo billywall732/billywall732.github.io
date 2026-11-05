@@ -137,61 +137,51 @@
   text-shadow: var(--cover-glow);
 }
 
-/* ---------- Ways in: one connected control ---------- */
-/* Three buttons on one solid bar (so they read on the bricks). A single indicator slides behind
-   whichever one you point at; that one comes forward in full weight and color, the rest step back.
-   Without JavaScript, Workshop wears the color and the others light up on hover. */
+/* ---------- Ways in: three floating pills ---------- */
+/* Three separate, identical pill buttons (no shared track) in a faint orange, opaque so they read
+   on the bricks: one centered row on wide screens, a centered stack on phones. Hovering (or
+   tabbing to) one fills it with the title's solid orange and lifts it a touch; nothing changes
+   size or weight. */
 
 .cover-actions {
-  position: relative;
-  isolation: isolate;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   margin-top: 32px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1.5px solid var(--ink);
-  border-radius: 14px;
-  box-shadow: 0 4px 0 var(--ink);
 }
-:root[data-theme='blueprint'] .cover-actions { background: var(--bg); box-shadow: none; }
 .seg {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  padding: 0 24px;
-  font: 600 16px/1 var(--sans);
-  color: var(--ink-2);
+  padding: 0 28px;
+  font: 650 16px/1 var(--sans);
+  color: var(--bubble-ink);
+  text-align: center;
+  white-space: nowrap;
   text-decoration: none;
-  border-radius: 10px;
-  opacity: 0.78;
-  transition: color 0.2s, opacity 0.2s;
+  background: color-mix(in srgb, var(--splat) 16%, var(--surface));
+  border: 1.5px solid color-mix(in srgb, var(--splat) 35%, var(--surface));
+  border-radius: 999px;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.55);
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
-/* The bold copy holds the width, so the chosen button getting bolder never nudges the row */
-.seg-label { display: inline-grid; }
-.seg-label::after { content: attr(data-text); height: 0; overflow: hidden; visibility: hidden; font-weight: 800; }
-.seg.is-picked, .cover-actions:not(.is-live) .seg:first-child { font-weight: 800; color: var(--brand-ink); opacity: 1; }
-.cover-actions:not(.is-live) .seg:first-child { background: var(--brand); }
-.cover-actions:not(.is-live) .seg:hover { opacity: 1; color: var(--ink); }
-.cover-actions .slide-ind {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 0;
-  width: 1px;
-  height: 1px;
-  background: var(--brand);
-  transform-origin: 0 0;
-  opacity: 0;
-  transition: transform 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
-  pointer-events: none;
+:root[data-theme='light'] .seg { box-shadow: 0 6px 18px -8px rgba(60, 35, 15, 0.35); }
+:root[data-theme='blueprint'] .seg { background: color-mix(in srgb, var(--splat) 16%, var(--bg)); box-shadow: none; }
+/* Solid like the title's paint, with its near-black lettering */
+:root .seg:focus-visible { color: var(--on-splat); background: var(--splat); border-color: var(--splat-under); }
+@media (hover: hover) and (pointer: fine) {
+  :root .seg:hover { /* :root so it also wins over the blueprint pill */
+    transform: translateY(-2px);
+    color: var(--on-splat);
+    background: var(--splat);
+    border-color: var(--splat-under);
+    box-shadow: 0 10px 22px -10px rgba(0, 0, 0, 0.6);
+  }
 }
 
 @media (max-width: 520px) {
-  .cover-actions { flex-direction: column; width: min(100%, 320px); }
-  .seg { width: 100%; }
+  .cover-actions { grid-template-columns: minmax(0, 1fr); gap: 12px; width: min(100%, 280px); }
 }
 
 /* ---------- The opening: the wall settles in, then the words (all done in under a second) ---------- */
@@ -235,5 +225,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .splat { animation: none; }
-  .seg, .cover-actions .slide-ind { transition: none; }
+  .seg { transition: none; }
+  :root .seg:hover { transform: none; }
 }

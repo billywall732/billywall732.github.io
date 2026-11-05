@@ -1,7 +1,6 @@
-// The cover: the opening, the buttons' sliding indicator, the bricks that answer a mouse, and
-// the paint wipe into the home page. Every link here is a plain link, so all of it is extra:
+// The cover: the opening, the bricks that answer a mouse, and the paint wipe into the home
+// page. Every link here is a plain link, so all of it is extra:
 // without JavaScript (or with reduced motion) the cover is the same page, standing still.
-import { slider } from './ui.js';
 
 const root = document.documentElement;
 const still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -20,29 +19,6 @@ if (root.classList.contains('cover-intro')) {
   setTimeout(endIntro, 950);
 }
 
-// ---------- Buttons: one control, one indicator ----------
-// The indicator sits behind Workshop until you point at (or tab to) another button, then slides
-// there; the chosen one comes forward in full weight and color, the others step back.
-
-const bar = document.querySelector('.cover-actions');
-const segs = [...bar.querySelectorAll('.seg')];
-const ind = slider(bar, { mode: 'block' });
-let home = segs[0];
-function pick(seg, opts) {
-  for (const s of segs) s.classList.toggle('is-picked', s === seg);
-  ind.place(seg, opts);
-}
-for (const s of segs) {
-  s.addEventListener('pointerenter', () => pick(s));
-  s.addEventListener('focus', () => pick(s));
-}
-bar.addEventListener('pointerleave', () => { if (!bar.contains(document.activeElement)) pick(home); });
-bar.addEventListener('focusout', (e) => { if (!bar.contains(e.relatedTarget)) pick(home); });
-bar.classList.add('is-live');
-// Once the fonts are in, the buttons have their real widths
-document.fonts?.ready.then(() => pick(ind.target ?? home, { instant: true }));
-pick(home, { instant: true });
-
 // ---------- The paint wipe: from a button into its page ----------
 // Orange paint rolls up over the wall (under half a second), then the page opens and the paint
 // rolls off it (js/main.js). A key or tap mid-wipe goes straight there. New-tab clicks, modified
@@ -55,8 +31,6 @@ for (const a of document.querySelectorAll('[data-wipe]')) {
     e.preventDefault();
     if (leaving) return;
     leaving = true;
-    home = a;
-    pick(a);
     const go = () => { location.href = a.href; };
     try { sessionStorage.setItem('otw-wipe', '1'); } catch { go(); return; }
     const wipe = Object.assign(document.createElement('div'), { className: 'wipe', ariaHidden: 'true' });

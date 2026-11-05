@@ -1,6 +1,6 @@
 // The home page at /home/: two sections built from js/projects.js, three tabs each, and every
-// tab shown as its own page. Workshop: #polished, #rough, #workshop. Off the Clock: #story,
-// #toolkit, #hobbies (#off-the-clock opens Story). The address picks the tab, so every tab can
+// tab shown as its own page. Workshop: #polished, #rough, #workshop. Off the Clock: #about,
+// #toolkit, #hobbies (#off-the-clock opens About). The address picks the tab, so every tab can
 // be linked to and the back button works.
 import { clockPhotos, hobbies, projects, toolkit } from './projects.js';
 import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, slider, spotlight, statusPill } from './ui.js';
@@ -53,6 +53,33 @@ $('.workshop-list').replaceChildren(...(workshop.length ? workshop.map((p) => h(
 $('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length).map((p) => h('section', { class: 'kit', style: accentStyle(p), 'aria-labelledby': `kit-${p.slug}` },
   h('h3', { id: `kit-${p.slug}` }, h('a', { href: projectHref(p) }, p.name)),
   h('ul', { class: 'kit-tools' }, toolkit[p.slug].map((t) => h('li', {}, t))))));
+
+// ---------- Off the clock, About: photos, the bench, the project count ----------
+
+// Three Off the Clock photos, shown whole at their own portrait shape (nobody cropped out)
+const COLLAGE = ['snowboarding', 'surfing', 'mountain-biking'];
+$('.collage').replaceChildren(...COLLAGE.map((id) => clockPhotos.find((p) => p.id === id)).filter(Boolean).map((p) => h('li', { class: 'about-reveal' },
+  h('img', { src: `/img/clock/${p.id}.webp`, alt: p.alt, width: '1050', height: '1400', loading: 'lazy', decoding: 'async', style: `object-position:50% ${Math.round((p.focus?.[0] ?? 0.5) * 100)}%` }))));
+$('.timeline-now').textContent = byStatus('workshop').map((p) => p.name).join(', ');
+$('.count-projects').textContent = projects.length;
+
+// Gentle reveal as each part scrolls into view, set up when the tab first opens (so nothing waits
+// at zero opacity in a hidden tab); whatever is already on screen shows at once. None of it with
+// reduced motion.
+let aboutWatched = false;
+function revealAbout() {
+  if (aboutWatched || still.matches || !('IntersectionObserver' in window)) return;
+  aboutWatched = true;
+  const items = [...document.querySelectorAll('#view-about .about-reveal')];
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+  }, { rootMargin: '0px 0px -6% 0px' });
+  for (const el of items) {
+    if (el.getBoundingClientRect().top < innerHeight) continue; // on screen now: no fade
+    el.classList.add('will-reveal');
+    io.observe(el);
+  }
+}
 
 // ---------- Off the clock, Hobbies: proudly mediocre at ----------
 
@@ -217,7 +244,7 @@ function startPhotos() {
 
 const SECTIONS = {
   work: { title: 'Workshop', views: ['polished', 'rough', 'workshop'] },
-  clock: { title: 'Off the Clock', views: ['story', 'toolkit', 'hobbies'] },
+  clock: { title: 'Off the Clock', views: ['about', 'toolkit', 'hobbies'] },
 };
 const tabs = [...document.querySelectorAll('.tablist a')];
 for (const t of tabs) {
@@ -225,7 +252,7 @@ for (const t of tabs) {
   const n = { polished: 'live', rough: 'rough', workshop: 'workshop' }[t.dataset.view];
   if (count && n) count.textContent = byStatus(n).length;
 }
-const OLD = { work: 'polished', 'off-the-clock': 'story' }; // links from before (and the Off the Clock link)
+const OLD = { work: 'polished', 'off-the-clock': 'about', story: 'about' }; // links from before (and the Off the Clock link)
 const sectionOf = (view) => Object.keys(SECTIONS).find((k) => SECTIONS[k].views.includes(view));
 const indicator = slider($('.tablist'));
 
@@ -258,6 +285,7 @@ function show(name, { scroll = false } = {}) {
   indicator.place(tabs.find((t) => t.dataset.view === name), { instant: section !== shownSection });
   shownSection = section;
   if (section === 'clock') startPhotos();
+  if (name === 'about') revealAbout();
   // If the visitor had scrolled down, bring the new page's top into view under the tabs
   const nav = $('.tabs');
   if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });

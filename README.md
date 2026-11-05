@@ -44,8 +44,8 @@ css/site.css          styles: dark, light and blueprint modes via CSS variables
 css/cover.css         the cover's styles, including the brick texture (a tiny SVG tile per mode)
 js/cover.js           the cover's opening, its buttons' sliding indicator, the bricks that answer a mouse, and the paint wipe into /home/
 js/projects.js        the data: edit this to change what's shown
-js/ui.js              shared: color-mode and board-cursor buttons, footer strip, card bits
-js/main.js            the home page: Workshop (#polished, #rough, #workshop) and Off the Clock (#story, #toolkit, #hobbies)
+js/ui.js              shared: color-mode and board-cursor buttons, the "Currently tinkering with" line, card bits
+js/main.js            the home page: Workshop (#polished, #rough, #workshop) and Off the Clock (#about, #toolkit, #hobbies)
 contact/              the Contact page: three big buttons (email, GitHub, LinkedIn)
 js/project-page.js    a project's page
 tools/make-pages.mjs  writes projects/<slug>/index.html for each project
@@ -67,7 +67,7 @@ tools/build-airports.mjs  rebuilds shared/data/airports.json (see the file for h
 reference/            the original claude.ai apps; not committed (Contrail's has real trips)
 ```
 
-The **home page** has two sections, each with three tabs shown as their own pages. **Workshop**: Polished Projects, Rough Around the Edges and In the Workshop. **Off the Clock**: Story, Toolkit and Hobbies. The address picks the tab (`/home/#rough`), so each can be linked to; `/home/#off-the-clock` opens Story, and old `/home/#work` links open Polished Projects. One indicator slides under the chosen tab.
+The **home page** has two sections, each with three tabs shown as their own pages. **Workshop**: Polished Projects, Rough Around the Edges and In the Workshop. **Off the Clock**: About, Toolkit and Hobbies. The address picks the tab (`/home/#rough`), so each can be linked to; `/home/#off-the-clock` (and the old `#story`) open About, and old `/home/#work` links open Polished Projects. One indicator slides under the chosen tab.
 
 The **top bar** (copied into every page by `tools/make-pages.mjs`) is Cover, Workshop, Off the Clock, Contact and two icon-only toggles. On phones it folds into a menu button.
 
