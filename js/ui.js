@@ -335,7 +335,7 @@ export function markNav(section) {
 }
 
 // ---------- The dot background: now and then, a few dots drift ----------
-// The grid itself is the page background (site.css) and never changes. Every 5-8 seconds a layer
+// The grid itself is the page background (site.css) and never changes. Every 2.5-4 seconds a layer
 // behind everything does one thing: either a handful of dots light up, swell and drift a few
 // pixels before settling back, or (half the time, or when no dots are free to shift) a glowing wave
 // runs along one row. To move a dot it covers that dot with the page color and draws a copy that
@@ -361,7 +361,7 @@ function backgroundDots() {
   document.body.prepend(layer);
 
   const canRun = () => !paused && !reducedMotion.matches && !lowBattery && !document.hidden;
-  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 5000 + Math.random() * 3000); };
+  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 2500 + Math.random() * 1500); };
   // A moving dot is drawn in a brighter color (--dot-hi); at rest it shows at the grid's own
   // strength (--dot), so it starts and ends looking exactly like the dot it covers
   const alpha = (name) => Number((getComputedStyle(root).getPropertyValue(name).match(/[\d.]+(?=\s*\)\s*$)/) || [1])[0]);
