@@ -248,15 +248,15 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ---------- The dot background (js/ui.js) ---------- */
 /* The grid is the page background and never changes. Now and then a layer behind everything covers
-   a few of its dots with the page color and draws identical dots that drift a couple of pixels and
-   come back. --dot matches each mode's grid dot; blueprint, whose grid is lines, gets faint specks
-   at the crossings. */
-:root, :root[data-theme='dark'] { --dot: rgba(255, 250, 240, 0.06); }
-:root[data-theme='light'] { --dot: rgba(20, 19, 17, 0.07); }
-:root[data-theme='blueprint'] { --dot: rgba(242, 247, 255, 0.22); }
+   some of its dots with the page color and draws copies that light up, swell and drift, then settle
+   back. --dot matches each mode's grid dot (what a copy looks like at rest); --dot-hi is how bright
+   it gets while moving. Blueprint, whose grid is lines, gets specks at the crossings. */
+:root, :root[data-theme='dark'] { --dot: rgba(255, 250, 240, 0.06); --dot-hi: rgba(255, 220, 190, 0.55); }
+:root[data-theme='light'] { --dot: rgba(20, 19, 17, 0.07); --dot-hi: rgba(20, 19, 17, 0.45); }
+:root[data-theme='blueprint'] { --dot: rgba(242, 247, 255, 0.22); --dot-hi: rgba(242, 247, 255, 0.8); }
 .dot-layer { position: absolute; top: 0; left: 0; z-index: -1; width: 0; height: 0; pointer-events: none; }
 .dot-layer i { position: absolute; display: block; pointer-events: none; }
-.dot-move { width: 2.2px; height: 2.2px; margin: -1.1px 0 0 -1.1px; background: var(--dot); border-radius: 50%; will-change: transform, opacity; }
+.dot-move { width: 2.2px; height: 2.2px; margin: -1.1px 0 0 -1.1px; background: var(--dot-hi); border-radius: 50%; will-change: transform, opacity; }
 .dot-hole { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--bg); }
 /* Small drawn icons: a moon, a sun, a grid */
 .ti { position: relative; flex: none; width: 14px; height: 14px; color: var(--brand); }
@@ -815,48 +815,60 @@ footer.wrap { margin-top: 72px; }
 .detail-pager strong { font: 700 18px/1.25 var(--display); }
 
 /* ---------- Off the Clock: About ---------- */
-/* The text beside three photos, then the story in order, then a few numbers from the site.
-   Stacked on phones: text, photos, story, numbers. */
+/* Two columns of the same height: the bio with two big numbers under it on the left, How it got
+   here on the right (its cards zig-zag down, joined by one curving line). Hobbies & Interests
+   follows below. Stacked on phones: bio, numbers, how it got here. */
 
-.about-tab { display: grid; gap: 28px 56px; margin-top: 18px; }
-@media (min-width: 900px) { .about-tab { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; } }
+.about-split { display: grid; gap: 40px 64px; margin-top: 18px; }
+@media (min-width: 900px) { .about-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; } }
+.about-left { display: flex; flex-direction: column; gap: 28px; }
 .about-text { display: grid; gap: 16px; }
-.about-tab p { margin: 0; font-size: 18px; color: var(--ink-2); }
-.about-tab .about-job { font: 650 clamp(21px, 2.6vw, 26px)/1.35 var(--display); letter-spacing: -0.01em; color: var(--ink); }
+.about-text p { margin: 0; font-size: 18px; color: var(--ink-2); }
+.about-text .about-job { font: 650 clamp(21px, 2.6vw, 26px)/1.35 var(--display); letter-spacing: -0.01em; color: var(--ink); }
 
-/* The photos: whole, at their own 3:4 shape, in one tidy row */
+.about-sub { margin: 56px 0 16px; font-size: 22px; font-weight: 750; }
+.about-right .about-sub { margin-top: 0; }
+
+/* The two numbers: big, lightly filled, outlined in neon with a soft glow; green, then orange */
+:root, :root[data-theme='dark'] { --neon-live: var(--live); --neon-bench: var(--brand); --neon-glow: 55%; }
+:root[data-theme='light'] { --neon-live: #1f9d55; --neon-bench: #ff5a1f; --neon-glow: 30%; }
+:root[data-theme='blueprint'] { --neon-live: #9ff0c0; --neon-bench: #ffb38a; --neon-glow: 55%; }
+.callouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin: auto 0 0; padding: 0; list-style: none; }
+.callout { --neon: var(--neon-live); display: grid; gap: 8px; }
+.callout.is-bench { --neon: var(--neon-bench); }
+.callout-num {
+  font: 800 clamp(72px, 9vw, 112px)/0.95 var(--display);
+  letter-spacing: -0.03em;
+  color: color-mix(in srgb, var(--neon) 16%, transparent);
+  -webkit-text-stroke: 2px var(--neon);
+  paint-order: stroke fill;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--neon) var(--neon-glow), transparent), 0 0 28px color-mix(in srgb, var(--neon) calc(var(--neon-glow) / 2), transparent);
+}
+.callout span { font-size: 15px; font-weight: 650; color: var(--ink-2); }
+
+/* The three photos above the bio: whole, at their own 3:4 shape, in one tidy row */
 .collage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .collage li { overflow: hidden; aspect-ratio: 3 / 4; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); }
 .collage img { width: 100%; height: 100%; object-fit: cover; }
 
-.about-sub { margin: 56px 0 16px; font-size: 22px; font-weight: 750; }
-
-/* The story in order: four steps joined by a line (no dates) */
-.timeline { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
-@media (min-width: 760px) { .timeline { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.timeline li { position: relative; display: grid; align-content: start; gap: 4px; padding: 18px 20px 20px; background: var(--surface); border: 1px solid var(--rule); border-top: 2px solid var(--brand); border-radius: var(--radius); }
+/* How it got here: the cards step down left and right; one curved line runs from each to the next */
+.snake { position: relative; }
+.snake-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.snake-line path { fill: none; stroke: var(--brand); stroke-width: 2; stroke-linecap: round; opacity: 0.6; }
+.timeline { position: relative; display: grid; gap: 44px; margin: 0; padding: 0; list-style: none; }
+.timeline li { position: relative; z-index: 1; display: grid; align-content: start; gap: 4px; width: 76%; padding: 18px 20px 20px; background: var(--surface); border: 1px solid var(--rule); border-top: 2px solid var(--brand); border-radius: var(--radius); }
+.timeline li:nth-child(even) { justify-self: end; }
+@media (max-width: 600px) { .timeline { gap: 40px; } .timeline li { width: 86%; } }
 .timeline .when { font: 700 12px/1.4 var(--label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--bubble-ink); }
 .timeline strong { font: 700 17px/1.3 var(--display); }
 .timeline li > span:last-child { font-size: 14px; color: var(--ink-2); }
-/* The arrow from one step to the next */
-@media (min-width: 760px) {
-  .timeline li:not(:last-child)::after { content: '→'; position: absolute; top: 50%; right: -13px; z-index: 1; font-size: 14px; color: var(--muted); transform: translateY(-50%); }
-}
 
-/* By the numbers: only numbers that appear on the site */
-.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
-.numbers li { display: grid; gap: 2px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); }
-.numbers strong { font: 800 40px/1 var(--display); letter-spacing: -0.03em; color: var(--brand); }
-:root[data-theme='blueprint'] .numbers strong { color: var(--ink); }
-.numbers span { font-size: 14px; color: var(--ink-2); }
-@media (max-width: 600px) { .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-/* Gentle reveal as parts scroll in (js/main.js); with a mouse, photos, steps and tools lift a touch */
+/* Gentle reveal as parts scroll in (js/main.js); with a mouse, steps and tools lift a touch */
 .will-reveal { opacity: 0; transform: translateY(12px); transition: opacity 0.4s ease, transform 0.4s ease; }
 .will-reveal.is-in { opacity: 1; transform: none; }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .collage li, .timeline li, .numbers li, .kit-tools li { transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.4s ease; }
-  .collage li:hover, .timeline li:hover, .numbers li:hover, .kit-tools li:hover { transform: translateY(-2px); }
+  .timeline li, .kit-tools li { transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.4s ease; }
+  .timeline li:hover, .kit-tools li:hover { transform: translateY(-2px); }
 }
 
 /* ---------- Workshop: Toolkit ---------- */

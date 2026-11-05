@@ -54,13 +54,37 @@ $('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length)
   h('h3', { id: `kit-${p.slug}` }, h('a', { href: projectHref(p) }, p.name)),
   h('ul', { class: 'kit-tools' }, toolkit[p.slug].map((t) => h('li', {}, t))))));
 
-// ---------- Off the clock, About: photos, the bench, the project count ----------
+// ---------- Off the clock, About: photos, the two numbers, the line through How it got here ----------
 
-// Three Off the Clock photos, shown whole at their own portrait shape (nobody cropped out)
+// Three Off the Clock photos above the bio, shown whole at their own portrait shape
 const COLLAGE = ['snowboarding', 'surfing', 'mountain-biking'];
-$('.collage').replaceChildren(...COLLAGE.map((id) => clockPhotos.find((p) => p.id === id)).filter(Boolean).map((p) => h('li', { class: 'about-reveal' },
+$('.collage').replaceChildren(...COLLAGE.map((id) => clockPhotos.find((p) => p.id === id)).filter(Boolean).map((p) => h('li', {},
   h('img', { src: `/img/clock/${p.id}.webp`, alt: p.alt, width: '1050', height: '1400', loading: 'lazy', decoding: 'async', style: `object-position:50% ${Math.round((p.focus?.[0] ?? 0.5) * 100)}%` }))));
-$('.count-projects').textContent = projects.length;
+
+$('.count-live').textContent = byStatus('live').length;
+$('.count-bench').textContent = byStatus('rough').length + byStatus('workshop').length;
+
+// One curving line snakes down through the timeline cards (they zig-zag left and right): from the
+// bottom of each card to the top of the next, as a soft S. Drawn from layout positions, so the
+// cards' fade-in never bends it; redrawn whenever the cards change size.
+const snake = $('.snake');
+function drawSnake() {
+  const cards = [...snake.querySelectorAll('.timeline li')];
+  if (!snake.offsetWidth || cards.length < 2) return;
+  const svg = $('.snake-line', snake);
+  svg.setAttribute('viewBox', `0 0 ${snake.offsetWidth} ${snake.offsetHeight}`);
+  let d = '';
+  cards.slice(0, -1).forEach((a, i) => {
+    const b = cards[i + 1];
+    const x1 = a.offsetLeft + a.offsetWidth / 2, y1 = a.offsetTop + a.offsetHeight;
+    const x2 = b.offsetLeft + b.offsetWidth / 2, y2 = b.offsetTop;
+    const k = (y2 - y1) * 0.95;
+    d += `M${x1} ${y1}C${x1} ${y1 + k} ${x2} ${y2 - k} ${x2} ${y2}`;
+  });
+  $('path', svg).setAttribute('d', d);
+}
+new ResizeObserver(drawSnake).observe(snake);
+document.fonts?.ready.then(drawSnake);
 
 // Gentle reveal as each part scrolls into view, set up when the tab first opens (so nothing waits
 // at zero opacity in a hidden tab); whatever is already on screen shows at once. None of it with
@@ -337,11 +361,5 @@ window.addEventListener('hashchange', () => {
   else show(next, { scroll: true });
 });
 show(viewFromHash());
-
-if (document.documentElement.classList.contains('wipe-in')) {
-  const done = () => document.documentElement.classList.remove('wipe-in');
-  for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, done, { once: true });
-  setTimeout(done, 700);
-}
 
 setUpPage();

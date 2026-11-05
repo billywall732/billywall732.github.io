@@ -335,13 +335,14 @@ export function markNav(section) {
 }
 
 // ---------- The dot background: now and then, a few dots drift ----------
-// The grid itself is the page background (site.css) and never changes. Every 8-12 seconds a
-// layer behind everything does one small thing: either a few dots drift a couple of pixels and
-// come back, or (half the time, or when no dots are free to shift) a soft wave runs along one row. To move a dot it covers that dot with the page
-// color and draws an identical dot that drifts and returns, then removes both, so the real grid
-// shows again exactly where it was. Transforms and opacity only; nothing runs while the tab is
-// hidden, when paused (remembered), with reduced motion, or on a low battery. Phones get fewer
-// dots and smaller moves.
+// The grid itself is the page background (site.css) and never changes. Every 5-8 seconds a layer
+// behind everything does one thing: either a handful of dots light up, swell and drift a few
+// pixels before settling back, or (half the time, or when no dots are free to shift) a glowing wave
+// runs along one row. To move a dot it covers that dot with the page color and draws a copy that
+// starts exactly as faint as the grid, brightens as it moves and fades back as it returns, then
+// removes both, so the real grid shows again exactly where it was. Transforms and opacity only;
+// nothing runs while the tab is hidden, when paused (remembered), with reduced motion, or on a low
+// battery. Phones get fewer dots and smaller moves.
 
 const GRID = 22; // a dot every 22px: centres 10px into each tile (site.css shifts the tiles by -1px)
 
@@ -360,25 +361,30 @@ function backgroundDots() {
   document.body.prepend(layer);
 
   const canRun = () => !paused && !reducedMotion.matches && !lowBattery && !document.hidden;
-  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 8000 + Math.random() * 4000); };
+  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 5000 + Math.random() * 3000); };
+  // A moving dot is drawn in a brighter color (--dot-hi); at rest it shows at the grid's own
+  // strength (--dot), so it starts and ends looking exactly like the dot it covers
+  const alpha = (name) => Number((getComputedStyle(root).getPropertyValue(name).match(/[\d.]+(?=\s*\)\s*$)/) || [1])[0]);
+  const restOpacity = () => Math.min(1, alpha('--dot') / alpha('--dot-hi'));
   const stopAll = () => { clearTimeout(timer); for (const a of [...live]) a.cancel(); };
   const rand = (n) => Math.floor(Math.random() * n);
   // Blueprint has no dots, only lines: there, small specks appear at the crossings instead
   const blueprint = () => root.dataset.theme === 'blueprint';
   const at = (i) => (blueprint() ? i * GRID - 0.5 : i * GRID + 10);
   // Only dots on the open background (not under a card, which would hide them anyway)
-  const OPEN = 'html, body, main, section, .section-head, .view, .wrap, footer, .footer, .about-tab, .timeline, .numbers, .projects, .toolkit, .clock-layout';
+  const OPEN = 'html, body, main, section, .section-head, .view, .wrap, footer, .footer, .about-split, .about-left, .about-right, .snake, .timeline, .callouts, .projects, .toolkit, .clock-layout';
   const open = (x, y) => { const el = document.elementFromPoint(x - scrollX, y - scrollY); return !el || el.matches(OPEN); };
 
-  function drift(x, y, dx, dy, delay, fade) {
+  function drift(x, y, dx, dy, delay, peak) {
     const dot = h('i', { class: 'dot-move', style: `left:${x}px;top:${y}px` });
     const hole = blueprint() ? null : h('i', { class: 'dot-hole', style: `left:${x}px;top:${y}px` });
     layer.append(...[hole, dot].filter(Boolean));
+    const rest = restOpacity();
     const a = dot.animate([
-      { transform: 'translate(0, 0)', opacity: 1 },
-      { transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`, opacity: fade },
-      { transform: 'translate(0, 0)', opacity: 1 },
-    ], { duration: touch ? 1600 : 1400, delay, easing: 'ease-in-out' });
+      { transform: 'translate(0, 0) scale(1)', opacity: rest },
+      { transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${touch ? 1.4 : 1.7})`, opacity: peak },
+      { transform: 'translate(0, 0) scale(1)', opacity: rest },
+    ], { duration: touch ? 2000 : 1800, delay, easing: 'ease-in-out', fill: 'both' });
     live.add(a);
     const done = () => { live.delete(a); hole?.remove(); dot.remove(); };
     a.finished.then(done, done);
@@ -389,16 +395,16 @@ function backgroundDots() {
     const cols = [Math.ceil((scrollX + 12) / GRID), Math.floor((scrollX + w - 12) / GRID)];
     const rows = [Math.ceil((scrollY + 12) / GRID), Math.floor((scrollY + ht - 12) / GRID)];
     const pick = (r) => r[0] + rand(Math.max(1, r[1] - r[0] + 1));
-    const reach = touch ? 2 : 3; // pixels, at most
+    const reach = touch ? 4 : 6; // pixels, at most
     let moved = 0;
     if (Math.random() < 0.5) {
-      // A few dots shift, each a little later and in its own direction; a couple fade slightly
-      const n = touch ? 2 + rand(2) : 3 + rand(4);
-      for (let tries = 0; moved < n && tries < 60; tries++) {
+      // A handful of dots light up and drift, each a little later and in its own direction
+      const n = touch ? 3 + rand(3) : 6 + rand(5);
+      for (let tries = 0; moved < n && tries < 80; tries++) {
         const x = at(pick(cols)), y = at(pick(rows));
         if (!open(x, y)) continue;
-        const angle = Math.random() * Math.PI * 2, dist = reach - Math.random();
-        drift(x, y, Math.cos(angle) * dist, Math.sin(angle) * dist, moved * 220 + rand(180), moved < 2 ? 0.7 : 1);
+        const angle = Math.random() * Math.PI * 2, dist = reach - Math.random() * 1.5;
+        drift(x, y, Math.cos(angle) * dist, Math.sin(angle) * dist, moved * 180 + rand(160), 0.75 + Math.random() * 0.25);
         moved++;
       }
     }
@@ -418,8 +424,8 @@ function backgroundDots() {
       list.forEach((c, k) => {
         const x = at(c), y = at(row);
         if (!open(x, y)) return;
-        // up by (reach - 0.6) to (reach - 0.2) px, a touch to one side: never more than `reach` in all
-        drift(x, y, (Math.random() - 0.5) * 0.6, -(reach - 0.6 + Math.random() * 0.4), k * (touch ? 70 : 40), k % 9 === 4 ? 0.75 : 1);
+        // up by (reach - 1.5) to (reach - 0.5) px, a touch to one side: never more than `reach` in all
+        drift(x, y, (Math.random() - 0.5) * 0.8, -(reach - 1.5 + Math.random()), k * (touch ? 60 : 35), 0.8 + Math.random() * 0.2);
       });
     }
     schedule();
@@ -458,6 +464,13 @@ function backgroundDots() {
 // ---------- Everything every page needs ----------
 
 export function setUpPage() {
+  // Arriving from a cover button: its paint wipe rolls off this page (the <head> started it). Any
+  // key or tap clears it at once, and it never outlasts its animation.
+  if (document.documentElement.classList.contains('wipe-in')) {
+    const done = () => document.documentElement.classList.remove('wipe-in');
+    for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, done, { once: true });
+    setTimeout(done, 700);
+  }
   themeButton();
   boardCursor();
   siteMenu();

@@ -136,34 +136,35 @@
     </section>
 
     <section id="view-about" class="view wrap" aria-label="About" hidden>
-      <div class="about-tab">
-        <div class="about-text">
-          <p class="about-job">I’m a network engineer at AT&amp;T. Day to day, I build tools, manage databases, and keep everyone’s phone working.</p>
-          <p>I like to build, experiment, and tinker in my free time. This usually comes from working on my bike and boards, or building tools and games. This site began with one idea, but I’ll probably continue adding more features.</p>
+      <!-- Two columns of the same height: the bio and two numbers on the left, how it got here on the right -->
+      <div class="about-split">
+        <div class="about-left">
+          <!-- Three of the Off the Clock photos, at their own portrait shape (js/main.js fills them in) -->
+          <ul class="collage" aria-label="A few photos from off the clock"></ul>
+          <div class="about-text">
+            <p class="about-job">I’m a network engineer at AT&amp;T. Day to day, I build tools, manage databases, and keep everyone’s phone working.</p>
+            <p>I like to build, experiment, and tinker in my free time. This usually comes from working on my bike and boards, or building tools and games. This site began with one idea, but I’ll probably continue adding more features.</p>
+          </div>
+          <!-- Counted from the project list in js/main.js -->
+          <ul class="callouts">
+            <li class="callout is-live about-reveal"><strong class="callout-num count-live"></strong><span>Live in Production</span></li>
+            <li class="callout is-bench about-reveal"><strong class="callout-num count-bench"></strong><span>On the Workbench</span></li>
+          </ul>
         </div>
-        <!-- Three of the Off the Clock photos, at their own portrait shape (js/main.js fills them in) -->
-        <ul class="collage" aria-label="A few photos from off the clock"></ul>
+        <div class="about-right">
+          <!-- In order only: no dates. The cards zig-zag down, joined by one curving line (js/main.js draws it) -->
+          <h3 class="about-sub">How it got here</h3>
+          <div class="snake">
+            <svg class="snake-line" aria-hidden="true" focusable="false"><path/></svg>
+            <ol class="timeline">
+              <li class="about-reveal"><span class="when">Start</span><strong>The wedding website</strong><span>Had a goal in mind, but had fun building</span></li>
+              <li class="about-reveal"><span class="when">Then</span><strong>Money &amp; Tools</strong><span>Decided to try building other useful apps, like managing finances and maximizing travel/credit card points.</span></li>
+              <li class="about-reveal"><span class="when">Now</span><strong>Games &amp; Hobbies</strong><span>Got hooked to the fun of building and started building games for my friends and me.</span></li>
+              <li class="about-reveal"><span class="when">Next</span><strong>On the Workbench</strong><span>Figuring out how this hobby might cross over into my day job or future role -- still tbd.</span></li>
+            </ol>
+          </div>
+        </div>
       </div>
-
-      <!-- In order only: no dates -->
-      <h3 class="about-sub about-reveal">How it got here</h3>
-      <ol class="timeline">
-        <li class="about-reveal"><span class="when">Start</span><strong>The wedding website</strong><span>Had a goal in mind, but had fun building</span></li>
-        <li class="about-reveal"><span class="when">Then</span><strong>Money &amp; Tools</strong><span>Decided to try building other useful apps, like managing finances and maximizing travel/credit card points.</span></li>
-        <li class="about-reveal"><span class="when">Now</span><strong>Games &amp; Hobbies</strong><span>Got hooked to the fun of building and started building games for my friends and me.</span></li>
-        <li class="about-reveal"><span class="when">Next</span><strong>On the Workbench</strong><span>Figuring out how this hobby might cross over into my day job or future role -- still tbd.</span></li>
-      </ol>
-
-      <!-- Only numbers that appear on the site itself: Snow and Surf Report's tagline (76, 52), the league
-           site's header ("8-TEAM"), Loop Lab's tagline (16) and the project list (counted in js/main.js) -->
-      <h3 class="about-sub about-reveal">By the numbers</h3>
-      <ul class="numbers">
-        <li class="about-reveal"><strong>76</strong><span>mountains rated every hour in Snow and Surf Report</span></li>
-        <li class="about-reveal"><strong>52</strong><span>beaches rated every hour in Snow and Surf Report</span></li>
-        <li class="about-reveal"><strong>8</strong><span>teams in the Fantasy Football league</span></li>
-        <li class="about-reveal"><strong>16</strong><span>steps in a Loop Lab loop</span></li>
-        <li class="about-reveal"><strong class="count-projects"></strong><span>projects on this site</span></li>
-      </ul>
 
       <h3 id="hobbies-title" class="about-sub">Hobbies &amp; Interests</h3>
       <p class="view-lede">When I’m not coding, I’m proudly mediocre at:</p>
