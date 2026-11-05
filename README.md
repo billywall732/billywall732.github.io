@@ -1,8 +1,22 @@
 # Off the Wall
 
-Billy Wall's projects site: https://offthewall.dev/ (the old https://billywall732.github.io/ addresses redirect there)
+[![The offthewall.dev cover: "Off the Wall" painted on a brick wall, with Workshop, Off the Clock and Say Hello buttons](docs/screenshot-cover.jpg)](https://offthewall.dev/)
+
+Billy Wall's personal site and project wall: **https://offthewall.dev/** (the old https://billywall732.github.io/ addresses redirect there).
 
 Plain HTML, CSS and JavaScript. No build step for the site itself; one small Node script makes the project pages.
+
+## Pages
+
+| Page | Address | What's there |
+|---|---|---|
+| Cover | `/` | The brick wall, and three ways in: Workshop, Off the Clock, Say Hello |
+| Workshop | `/home/` | Production Ready projects, then boxes that open the projects still on the Workbench (`#workbench`) and the Toolkit (`#toolkit`) |
+| Off the Clock | `/home/#off-the-clock` | About me, How it got here, and Hobbies & Interests (`#hobbies`) |
+| Contact | `/contact/` | Email, GitHub and LinkedIn |
+| Projects | `/projects/<slug>/` | One page per project |
+
+![The Workshop page](docs/screenshot-workshop.jpg)
 
 ## How it fits together
 
@@ -37,16 +51,18 @@ Step 4 is only needed when you add or remove a project, or change a slug, name o
 ## Files
 
 ```
-index.html            the cover at / (brick wall, paint splat, three buttons: Workshop, Off the Clock, GitHub); it never moves on by itself
+index.html            the cover at / (brick wall, paint splat, three buttons: Workshop, Off the Clock, Say Hello); it never moves on by itself
 home/index.html       the home page at /home/ (its header and footer are copied into the project pages)
 projects/<slug>/      project pages, made by tools/make-pages.mjs; don't edit by hand
 css/site.css          styles: dark, light and blueprint modes via CSS variables
 css/cover.css         the cover's styles, including the brick texture (a tiny SVG tile per mode)
-js/cover.js           the cover's opening, its buttons' sliding indicator, the bricks that answer a mouse, and the paint wipe into /home/
+js/cover.js           the cover's opening, the bricks that answer a mouse, and the paint wipe into /home/ and /contact/
 js/projects.js        the data: edit this to change what's shown
-js/ui.js              shared: color-mode and board-cursor buttons, the phone menu, card bits
+js/ui.js              shared: the top bar's toggles (background, board cursor, color mode), the phone menu, the dot background, card bits
+js/slide.js, css/slide.css   the sideways slide between Workshop, Off the Clock and Contact
 js/main.js            the home page: Workshop (one page; #workbench opens the projects still being built) and Off the Clock (one page; #hobbies goes to Hobbies & Interests)
 contact/              the Contact page: three big buttons (email, GitHub, LinkedIn)
+docs/                 screenshots for this README
 js/project-page.js    a project's page
 tools/make-pages.mjs  writes projects/<slug>/index.html for each project
 img/                  project screenshots; img/clock/ has the Off the Clock photos
@@ -67,11 +83,11 @@ tools/build-airports.mjs  rebuilds shared/data/airports.json (see the file for h
 reference/            the original claude.ai apps; not committed (Contrail's has real trips)
 ```
 
-The **home page** has two sections. **Workshop** is one page under a big outlined WORKSHOP title, showing the Production Ready - Live for Use projects, then an orange dotted box, Projects Still on the Workbench, that opens the rest (`/home/#workbench`; old `#rough` and `#workshop` links open it too), and a teal dotted Toolkit box (`/home/#toolkit`). **Off the Clock** is one page under a big outlined OFF THE CLOCK title: about me, How it got here, By the numbers, then Hobbies & Interests (`/home/#hobbies`). `/home/#off-the-clock`, `#about` and the old `#story` open it, and old `/home/#work` links open Workshop.
+The **home page** has two sections. **Workshop** is one page under a big outlined WORKSHOP title, showing the Production Ready - Live for Use projects, then an orange dotted box, Projects Still on the Workbench, that opens the rest (`/home/#workbench`; old `#rough` and `#workshop` links open it too), and a teal dotted Toolkit box (`/home/#toolkit`). **Off the Clock** is one page under a big outlined OFF THE CLOCK title: three photos, a short bio and two counts (live projects and projects on the workbench) beside How it got here, then Hobbies & Interests (`/home/#hobbies`). `/home/#off-the-clock`, `#about` and the old `#story` open it, and old `/home/#work` links open Workshop.
 
-The **top bar** (copied into every page by `tools/make-pages.mjs`) is Cover, Workshop, Off the Clock, Contact and two icon-only toggles. On phones it folds into a menu button.
+The **top bar** (copied into every page by `tools/make-pages.mjs`) is Cover, Workshop, Off the Clock, Contact and three icon-only toggles: pause the background, the board cursor and color mode. On phones it folds into a menu button. Moving between Workshop, Off the Clock and Contact slides the page sideways (instant with reduced motion).
 
-The **cover** plays a short opening once per visit (under a second; any key or tap ends it). Its Workshop and Off the Clock buttons roll a paint wipe into `/home/`, which rolls off on arrival. With reduced motion, from a deep link or on back/forward there's no animation at all, and every link works without JavaScript.
+The **cover** plays a short opening once per visit (under a second; any key or tap ends it). Its three buttons roll a paint wipe into the next page, which rolls off on arrival. With reduced motion, from a deep link or on back/forward there's no animation at all, and every link works without JavaScript.
 
 **Toolkit** lists the tools each app is built with (`toolkit` in `js/projects.js`). Only list a tool you can point to in that app's code; the file says where each one was checked.
 
@@ -96,10 +112,14 @@ Every public page loads `shared/count.js`, the site's own small counter, which r
 - device type and browser family (no versions);
 - entry page, time-on-page bucket and an estimated exit page.
 
-There are no cookies and nothing is stored in the browser, so "Anonymous visit counts, no cookies." in the footer stays true. The league's own Fantasy Feetpics site keeps its separate counter.
+There are no cookies and nothing is stored in the browser, so "Anonymous visit counts, no cookies." in the footer stays true. The fantasy league's own site keeps its separate counter.
 
 The counts are on a hidden page, `/stats/`. It's linked from nowhere, isn't indexed and isn't counted itself. It reads the counts through `worker-stats/` (setup in that folder's README) and shows only aggregates.
 
 ## Run it on your computer
 
 From the folder: `python -m http.server 8080`, then open http://localhost:8080. (The app links only work on the real site, where the other repos live next to it.)
+
+## License
+
+[MIT](LICENSE)
