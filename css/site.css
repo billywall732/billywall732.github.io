@@ -1,7 +1,7 @@
 /* Off the Wall: Billy Wall's projects site.
    Three color modes, set on <html data-theme="...">: dark (the default), light and
    blueprint. Every color is a variable defined per mode below. Each project also
-   sets --accent (and --accent-ink, the text color on it) from js/projects.js. */
+   sets --accent from js/projects.js, used only for its top line, its tags, its icon tile and its placeholder drawing. */
 
 :root,
 :root[data-theme='dark'] {
@@ -87,6 +87,12 @@
 
 /* ---------- Base ---------- */
 
+/* One color for inline links (and one hover), and the text on the primary orange button.
+   Every project's own color is kept to its card's top line and its tags. */
+:root, :root[data-theme='dark'] { --link: #ff8a5c; --link-hover: #ffb592; --primary-ink: #141311; }
+:root[data-theme='light'] { --link: #b33d0c; --link-hover: #7e2a06; --primary-ink: #141311; }
+:root[data-theme='blueprint'] { --link: #ffd3b5; --link-hover: #ffffff; --primary-ink: #123f7a; }
+
 /* The paint for the cover-to-page wipe: brick lines on orange, and drips for its edge */
 :root {
   --splat: #ff6a1f;
@@ -135,10 +141,19 @@ img { display: block; max-width: 100%; height: auto; }
 }
 .button:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--ink); }
 .button:active { transform: translateY(0); box-shadow: none; }
-.button.primary { color: var(--brand-ink); background: var(--brand); border-color: var(--brand); }
+/* The one primary button: the brand orange with near-black text, on every card and page */
+.button.primary { color: var(--primary-ink); background: var(--brand); border-color: var(--brand); font-weight: 700; }
 .button.primary:hover { box-shadow: 0 4px 0 var(--ink); }
-.button.accent { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
-.button.accent:hover { box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 45%, var(--ink)); }
+
+/* Inline links: one color, one hover, everywhere */
+.tinkering a,
+.home-about a,
+.footer a,
+.detail-frame-note a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color 0.15s; }
+.tinkering a:hover,
+.home-about a:hover,
+.footer a:hover,
+.detail-frame-note a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .button.ghost { background: transparent; border-color: var(--rule); }
 .button.ghost:hover { border-color: var(--ink); }
 .button.small { min-height: 44px; padding: 0 16px; font-size: 14px; }
@@ -340,7 +355,9 @@ html.board-on, html.board-on * { cursor: none !important; }
   transition: transform 0.32s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.2s;
   pointer-events: none;
 }
-.tablist li:first-child a { padding-left: 2px; }
+/* Every tab has the same padding; the row starts 14px early so the first label lines up with the page */
+.tablist.wrap { padding-inline: 10px; }
+@media (max-width: 600px) { .tablist.wrap { padding-inline: 6px; } }
 .tab-emoji { font-size: 16px; filter: grayscale(0.7); transition: filter 0.2s, transform 0.2s; }
 .tablist a:hover { color: var(--ink); }
 .tablist a:hover .tab-emoji { filter: none; transform: scale(1.15) rotate(-6deg); }
@@ -359,10 +376,12 @@ html.board-on, html.board-on * { cursor: none !important; }
 
 /* The section's name above its tabs, then each tab's page: a title, a line under it, its content */
 .section-head { padding-top: 8px; padding-bottom: 6px; }
-.section-head h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 800; letter-spacing: -0.035em; }
+.section-head h1,
+.contact h1,
+.detail-head h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 800; letter-spacing: -0.035em; }
 .view { padding-top: 40px; }
 .view .view-title { font-size: clamp(30px, 5vw, 48px); font-weight: 800; }
-.view-lede { margin: 10px 0 28px; font-size: 18px; color: var(--ink-2); }
+.view-lede { margin: 10px 0 28px; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
 .view-empty { padding: 28px; color: var(--muted); text-align: center; border: 1.5px dashed var(--rule); border-radius: var(--radius); }
 
 /* ---------- Projects ---------- */
@@ -382,7 +401,7 @@ html.board-on, html.board-on * { cursor: none !important; }
   box-shadow: var(--shadow);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
-/* A thin accent line along the top, and a soft glow hanging from it */
+/* A thin line in the project's color along the top (its only use of that color, besides its tags) */
 .project::before {
   content: '';
   position: absolute;
@@ -391,32 +410,18 @@ html.board-on, html.board-on * { cursor: none !important; }
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent) 20%, var(--accent) 80%, transparent);
 }
-.project::after {
-  content: '';
-  position: absolute;
-  top: -90px;
-  left: 50%;
-  z-index: -1;
-  width: 120%;
-  height: 180px;
-  background: radial-gradient(closest-side, var(--accent), transparent);
-  opacity: var(--glow);
-  transform: translateX(-50%);
-  transition: opacity 0.35s ease;
-  pointer-events: none;
-}
+
 /* The spotlight that follows the pointer (js/ui.js sets --mx and --my) */
 .spot {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) var(--spot), transparent), transparent 70%);
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--ink) 5%, transparent), transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
-.project:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); box-shadow: var(--shadow-hover); }
-.project:hover::after { opacity: var(--glow-hover); }
+.project:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); box-shadow: var(--shadow-hover); }
 .project:hover .spot { opacity: 1; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .project:hover, .project.reveal.is-in:hover { transform: translateY(-4px); }
@@ -513,11 +518,11 @@ html.board-on, html.board-on * { cursor: none !important; }
 .status.is-rough { color: var(--rough); background: color-mix(in srgb, var(--rough) 15%, transparent); }
 .project h2 { font-size: 28px; font-weight: 750; }
 .project h2 a { display: inline-block; padding-block: 8px; margin-block: -8px; text-decoration: none; } /* a 44px tap target, same layout */
-.project h2 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.project h2 a:hover { text-decoration: underline; text-decoration-color: var(--link); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .blurb { margin: 10px 0 0; color: var(--ink-2); }
 .highlights { display: grid; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; font-size: 14.5px; }
 .highlights li { position: relative; padding-left: 22px; }
-.highlights li::before { content: ''; position: absolute; left: 2px; top: 0.5em; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.highlights li::before { content: ''; position: absolute; left: 2px; top: 0.5em; width: 9px; height: 9px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent); }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 0; padding: 0; list-style: none; }
 .tags li { padding: 4px 10px; font-size: 12.5px; font-weight: 550; color: var(--ink-2); background: var(--surface-2); border-radius: 6px; }
 .project-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 22px; }
@@ -537,18 +542,19 @@ html.board-on, html.board-on * { cursor: none !important; }
   text-decoration: none;
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-left: 3px solid var(--accent);
+  border-top: 2px solid var(--accent);
   border-radius: 14px;
   transition: border-color 0.2s, background 0.2s;
 }
-.workshop-item:hover { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 50%, var(--rule)); border-left-color: var(--accent); }
+.workshop-item:hover { background: var(--surface-2); border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); border-top-color: var(--accent); }
 .workshop-item .icon-tile { grid-area: icon; }
 .workshop-text { display: grid; grid-area: text; min-width: 0; }
 .workshop-text strong { font: 700 18px/1.25 var(--display); }
 .workshop-line { font-size: 14px; color: var(--ink-2); }
 .workshop-status { grid-area: status; font-size: 12.5px; font-weight: 600; color: var(--workshop); }
 .workshop-status::before { content: '● '; font-size: 9px; vertical-align: 2px; }
-.workshop-more { grid-area: more; font-size: 14px; font-weight: 650; color: color-mix(in srgb, var(--accent) 70%, var(--kicker-mix)); white-space: nowrap; }
+.workshop-more { grid-area: more; font-size: 14px; font-weight: 650; color: var(--link); white-space: nowrap; }
+.workshop-item:hover .workshop-more { color: var(--link-hover); }
 @media (max-width: 520px) {
   .workshop-item { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'icon text' 'icon status' 'icon more'; }
   .workshop-more { margin-top: 4px; }
@@ -614,8 +620,22 @@ html.board-on, html.board-on * { cursor: none !important; }
   border-radius: var(--radius);
   box-shadow: 3px 3px 0 var(--ink);
 }
-.carousel-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; opacity: 0; transition: opacity 1.2s ease; }
+.carousel-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; opacity: 0; }
 .carousel-img.is-on { opacity: 1; animation: drift 7.5s ease-out both; }
+/* Until the first photo has arrived: a quiet "Loading photo" instead of an empty frame. If a later
+   photo is slow, the current one dims under the same note (one photo at a time, never two). */
+.carousel-frame.is-waiting .carousel-img.is-on { opacity: 0.25; }
+.carousel-frame.is-waiting::after { background: color-mix(in srgb, var(--surface-2) 40%, transparent); color: var(--ink); }
+.carousel-frame.is-loading::after,
+.carousel-frame.is-waiting::after {
+  content: 'Loading photo…';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 600 14px/1 var(--label);
+  color: var(--muted);
+}
 @keyframes drift { from { transform: scale(1.0); } to { transform: scale(1.07); } }
 /* One row under the photo, always the same height: previous, the caption (two lines at most,
    centered in a fixed box), the count, play, next. A long or short caption never moves anything. */
@@ -640,7 +660,7 @@ html.board-on, html.board-on * { cursor: none !important; }
 }
 .carousel-btn:hover { border-color: var(--ink); }
 .carousel-btn svg { display: block; }
-@media (max-width: 899px) { .carousel-frame { aspect-ratio: 4 / 3; } }
+
 .mediocre { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
 .mediocre-text { white-space: nowrap; }
 @media (max-width: 520px) { .mediocre-text { white-space: normal; } }
@@ -654,20 +674,23 @@ html.board-on, html.board-on * { cursor: none !important; }
 .steal {
   display: grid;
   gap: 14px 32px;
-  margin-top: 96px;
+  margin-top: 72px;
   padding: 22px 24px;
   background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 .steal:empty { display: none; }
+/* About: just the tinkering line, as plain text (no card around it) */
+.steal.is-plain { padding: 0; background: none; border: 0; }
+.steal.is-plain .tinkering { padding-top: 0; border-top: 0; }
 .steal-main { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .steal h2 { font-size: 22px; font-weight: 750; }
 .steal-main p { flex: 1; min-width: 12em; margin: 0; color: var(--ink-2); }
 .steal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .tinkering { margin: 0; padding-top: 14px; font-size: 14.5px; color: var(--ink-2); border-top: 1px dashed var(--rule); }
 .tinkering-label { font-weight: 650; color: var(--ink); }
-.tinkering a { color: color-mix(in srgb, var(--accent) 70%, var(--kicker-mix)); font-weight: 600; text-underline-offset: 3px; }
+.tinkering a { font-weight: 600; }
 
 .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 32px 40px; font-size: 14px; color: var(--muted); }
 .footer p { margin: 0; }
@@ -679,25 +702,16 @@ html.board-on, html.board-on * { cursor: none !important; }
 .back:hover { color: var(--ink); }
 .detail-head { max-width: 46em; }
 .detail-head .status { margin-left: 0; }
-.detail-head h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 800; letter-spacing: -0.035em; }
-.detail-lede { margin: 14px 0 0; font-size: clamp(17px, 2vw, 21px); color: var(--ink-2); }
+
+.detail-lede { margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
 .detail-head .project-actions { padding-top: 24px; }
 .detail-preview { position: relative; isolation: isolate; margin-top: 36px; }
-.detail-preview::before {
-  content: '';
-  position: absolute;
-  inset: -40px 10% auto;
-  z-index: -1;
-  height: 160px;
-  background: radial-gradient(closest-side, var(--accent), transparent);
-  opacity: var(--glow);
-  pointer-events: none;
-}
+
 .detail-preview .frame-link { padding: 0; }
 .detail-preview .frame { border-radius: var(--radius); }
 .detail-frame { display: block; width: 100%; height: min(78vh, 760px); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); }
 .detail-frame-note { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
-.detail-frame-note a { color: var(--ink-2); }
+
 .detail-grid { display: grid; gap: 16px; margin-top: 40px; }
 @media (min-width: 760px) { .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .detail-section { padding: 22px 24px; background: var(--surface); border: 1px solid var(--rule); border-top: 2px solid var(--accent); border-radius: var(--radius); }
@@ -724,8 +738,7 @@ html.board-on, html.board-on * { cursor: none !important; }
 .detail-status .status-sep { margin: 0 4px 0 0; color: var(--muted); }
 /* /home/: the plain "About →" link under the opening tab's intro */
 .home-about { margin: -6px 0 6px; font-size: 15px; }
-.home-about a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
-.home-about a:hover { color: var(--ink); }
+.home-about a { display: inline-flex; align-items: center; gap: 0.3em; min-height: 44px; font-weight: 600; }
 .steps { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; counter-reset: step; font-size: 15px; color: var(--ink-2); }
 .steps li { position: relative; padding-left: 36px; counter-increment: step; }
 .steps li::before {
@@ -738,14 +751,14 @@ html.board-on, html.board-on * { cursor: none !important; }
   width: 24px;
   height: 24px;
   font: 700 12px/1 var(--label);
-  color: var(--accent-ink);
-  background: var(--accent);
+  color: var(--primary-ink);
+  background: var(--brand);
   border-radius: 7px;
 }
 .detail-pager { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
 .detail-pager a { display: grid; gap: 4px; padding: 16px 20px; text-decoration: none; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; transition: border-color 0.2s; }
 .detail-pager a:last-child { text-align: right; }
-.detail-pager a:hover { border-color: var(--accent); }
+.detail-pager a:hover { border-color: color-mix(in srgb, var(--ink) 30%, var(--rule)); }
 .detail-pager span { font-size: 13px; color: var(--muted); }
 .detail-pager strong { font: 700 18px/1.25 var(--display); }
 
@@ -761,9 +774,9 @@ html.board-on, html.board-on * { cursor: none !important; }
 
 .toolkit { display: grid; gap: 28px; }
 @media (min-width: 900px) { .toolkit { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px; } }
-.kit h3 { font-size: 21px; font-weight: 750; }
+.kit h3 { font-size: 22px; font-weight: 750; }
 .kit h3 a { text-decoration: none; }
-.kit h3 a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; }
+.kit h3 a:hover { text-decoration: underline; text-decoration-color: var(--link); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .kit-tools { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
 .kit-tools li {
   padding: 6px 14px;
@@ -786,9 +799,9 @@ html.board-on, html.board-on * { cursor: none !important; }
 /* Three big orange pills, centered, with lettering like the cover's Wall: white letters on bricks.
    These are the only big pills on the site. */
 
-.contact { display: grid; justify-items: center; padding-block: 32px 24px; text-align: center; }
-.contact h1 { font-size: clamp(44px, 8vw, 84px); font-weight: 800; letter-spacing: -0.035em; }
-.contact-lede { max-width: 30em; margin: 14px 0 0; font-size: clamp(17px, 2vw, 20px); color: var(--ink-2); }
+.contact { display: grid; justify-items: center; padding-block: 8px 24px; text-align: center; }
+
+.contact-lede { max-width: 30em; margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
 .contact-buttons { display: grid; gap: 18px; width: min(100%, 460px); margin: 36px 0 0; padding: 0; list-style: none; }
 .big-pill {
   display: flex;
@@ -837,9 +850,9 @@ html.wipe-in body::after {
 
 /* ---------- Motion ---------- */
 
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.35s ease, transform 0.35s ease; }
 .reveal.is-in { opacity: 1; transform: none; }
-.project.reveal.is-in { transition: opacity 0.6s ease, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.project.reveal.is-in { transition: opacity 0.35s ease, transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -853,7 +866,7 @@ html.wipe-in body::after {
 :root[data-theme='blueprint'] .detail-section,
 :root[data-theme='blueprint'] .workshop-item { border-width: 1.5px; border-color: var(--rule); }
 :root[data-theme='blueprint'] .project::before { height: 3px; background: repeating-linear-gradient(90deg, var(--accent) 0 12px, transparent 12px 18px); }
-:root[data-theme='blueprint'] .workshop-item { border-left: 3px solid var(--accent); }
+:root[data-theme='blueprint'] .workshop-item { border-top: 2px dashed var(--accent); }
 :root[data-theme='blueprint'] .detail-section { border-top: 2px dashed var(--accent); }
 :root[data-theme='blueprint'] .eyebrow,
 :root[data-theme='blueprint'] .tags li,

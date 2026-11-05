@@ -102,7 +102,7 @@ const button = (cls, label, text, onClick) => {
 const playBtn = button('is-play', '', '', () => { playing = !playing; drawPlay(); restart(); });
 const live = h('p', { class: 'sr', 'aria-live': 'polite' });
 carousel.replaceChildren(
-  h('div', { class: 'carousel-frame' }, ...layers),
+  h('div', { class: 'carousel-frame is-loading' }, ...layers),
   // One row that never changes height: previous, the caption (two lines at most), count, play, next
   h('figcaption', { class: 'carousel-bar' },
     button('is-prev', 'Previous photo', '←', () => go(at - 1, true)),
@@ -125,35 +125,51 @@ function drawPlay() {
 
 // Frame a photo on its people. The photos are portrait and fill the frame's width, so only the
 // top and bottom are ever cut: pick the slice that centers the people, but never starts below
-// the top person's head. Worked out for the frame's current shape (square, or 4:3 on phones).
+// the top person's head, with a little headroom. The slow zoom (drift, up to 1.07x) trims the
+// edges a bit more, so that's allowed for too. Uses the photo's real shape once it's known.
+const ZOOM = 1.07;
 function frameOn(img) {
   const [center, head] = (img.dataset.focus || '0.5,0').split(',').map(Number);
   const frame = img.parentElement.getBoundingClientRect();
-  const shown = frame.width ? Math.min(1, frame.height / (frame.width * (1400 / 1050))) : 0.75; // share of the photo's height on screen
+  const ratio = img.naturalWidth ? img.naturalHeight / img.naturalWidth : 1400 / 1050;
+  const shown = frame.width ? Math.min(1, frame.height / (frame.width * ratio)) : 0.75; // share of the photo's height on screen
   if (shown >= 1) { img.style.objectPosition = '50% 50%'; return; }
-  const top = Math.max(0, Math.min(1 - shown, center - shown / 2, head - 0.05));
+  const zoomTrim = (shown * (1 - 1 / ZOOM)) / 2; // what the zoom hides at the top, at its closest
+  const top = Math.max(0, Math.min(1 - shown, center - shown / 2, head - 0.05 - zoomTrim));
   img.style.objectPosition = `50% ${(top / (1 - shown) * 100).toFixed(1)}%`;
 }
 // Again whenever the frame changes size (including when the Off the Clock tab first shows)
 new ResizeObserver(() => layers.forEach((l) => l.dataset.focus && frameOn(l))).observe(layers[0].parentElement);
 
+let asked = 0; // the latest photo asked for; an older one that finishes loading later is ignored
+let waiting = 0;
+const frameEl = carousel.querySelector('.carousel-frame');
 function go(i, byHand = false) {
   at = (i + photos.length) % photos.length;
   const p = photos[at];
+  const ticket = ++asked;
   const [front, back] = layers[0].classList.contains('is-on') ? layers : [layers[1], layers[0]];
   back.src = `/img/clock/${p.id}.webp`;
   back.alt = p.alt;
   back.dataset.focus = (p.focus ?? [0.5, 0]).join(',');
   frameOn(back);
   const swap = () => {
+    if (ticket !== asked) return;
+    frameOn(back); // again, now that the photo's real shape is known
     back.classList.add('is-on');
     front.classList.remove('is-on');
     front.alt = '';
+    clearTimeout(waiting);
+    frameEl.classList.remove('is-loading', 'is-waiting');
+    // The caption changes with the photo, so the two always match
+    caption.textContent = p.caption;
+    count.textContent = `${at + 1} / ${photos.length}`;
+    if (byHand) live.textContent = `${p.caption}. ${p.alt}`;
   };
   back.decode().then(swap, swap);
-  caption.textContent = p.caption;
-  count.textContent = `${at + 1} / ${photos.length}`;
-  if (byHand) live.textContent = `${p.caption}. ${p.alt}`;
+  // A slow connection: if the next photo isn't here in a moment, say so over the current one
+  clearTimeout(waiting);
+  waiting = setTimeout(() => { if (ticket === asked) frameEl.classList.add('is-waiting'); }, 200);
   for (const b of blocks) if (b.ids.length) b.setAttribute('aria-pressed', String(b.ids.includes(p.id)));
   new Image().src = `/img/clock/${photos[(at + 1) % photos.length].id}.webp`; // ready for next time
   restart();
@@ -186,12 +202,13 @@ for (const b of blocks) {
 }
 
 drawPlay();
-// Start the first time it's on screen, so other tabs don't download photos
-new IntersectionObserver((entries, seen) => {
-  if (!entries.some((e) => e.isIntersecting)) return;
-  seen.disconnect();
-  if (!layers.some((l) => l.src)) go(0);
-}).observe(carousel);
+// Load the first photo as soon as the Off the Clock section opens (any of its tabs), so it's
+// there the moment Hobbies is: never an empty frame. Workshop visitors don't download photos.
+function startPhotos() {
+  if (layers.some((l) => l.src)) return;
+  layers.forEach((l, n) => { l.fetchPriority = n ? 'auto' : 'high'; l.loading = 'eager'; });
+  go(0);
+}
 
 // ---------- Sections and tabs ----------
 // One row of tabs under the section title shows the open section's three tabs, with a single
@@ -240,6 +257,7 @@ function show(name, { scroll = false } = {}) {
   // Switching section jumps the indicator; within a section it slides
   indicator.place(tabs.find((t) => t.dataset.view === name), { instant: section !== shownSection });
   shownSection = section;
+  if (section === 'clock') startPhotos();
   // If the visitor had scrolled down, bring the new page's top into view under the tabs
   const nav = $('.tabs');
   if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });

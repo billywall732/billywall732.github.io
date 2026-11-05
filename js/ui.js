@@ -52,7 +52,7 @@ export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'polished'}`;
 export function actions(p, { learnMore = true } = {}) {
   return h('div', { class: 'project-actions' },
     p.url
-      ? h('a', { class: 'button accent small', href: p.url }, 'Open App ', h('span', { 'aria-hidden': 'true' }, '↗'))
+      ? h('a', { class: 'button primary small', href: p.url }, 'Open App ', h('span', { 'aria-hidden': 'true' }, '↗'))
       : h('span', { class: 'button small is-soon', 'aria-disabled': 'true' }, 'Coming soon'),
     learnMore ? h('a', { class: 'button small', href: projectHref(p) }, 'Learn More', h('span', { class: 'sr' }, ` about ${p.name}`)) : null,
     p.code
@@ -338,8 +338,14 @@ function stealStrip() {
   const slot = $('.steal');
   if (!slot) return;
   const tinkering = projects.filter((p) => p.status === 'workshop');
-  slot.replaceChildren(
-    h('div', { class: 'steal-main' },
+  // The About page ends on the "Currently tinkering with" line alone: no callout, no buttons
+  const plain = Boolean($('main.about'));
+  if (plain) {
+    slot.classList.add('is-plain');
+    slot.removeAttribute('aria-labelledby');
+  }
+  slot.replaceChildren(...[
+    plain ? null : h('div', { class: 'steal-main' },
       h('h2', { id: 'steal-title' }, 'Steal this idea'),
       h('p', {}, 'Found a bug or got an idea?'),
       h('div', { class: 'steal-actions' },
@@ -351,7 +357,7 @@ function stealStrip() {
       tinkering.flatMap((p, i) => [
         i ? (i === tinkering.length - 1 ? ' and ' : ', ') : null,
         h('a', { href: projectHref(p), style: accentStyle(p) }, p.name),
-      ])) : null);
+      ])) : null].filter(Boolean)); // replaceChildren would print a null as text
 }
 
 // ---------- Everything every page needs ----------
@@ -374,7 +380,9 @@ export function setUpPage() {
         }
       }
     }, { rootMargin: '0px 0px -8% 0px' });
+    // Only what's on the page now: a card in a hidden tab shows at full strength when its tab opens
     for (const el of document.querySelectorAll('.project, .detail-section')) {
+      if (el.closest('[hidden]')) continue;
       el.classList.add('reveal');
       seen.observe(el);
     }

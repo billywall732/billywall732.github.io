@@ -445,7 +445,7 @@ export const hobbies = [
 // focus: [where the people are, where the top person's head is], as fractions of the photo's
 // height (0 top, 1 bottom). The carousel frames each photo on the people, keeping that head in view.
 export const clockPhotos = [
-  { id: 'snowboarding', focus: [0.66, 0.34], caption: 'Snowboarding', alt: 'Snowboarding down a groomed run with snowy peaks behind' },
+  { id: 'snowboarding', focus: [0.64, 0.32], caption: 'Snowboarding', alt: 'Snowboarding down a groomed run with snowy peaks behind' },
   { id: 'mountain-biking', focus: [0.62, 0.45], caption: 'Mountain biking', alt: 'A selfie with a mountain bike on one shoulder, green canyons behind' },
   { id: 'surfing', focus: [0.63, 0.42], caption: 'Surfing', alt: 'Carrying a surfboard down the beach in a wetsuit' },
   { id: 'golfing', focus: [0.58, 0.33], caption: 'Golf (mostly the cart)', alt: 'A selfie in a golf cart on the course' },
