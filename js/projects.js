@@ -1,6 +1,6 @@
 // Everything the site shows: the project cards on the home page, each project's
-// page at /projects/<slug>/, the "In the workshop" list, "Proudly mediocre at"
-// and the "Currently tinkering with" line in the footer strip.
+// page at /projects/<slug>/, the "Still on the Workbench" list, the Toolkit lists
+// and "Proudly mediocre at".
 //
 // To add a project, copy one entry and change it, then run
 //   node tools/make-pages.mjs
@@ -400,9 +400,11 @@ export const projects = [
   },
 ];
 
-// The Toolkit tab (Off the Clock): what each app is built with, by slug. Only tools found in
-// that app's own code (its repo, or its folder here) belong in a list; a project with no code
-// yet (Quizzical, Shred Lab, Happily Ever Wall) has no list. Where each one was checked:
+// The Toolkit tab (Off the Clock): the main tools each app is built with, by slug: six at most,
+// technical tools and services only (no data sources like NOAA or OurAirports; the ESPN API is the
+// exception, since the league site is built on it). Only tools found in that app's own code (its
+// repo, or its folder here) belong in a list; a project with no code yet (Quizzical, Shred Lab,
+// Happily Ever Wall) has no list. Where each one was checked:
 //   snow-surf-report: scripts/lib/sources (Open-Meteo incl. marine, NDBC, CO-OPS, SNOTEL),
 //     js/account.js (Firebase Auth, Firestore), js/alerts.js + scripts/email (Web Push,
 //     Nodemailer), .github/workflows/update-report.yml (Actions, Pages), scripts/*.mjs (Node)
@@ -414,12 +416,12 @@ export const projects = [
 //   wallet/: navigator.clipboard, saveFile (Blob downloads), localStorage
 //   code-breaker/: an SVG score chart, localStorage. loop-lab/: Web Audio, localStorage
 export const toolkit = {
-  'snow-and-surf-report': ['Open-Meteo', 'NOAA buoys (NDBC)', 'NOAA Tides & Currents', 'USDA SNOTEL', 'Firebase Auth', 'Firestore', 'Web Push', 'Nodemailer', 'Node.js', 'GitHub Actions', 'GitHub Pages'],
-  'fantasy-football': ['ESPN Fantasy API', 'Google Sheets', 'Node.js', 'Nodemailer', 'Cloudflare Workers', 'GitHub API', 'GitHub Actions', 'GitHub Pages'],
+  'snow-and-surf-report': ['Firebase Auth', 'Firestore', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer'],
+  'fantasy-football': ['ESPN Fantasy API', 'Node.js', 'GitHub Actions', 'Cloudflare Workers', 'Nodemailer', 'GitHub Pages'],
   'budget-ledger': ['Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
-  contrail: ['D3', 'TopoJSON', 'world-atlas & us-atlas', 'OpenStreetMap Nominatim', 'OurAirports', 'Clipboard API'],
+  contrail: ['D3', 'TopoJSON', 'Nominatim geocoding', 'Clipboard API'],
   wallet: ['Clipboard API', 'File downloads (Blob)', 'localStorage'],
-  'portfolio-ledger': ['Google Sign-In', 'Google Drive API', 'Cloudflare Workers', 'Finnhub', 'CoinGecko', 'IndexedDB', 'SheetJS'],
+  'portfolio-ledger': ['Cloudflare Workers', 'Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS'],
   'krillion-code-breaker': ['SVG charts', 'localStorage'],
   'loop-lab': ['Web Audio API', 'localStorage'],
 };

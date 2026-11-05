@@ -22,6 +22,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
+  <!-- The sideways slide between Workshop, Off the Clock and Contact -->
+  <link rel="stylesheet" href="/css/slide.css">
+  <script src="/js/slide.js"></script>
   <script type="module">import { setUpPage } from '/js/ui.js'; setUpPage();</script>
 </head>
 <body>
@@ -39,6 +42,7 @@
       <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
       <a href="/contact/">Contact</a>
       <span class="nav-toggles">
+        <button type="button" class="icon-toggle bg-toggle"><span class="bg-icon" aria-hidden="true"></span><span class="sr">Pause background</span></button>
         <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
         <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
       </span>
@@ -73,7 +77,6 @@
   </main>
 
   <footer class="wrap">
-    <p class="tinkering"></p>
     <div class="footer">
       <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
       <p>Anonymous visit counts, no cookies.</p>

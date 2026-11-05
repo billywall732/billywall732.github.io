@@ -53,8 +53,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 340px;
-  height: 340px;
+  width: 380px; /* js/cover.js sets each lens's own size */
+  height: 380px;
   overflow: hidden;
   border-radius: 50%;
   opacity: 0;

@@ -37,6 +37,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
+  <!-- The sideways slide between Workshop, Off the Clock and Contact -->
+  <link rel="stylesheet" href="/css/slide.css">
+  <script src="/js/slide.js"></script>
   <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Each tab counts as its own page (js/main.js). -->
   <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"no_onload":true}' async src="/shared/count.js"></script>
   <script type="module" src="/js/main.js"></script>
@@ -56,6 +59,7 @@
       <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
       <a href="/contact/">Contact</a>
       <span class="nav-toggles">
+        <button type="button" class="icon-toggle bg-toggle"><span class="bg-icon" aria-hidden="true"></span><span class="sr">Pause background</span></button>
         <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
         <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
       </span>
@@ -63,47 +67,79 @@
   </header>
 
   <main id="main">
-    <!-- Two sections, Workshop and Off the Clock, with three tabs each; each tab is its own page.
-         The address says which: #polished, #rough, #workshop, or #about, #toolkit, #hobbies
-         (#off-the-clock opens About). See js/main.js -->
+    <!-- Two pages. Workshop: the production-ready projects, then boxes that open the ones still being
+         built (#workbench; old #rough and #workshop links too) and the Toolkit (#toolkit). Off the Clock
+         (#about, #off-the-clock): about me, how it got here, the numbers and Hobbies & Interests
+         (#hobbies). See js/main.js -->
     <div class="section-head wrap">
       <h1 id="section-title">Workshop</h1>
+      <!-- Each page's title: big outlined letters across the page, glowing, dissolving toward the bottom -->
+      <svg class="watermark" data-for="work" viewBox="0 0 1000 150" overflow="visible" aria-hidden="true" focusable="false">
+        <defs>
+          <!-- Strong at the top of the letters, dissolving to nothing by their base (y 128), glow included -->
+          <linearGradient id="wm-fade" gradientUnits="userSpaceOnUse" x1="0" y1="18" x2="0" y2="130">
+            <stop offset="0" stop-color="#fff"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.7"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.15"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <mask id="wm-mask" maskUnits="userSpaceOnUse" x="-60" y="-60" width="1120" height="270"><rect x="-60" y="-60" width="1120" height="270" fill="url(#wm-fade)"/></mask>
+          <!-- A soft white glow: a tight halo and a wider one around the letters -->
+          <filter id="wm-glow" x="-10%" y="-40%" width="120%" height="180%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="near"/>
+            <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="far"/>
+            <feFlood class="wm-glow-near"/><feComposite in2="near" operator="in" result="nearGlow"/>
+            <feFlood class="wm-glow-far"/><feComposite in2="far" operator="in" result="farGlow"/>
+            <feMerge><feMergeNode in="farGlow"/><feMergeNode in="nearGlow"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g mask="url(#wm-mask)"><text x="500" y="128" text-anchor="middle" textLength="996" lengthAdjust="spacing" filter="url(#wm-glow)">WORKSHOP</text></g>
+      </svg>
+      <!-- The same for Off the Clock: a longer title, so smaller letters (same glow, same fade to the base) -->
+      <svg class="watermark" data-for="clock" viewBox="0 6 1000 144" overflow="visible" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="wm-fade-c" gradientUnits="userSpaceOnUse" x1="0" y1="24" x2="0" y2="130">
+            <stop offset="0" stop-color="#fff"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.7"/><stop offset="0.75" stop-color="#fff" stop-opacity="0.15"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <mask id="wm-mask-c" maskUnits="userSpaceOnUse" x="-60" y="-40" width="1120" height="250"><rect x="-60" y="-40" width="1120" height="250" fill="url(#wm-fade-c)"/></mask>
+          <!-- Its own copy of the glow: the Workshop title (and its filter) is hidden on this page -->
+          <filter id="wm-glow-c" x="-10%" y="-40%" width="120%" height="180%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="near"/>
+            <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="far"/>
+            <feFlood class="wm-glow-near"/><feComposite in2="near" operator="in" result="nearGlow"/>
+            <feFlood class="wm-glow-far"/><feComposite in2="far" operator="in" result="farGlow"/>
+            <feMerge><feMergeNode in="farGlow"/><feMergeNode in="nearGlow"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g mask="url(#wm-mask-c)"><text x="500" y="128" text-anchor="middle" textLength="996" lengthAdjust="spacing" filter="url(#wm-glow-c)">OFF THE CLOCK</text></g>
+      </svg>
     </div>
-    <nav class="tabs" aria-label="Sections">
-      <ul class="tablist wrap">
-        <li data-section="work"><a href="#polished" data-view="polished" aria-current="page"><span class="tab-emoji" aria-hidden="true">✨</span><span class="tab-label" data-text="Polished Projects">Polished Projects</span><span class="tab-count"></span></a></li>
-        <li data-section="work"><a href="#rough" data-view="rough"><span class="tab-emoji" aria-hidden="true">🧱</span><span class="tab-label" data-text="Rough Around the Edges">Rough Around the Edges</span><span class="tab-count"></span></a></li>
-        <li data-section="work"><a href="#workshop" data-view="workshop"><span class="tab-emoji" aria-hidden="true">🛠️</span><span class="tab-label" data-text="In the Workshop">In the Workshop</span><span class="tab-count"></span></a></li>
-        <li data-section="clock" hidden><a href="#about" data-view="about"><span class="tab-emoji" aria-hidden="true">📖</span><span class="tab-label" data-text="About">About</span></a></li>
-        <li data-section="clock" hidden><a href="#toolkit" data-view="toolkit"><span class="tab-emoji" aria-hidden="true">🧰</span><span class="tab-label" data-text="Toolkit">Toolkit</span></a></li>
-        <li data-section="clock" hidden><a href="#hobbies" data-view="hobbies"><span class="tab-emoji" aria-hidden="true">⏰</span><span class="tab-label" data-text="Hobbies">Hobbies</span></a></li>
-      </ul>
-    </nav>
 
-    <section id="view-polished" class="view wrap" aria-labelledby="polished-title">
-      <h2 id="polished-title" class="view-title">Polished Projects</h2>
-      <p class="view-lede">Finished, working and in use. Go click around.</p>
+    <section id="view-polished" class="view group wrap" aria-labelledby="polished-title">
+      <h2 id="polished-title" class="group-title">Production Ready - Live for Use</h2>
       <div class="projects" data-status="live"></div>
+
+      <!-- Everything still being built (rough ones included), behind one box -->
+      <button type="button" class="workbench-toggle" aria-expanded="false" aria-controls="workbench">
+        <span class="workbench-label">Projects Still on the Workbench <span class="workbench-arrow" aria-hidden="true">→</span></span>
+        <span class="workbench-sub">Projects that I’m still working on</span>
+      </button>
+      <div id="workbench" class="workbench" hidden>
+        <ul class="workshop-list" aria-label="Projects still on the workbench"></ul>
+      </div>
+
+      <!-- What each app is built with, behind a second box -->
+      <button type="button" class="workbench-toggle kit-toggle" aria-expanded="false" aria-controls="toolkit">
+        <span class="workbench-label">Toolkit <span class="workbench-arrow" aria-hidden="true">→</span></span>
+        <span class="workbench-sub">What each app is built with</span>
+      </button>
+      <div id="toolkit" class="workbench" hidden>
+        <div class="toolkit"></div>
+      </div>
     </section>
 
-    <section id="view-rough" class="view wrap" aria-labelledby="rough-title" hidden>
-      <h2 id="rough-title" class="view-title">Rough Around the Edges</h2>
-      <p class="view-lede">They work, mostly. Mind the loose bricks.</p>
-      <div class="projects" data-status="rough"></div>
-    </section>
-
-    <section id="view-workshop" class="view wrap" aria-labelledby="workshop-title" hidden>
-      <h2 id="workshop-title" class="view-title">In the Workshop</h2>
-      <p class="view-lede">I build tools for things that are fun, useful, and often not useful. Check them out</p>
-      <ul class="workshop-list"></ul>
-    </section>
-
-    <section id="view-about" class="view wrap" aria-labelledby="about-title" hidden>
-      <h2 id="about-title" class="view-title">About</h2>
+    <section id="view-about" class="view wrap" aria-label="About" hidden>
       <div class="about-tab">
         <div class="about-text">
-          <p class="about-job">I’m a network engineer at AT&amp;T, with experience across RAN wireless and wireline. Day to day, I automate tasks and manage cloud databases.</p>
-          <p>I build for fun, to experiment and tinker. It started with my own wedding website, then spiralled into daily games, tools for my hobbies, a home for my fantasy football league, apps to keep my finances in check, ways to game credit cards and travel, and more ideas in the works.</p>
+          <p class="about-job">I’m a network engineer at AT&amp;T. Day to day, I build tools, manage databases, and keep everyone’s phone working.</p>
+          <p>I like to build, experiment, and tinker in my free time. This usually comes from working on my bike and boards, or building tools and games. This site began because I wanted to build my own wedding website, then that spiraled into building daily games, financial apps, fantasy football metrics, credit card and travel scheming, and more ideas in the works.</p>
         </div>
         <!-- Three of the Off the Clock photos, at their own portrait shape (js/main.js fills them in) -->
         <ul class="collage" aria-label="A few photos from off the clock"></ul>
@@ -112,10 +148,10 @@
       <!-- In order only: no dates -->
       <h3 class="about-sub about-reveal">How it got here</h3>
       <ol class="timeline">
-        <li class="about-reveal"><span class="when">First</span><strong>My own wedding website</strong><span>Where it started</span></li>
-        <li class="about-reveal"><span class="when">Then</span><strong>Daily games and tools for my hobbies</strong><span>Quizzical, Krillion Code Breaker, Snow and Surf Report, Shred Lab</span></li>
-        <li class="about-reveal"><span class="when">Then</span><strong>Fantasy football, money, cards and travel</strong><span>Fantasy Football, Budget Ledger, Portfolio Ledger, What’s in My Wallet?, Contrail</span></li>
-        <li class="about-reveal"><span class="when">Now</span><strong>What’s on the bench</strong><span class="timeline-now"></span></li>
+        <li class="about-reveal"><span class="when">Start</span><strong>The wedding website</strong><span>Had a goal in mind, but had fun building</span></li>
+        <li class="about-reveal"><span class="when">Then</span><strong>Money &amp; Tools</strong><span>Decided to try building other useful apps, like managing finances and maximizing travel/credit card points.</span></li>
+        <li class="about-reveal"><span class="when">Now</span><strong>Games &amp; Hobbies</strong><span>Got hooked to the fun of building and started building games for my friends and me.</span></li>
+        <li class="about-reveal"><span class="when">Next</span><strong>On the Workbench</strong><span>Figuring out how this hobby might cross over into my day job or future role -- still tbd.</span></li>
       </ol>
 
       <!-- Only numbers that appear on the site itself: Snow and Surf Report's tagline (76, 52), the league
@@ -128,16 +164,8 @@
         <li class="about-reveal"><strong>16</strong><span>steps in a Loop Lab loop</span></li>
         <li class="about-reveal"><strong class="count-projects"></strong><span>projects on this site</span></li>
       </ul>
-    </section>
 
-    <section id="view-toolkit" class="view wrap" aria-labelledby="toolkit-title" hidden>
-      <h2 id="toolkit-title" class="view-title">Toolkit</h2>
-      <p class="view-lede">What each app is built with, checked against its code</p>
-      <div class="toolkit"></div>
-    </section>
-
-    <section id="view-hobbies" class="view wrap" aria-labelledby="hobbies-title" hidden>
-      <h2 id="hobbies-title" class="view-title">Hobbies</h2>
+      <h3 id="hobbies-title" class="about-sub">Hobbies &amp; Interests</h3>
       <p class="view-lede">When I’m not coding, I’m proudly mediocre at:</p>
       <div class="clock-layout">
         <ul class="hobbies"></ul>
@@ -147,7 +175,6 @@
   </main>
 
   <footer class="wrap">
-    <p class="tinkering"></p>
     <div class="footer">
       <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
       <p>Anonymous visit counts, no cookies.</p>

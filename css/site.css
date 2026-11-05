@@ -146,10 +146,8 @@ img { display: block; max-width: 100%; height: auto; }
 .button.primary:hover { box-shadow: 0 4px 0 var(--ink); }
 
 /* Inline links: one color, one hover, everywhere */
-.tinkering a,
 .footer a,
 .detail-frame-note a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color 0.15s; }
-.tinkering a:hover,
 .footer a:hover,
 .detail-frame-note a:hover { color: var(--link-hover); text-decoration-thickness: 2px; }
 .button.ghost { background: transparent; border-color: var(--rule); }
@@ -205,6 +203,16 @@ img { display: block; max-width: 100%; height: auto; }
 .b-ghost { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 3; }
 .b-slash { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
 
+/* The background toggle: an icon button like the others, a pause or play mark (its label, "Pause
+   background" / "Play background", is for screen readers and the hover tooltip). It never moves
+   or animates. */
+.bg-toggle { transition: none; }
+.bg-toggle[aria-disabled='true'] { cursor: default; }
+.bg-toggle[aria-disabled='true']:hover { border-color: var(--rule); background: var(--surface); }
+.bg-icon { flex: none; box-sizing: border-box; width: 9px; height: 10px; }
+.bg-toggle[data-state='playing'] .bg-icon { border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
+.bg-toggle[data-state='paused'] .bg-icon { width: 0; height: 0; border-left: 9px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+
 /* The menu button (phones) and its three bars, which turn into an X while it's open */
 .menu-toggle { display: none; place-items: center; width: 44px; height: 44px; margin-left: auto; padding: 0; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; cursor: pointer; }
 .menu-bars { display: grid; gap: 4px; width: 18px; }
@@ -213,7 +221,8 @@ img { display: block; max-width: 100%; height: auto; }
 .nav.is-open .menu-bars i:nth-child(2) { opacity: 0; }
 .nav.is-open .menu-bars i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-@media (max-width: 760px) {
+/* Narrower than 770px the full bar no longer fits on one line, so it folds into the menu button */
+@media (max-width: 769px) {
   .nav.has-menu .menu-toggle { display: grid; }
   .nav.has-menu .site-menu { display: none; }
   .nav.has-menu.is-open .site-menu {
@@ -236,6 +245,19 @@ img { display: block; max-width: 100%; height: auto; }
   .nav.has-menu.is-open .nav-toggles { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; margin: 6px 0 0; padding-top: 6px; border-top: 1px solid var(--rule); }
   .nav.has-menu.is-open .icon-toggle { width: 100%; height: 48px; }
 }
+
+/* ---------- The dot background (js/ui.js) ---------- */
+/* The grid is the page background and never changes. Now and then a layer behind everything covers
+   a few of its dots with the page color and draws identical dots that drift a couple of pixels and
+   come back. --dot matches each mode's grid dot; blueprint, whose grid is lines, gets faint specks
+   at the crossings. */
+:root, :root[data-theme='dark'] { --dot: rgba(255, 250, 240, 0.06); }
+:root[data-theme='light'] { --dot: rgba(20, 19, 17, 0.07); }
+:root[data-theme='blueprint'] { --dot: rgba(242, 247, 255, 0.22); }
+.dot-layer { position: absolute; top: 0; left: 0; z-index: -1; width: 0; height: 0; pointer-events: none; }
+.dot-layer i { position: absolute; display: block; pointer-events: none; }
+.dot-move { width: 2.2px; height: 2.2px; margin: -1.1px 0 0 -1.1px; background: var(--dot); border-radius: 50%; will-change: transform, opacity; }
+.dot-hole { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--bg); }
 /* Small drawn icons: a moon, a sun, a grid */
 .ti { position: relative; flex: none; width: 14px; height: 14px; color: var(--brand); }
 .ti-dark { border-radius: 50%; box-shadow: inset -4px -2px 0 0 currentColor; transform: rotate(-20deg); }
@@ -363,8 +385,6 @@ html.board-on, html.board-on * { cursor: none !important; }
 /* Without JavaScript there's no indicator: underline the chosen tab instead */
 .tablist:not(:has(.slide-ind)) a[aria-current='page'] { box-shadow: inset 0 -3px 0 var(--brand); }
 .tablist a[aria-current='page'] .tab-emoji { filter: none; }
-.tab-count { min-width: 20px; padding: 1px 6px; font-size: 12px; font-weight: 700; text-align: center; color: var(--ink-2); background: var(--surface-2); border-radius: 999px; }
-.tab-count:empty { display: none; }
 @media (max-width: 600px) {
   .tab-emoji { display: none; }
   .tablist a { padding-inline: 10px; }
@@ -372,8 +392,75 @@ html.board-on, html.board-on * { cursor: none !important; }
   .tablist { -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent); }
 }
 
-/* The section's name above its tabs, then each tab's page: a title, a line under it, its content */
-.section-head { padding-top: 8px; padding-bottom: 6px; }
+.section-head { position: relative; padding-top: 8px; padding-bottom: 0; }
+/* Each page's title (WORKSHOP, OFF THE CLOCK) is big outlined letters across the page, fading out
+   toward their bottom edge (and a little more as you scroll, js/main.js). The real heading is still
+   there for screen readers. */
+.watermark { display: none; }
+.section-head h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.on-workshop .watermark[data-for='work'],
+.on-clock .watermark[data-for='clock'] {
+  display: block;
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: auto;
+  margin-bottom: 18px; /* the apps start below the letters */
+  overflow: visible;
+  pointer-events: none;
+}
+/* Phones: the letters are short, so they only just tuck behind the first heading */
+@media (max-width: 600px) { .watermark { margin-bottom: 10px !important; } }
+/* Outlines only to the eye. The font builds some letters from overlapping shapes (H, O, P), which
+   would show as stray lines inside an outline; so the stroke is drawn first, twice as wide, and the
+   letter is filled with the page color on top, leaving just the outer edge. Letters keep their own
+   proportions, spread across the width. */
+.watermark text { font: 800 150px/1 var(--display); fill: var(--bg); stroke: var(--wm-stroke); stroke-width: 3.2px; paint-order: stroke; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+/* OFF THE CLOCK is longer, so its letters are smaller to fit the same width without squeezing */
+.watermark[data-for='clock'] text { font-size: 140px; }
+/* A soft white glow around the letters (the SVG's own filter, so it's never clipped to a box); the
+   same top-to-bottom fade carries it off with them */
+.wm-glow-near { flood-color: var(--wm-glow); }
+.wm-glow-far { flood-color: var(--wm-glow-wide); }
+:root, :root[data-theme='dark'] { --wm-stroke: rgba(255, 255, 255, 0.42); --wm-glow: rgba(255, 255, 255, 0.35); --wm-glow-wide: rgba(255, 255, 255, 0.16); --group-ink: rgba(241, 237, 228, 0.66); }
+/* Light mode: white wouldn't show, so the outline is ink and the glow a slight black one */
+:root[data-theme='light'] { --wm-stroke: rgba(20, 19, 17, 0.32); --wm-glow: rgba(20, 19, 17, 0.22); --wm-glow-wide: rgba(20, 19, 17, 0.08); --group-ink: rgba(22, 21, 19, 0.66); }
+:root[data-theme='blueprint'] { --wm-stroke: rgba(242, 247, 255, 0.5); --wm-glow: rgba(255, 255, 255, 0.35); --wm-glow-wide: rgba(255, 255, 255, 0.15); --group-ink: rgba(242, 247, 255, 0.72); }
+/* The three groups: a small, faint heading each, content above the title's letters */
+.view.group, #view-about { position: relative; z-index: 1; padding-top: 0; }
+.view.group + .view.group { padding-top: 56px; }
+.group-title { margin: 0 0 18px; font: 650 16px/1.3 var(--sans); letter-spacing: 0.01em; color: var(--group-ink); }
+
+/* "Projects Still on the Workbench": an orange dotted box at the end of the list that opens the
+   projects still being built */
+.workbench-toggle {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  width: 100%;
+  margin-top: 28px;
+  padding: 22px 26px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+  border: 2px dotted var(--brand);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.workbench-toggle:hover { background: color-mix(in srgb, var(--brand) 11%, transparent); }
+.workbench-label { font: 750 clamp(20px, 2.4vw, 24px)/1.2 var(--display); letter-spacing: -0.01em; color: var(--bubble-ink); }
+.workbench-arrow { display: inline-block; margin-left: 4px; transition: transform 0.25s ease; }
+.workbench-toggle[aria-expanded='true'] .workbench-arrow { transform: rotate(90deg); }
+.workbench-sub { font-size: 15px; color: var(--ink-2); }
+.workbench { margin-top: 16px; animation: bench-in 0.25s ease-out; }
+/* The Toolkit box: the same box in teal, the Toolkit's color */
+.kit-toggle { border-color: var(--kit); background: color-mix(in srgb, var(--kit) 5%, transparent); }
+.kit-toggle:hover { background: color-mix(in srgb, var(--kit) 11%, transparent); }
+.kit-toggle .workbench-label { color: var(--kit-ink); }
+#toolkit { margin-top: 20px; }
+@keyframes bench-in { from { opacity: 0; transform: translateY(-6px); } }
 .section-head h1,
 .contact h1,
 .detail-head h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 800; letter-spacing: -0.035em; }
@@ -425,12 +512,16 @@ html.board-on, html.board-on * { cursor: none !important; }
   .project:hover, .project.reveal.is-in:hover { transform: translateY(-4px); }
 }
 .project-body { display: flex; flex: 1; flex-direction: column; padding: 22px 24px 24px; }
+/* A card's icon, category and status: a row above its preview window */
+.project > .project-meta { margin: 0; padding: 18px 18px 0; }
+.project > .project-meta + .frame-link { padding-top: 14px; }
 
 /* The first project: big, image beside the text */
 .project.featured { grid-column: 1 / -1; }
 @media (min-width: 900px) {
-  .project.featured { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
-  .project.featured .frame-link { padding: 28px 0 28px 28px; }
+  .project.featured { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .project.featured > .project-meta { grid-column: 1 / -1; padding: 26px 28px 0; }
+  .project.featured .frame-link { padding: 16px 0 28px 28px; }
   .project.featured .project-body { justify-content: center; padding: 36px; }
   .project.featured h2 { font-size: 40px; }
   .project.featured .blurb { font-size: 17px; }
@@ -668,10 +759,8 @@ html.board-on, html.board-on * { cursor: none !important; }
 
 /* ---------- Footer strip + footer ---------- */
 
-/* "Currently tinkering with": one plain line above the footer */
-.tinkering { margin: 72px 0 0; font-size: 14.5px; color: var(--ink-2); }
-.tinkering-label { font-weight: 650; color: var(--ink); }
-.tinkering a { font-weight: 600; }
+/* The footer sits the same distance below every page's content */
+footer.wrap { margin-top: 72px; }
 
 .footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding-block: 32px 40px; font-size: 14px; color: var(--muted); }
 .footer p { margin: 0; }
@@ -770,9 +859,13 @@ html.board-on, html.board-on * { cursor: none !important; }
   .collage li:hover, .timeline li:hover, .numbers li:hover, .kit-tools li:hover { transform: translateY(-2px); }
 }
 
-/* ---------- Off the Clock: Toolkit ---------- */
-/* Each app's tools as bubbles with a neon outline in the app's color and a soft, still glow
-   (never animated). Light mode keeps the glow faint and the text dark enough to read. */
+/* ---------- Workshop: Toolkit ---------- */
+/* Each app's tools as bubbles with a neon outline in that app's own color and a soft, still glow
+   (never animated). The Toolkit box itself is teal. Light mode keeps the glow faint and the text
+   dark enough to read. */
+:root, :root[data-theme='dark'] { --kit: #3dd6c6; --kit-ink: #6fe3d6; }
+:root[data-theme='light'] { --kit: #0f8a7e; --kit-ink: #0b6b62; }
+:root[data-theme='blueprint'] { --kit: #8ff0e2; --kit-ink: #b6f6ec; }
 
 .toolkit { display: grid; gap: 28px; }
 @media (min-width: 900px) { .toolkit { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px; } }
@@ -798,43 +891,51 @@ html.board-on, html.board-on * { cursor: none !important; }
 @media (prefers-reduced-motion: reduce) { .kit-tools li { box-shadow: none; } }
 
 /* ---------- Contact (/contact/) ---------- */
-/* Three big orange pills, centered, with lettering like the cover's Wall: white letters on bricks.
-   These are the only big pills on the site. */
+/* Three big orange pills, centered, with lettering like the cover's Wall: white letters on small
+   bricks, set evenly with a slight hand-laid tilt. A soft orange shadow instead of a hard outline;
+   with a mouse, hovering lifts the pill and straightens its bricks. These are the only big pills on
+   the site. */
 
 .contact { display: grid; justify-items: center; padding-block: 8px 24px; text-align: center; }
 
 .contact-lede { max-width: 30em; margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
-.contact-buttons { display: grid; gap: 18px; width: min(100%, 460px); margin: 36px 0 0; padding: 0; list-style: none; }
+.contact-buttons { display: grid; gap: 16px; width: min(100%, 440px); margin: 36px 0 0; padding: 0; list-style: none; }
 .big-pill {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 76px;
-  padding: 10px 28px;
+  min-height: 72px;
+  padding: 12px 28px;
   text-decoration: none;
   background: var(--splat);
+  border: 1.5px solid #e2561a;
   border-radius: 999px;
-  box-shadow: inset 0 -5px 0 #c94a0e, 0 5px 0 var(--ink);
-  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -3px 0 rgba(120, 40, 5, 0.25), 0 10px 26px -14px rgba(255, 106, 31, 0.75);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
-.big-pill:hover { transform: translateY(-2px); box-shadow: inset 0 -5px 0 #c94a0e, 0 7px 0 var(--ink); }
-.big-pill:active { transform: translateY(2px); box-shadow: inset 0 -5px 0 #c94a0e, 0 2px 0 var(--ink); }
-.tiles { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+.tiles { display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px; }
 .tiles .t {
-  display: inline-block;
-  padding: 0.02em 0.12em 0.06em;
-  font: 800 clamp(22px, 3vw, 28px)/1.05 var(--display);
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.05em;
+  padding: 0.04em 0.1em 0.07em;
+  font: 800 clamp(21px, 2.6vw, 25px)/1 var(--display);
   color: #fff;
-  background: #e6521a; /* a shade deeper than the pill, like the cover's bricks (3.7:1 for large text) */
-  border-radius: 0.12em;
-  box-shadow: inset 0 -0.07em 0 #b8400d;
+  background: #e2561a; /* a shade deeper than the pill, like the cover's bricks (white on it reads at 3.7:1, fine for large text) */
+  border-radius: 0.16em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -0.08em 0 rgba(110, 35, 5, 0.35);
+  text-shadow: 0 1px 0 rgba(110, 35, 5, 0.35);
   transform: rotate(var(--r, 0deg));
+  transition: transform 0.2s ease;
 }
-.tiles .t:nth-child(4n + 1) { --r: -3deg; }
-.tiles .t:nth-child(4n + 2) { --r: 2deg; }
-.tiles .t:nth-child(4n + 3) { --r: -1deg; }
-.tiles .t:nth-child(4n) { --r: 2.5deg; }
-.tiles .gap { width: 0.35em; }
+.tiles .t:nth-child(odd) { --r: -1.5deg; }
+.tiles .t:nth-child(even) { --r: 1.5deg; }
+.tiles .gap { width: 0.4em; }
+@media (hover: hover) and (pointer: fine) {
+  .big-pill:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -3px 0 rgba(120, 40, 5, 0.25), 0 16px 32px -14px rgba(255, 106, 31, 0.9); }
+  .big-pill:hover .t { --r: 0deg; }
+}
+.big-pill:active { transform: translateY(1px); }
 @media (max-width: 600px) { .big-pill { min-height: 64px; } }
 
 /* ---------- Arriving from the cover: its paint rolls off the page ---------- */

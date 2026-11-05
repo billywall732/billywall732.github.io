@@ -1,9 +1,8 @@
-// The home page at /home/: two sections built from js/projects.js, three tabs each, and every
-// tab shown as its own page. Workshop: #polished, #rough, #workshop. Off the Clock: #about,
-// #toolkit, #hobbies (#off-the-clock opens About). The address picks the tab, so every tab can
-// be linked to and the back button works.
+// The home page at /home/: two pages built from js/projects.js. Workshop (#polished; #workbench and
+// #toolkit open its boxes) and Off the Clock (#about; #hobbies goes to Hobbies & Interests). The
+// address picks the page, so each can be linked to and the back button works.
 import { clockPhotos, hobbies, projects, toolkit } from './projects.js';
-import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, slider, spotlight, statusPill } from './ui.js';
+import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, spotlight, statusPill } from './ui.js';
 
 const byStatus = (s) => projects.filter((p) => p.status === s);
 
@@ -12,17 +11,18 @@ const byStatus = (s) => projects.filter((p) => p.status === s);
 function card(p, wide) {
   return h('article', { class: `project${wide ? ' featured' : ''}`, style: accentStyle(p) },
     h('span', { class: 'spot', 'aria-hidden': 'true' }),
+    // Icon, category and status sit above the preview window
+    h('div', { class: 'project-meta' },
+      iconTile(p),
+      h('span', { class: 'kicker' }, p.kicker),
+      statusPill(p)),
     preview(p),
     h('div', { class: 'project-body' },
-      h('div', { class: 'project-meta' },
-        iconTile(p),
-        h('span', { class: 'kicker' }, p.kicker),
-        statusPill(p)),
       h('h2', {}, h('a', { href: projectHref(p) }, p.name)),
       h('p', { class: 'blurb' }, p.blurb),
       h('ul', { class: 'highlights' }, p.highlights.map((x) => h('li', {}, x))),
       h('ul', { class: 'tags', 'aria-label': 'Built with' }, p.tags.map((t) => h('li', {}, t))),
-      actions(p)));
+      actions(p, { code: false })));
 }
 
 const empty = (text) => h('p', { class: 'view-empty' }, text);
@@ -36,9 +36,9 @@ for (const grid of document.querySelectorAll('.projects')) {
 }
 spotlight(document.querySelectorAll('.project'));
 
-// ---------- In the workshop: a compact list ----------
+// ---------- Still on the workbench: a compact list (rough projects first, then the rest) ----------
 
-const workshop = byStatus('workshop');
+const workshop = [...byStatus('rough'), ...byStatus('workshop')];
 $('.workshop-list').replaceChildren(...(workshop.length ? workshop.map((p) => h('li', { style: accentStyle(p) },
   h('a', { class: 'workshop-item', href: projectHref(p) },
     iconTile(p),
@@ -48,7 +48,7 @@ $('.workshop-list').replaceChildren(...(workshop.length ? workshop.map((p) => h(
     h('span', { class: 'workshop-status' }, p.statusNote),
     h('span', { class: 'workshop-more' }, 'Learn more ', h('span', { 'aria-hidden': 'true' }, '→'))))) : [empty('The bench is clear.')]));
 
-// ---------- Off the clock, Toolkit: each app's tools, as checked in its code ----------
+// ---------- Workshop, Toolkit: each app's main tools, as checked in its code ----------
 
 $('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length).map((p) => h('section', { class: 'kit', style: accentStyle(p), 'aria-labelledby': `kit-${p.slug}` },
   h('h3', { id: `kit-${p.slug}` }, h('a', { href: projectHref(p) }, p.name)),
@@ -60,7 +60,6 @@ $('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length)
 const COLLAGE = ['snowboarding', 'surfing', 'mountain-biking'];
 $('.collage').replaceChildren(...COLLAGE.map((id) => clockPhotos.find((p) => p.id === id)).filter(Boolean).map((p) => h('li', { class: 'about-reveal' },
   h('img', { src: `/img/clock/${p.id}.webp`, alt: p.alt, width: '1050', height: '1400', loading: 'lazy', decoding: 'async', style: `object-position:50% ${Math.round((p.focus?.[0] ?? 0.5) * 100)}%` }))));
-$('.timeline-now').textContent = byStatus('workshop').map((p) => p.name).join(', ');
 $('.count-projects').textContent = projects.length;
 
 // Gentle reveal as each part scrolls into view, set up when the tab first opens (so nothing waits
@@ -237,60 +236,88 @@ function startPhotos() {
   go(0);
 }
 
-// ---------- Sections and tabs ----------
-// One row of tabs under the section title shows the open section's three tabs, with a single
-// indicator that slides to the chosen one. The top bar's Workshop and Off the Clock links say
-// which section is open.
+// ---------- The two pages ----------
+// Each sits under a big outlined title that fades as you scroll. Workshop: the production-ready
+// projects, then two boxes that open the projects still on the workbench and the Toolkit. Off the
+// Clock: about me, how it got here, the numbers, then Hobbies & Interests. The top bar's Workshop
+// and Off the Clock links say which page is open.
 
 const SECTIONS = {
-  work: { title: 'Workshop', views: ['polished', 'rough', 'workshop'] },
-  clock: { title: 'Off the Clock', views: ['about', 'toolkit', 'hobbies'] },
+  work: { title: 'Workshop', views: ['polished', 'workbench', 'toolkit'] },
+  clock: { title: 'Off the Clock', views: ['about', 'hobbies'] },
 };
-const tabs = [...document.querySelectorAll('.tablist a')];
-for (const t of tabs) {
-  const count = $('.tab-count', t);
-  const n = { polished: 'live', rough: 'rough', workshop: 'workshop' }[t.dataset.view];
-  if (count && n) count.textContent = byStatus(n).length;
-}
-const OLD = { work: 'polished', 'off-the-clock': 'about', story: 'about' }; // links from before (and the Off the Clock link)
+// Links from before (and the Off the Clock link); the old tabs go to the box or part they became
+const OLD = { work: 'polished', rough: 'workbench', workshop: 'workbench', 'off-the-clock': 'about', story: 'about' };
 const sectionOf = (view) => Object.keys(SECTIONS).find((k) => SECTIONS[k].views.includes(view));
-const indicator = slider($('.tablist'));
 
 function viewFromHash() {
   const id = decodeURIComponent(location.hash.slice(1));
   const name = OLD[id] ?? id;
-  return tabs.some((t) => t.dataset.view === name) ? name : 'polished';
+  return sectionOf(name) ? name : 'polished';
 }
 
 let shownSection = null;
 function show(name, { scroll = false } = {}) {
   const section = sectionOf(name);
-  for (const t of tabs) {
-    const on = t.dataset.view === name;
-    t.parentElement.hidden = sectionOf(t.dataset.view) !== section;
-    if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
-    const view = $(`#view-${t.dataset.view}`);
-    view.hidden = !on;
-    if (on) {
-      document.title = `${$('.view-title', view).textContent} · ${SECTIONS[section].title} · Off the Wall`;
-      // On a phone the row scrolls sideways: center the open tab in it
-      const row = t.closest('.tablist');
-      const [a, b] = [t.getBoundingClientRect(), row.getBoundingClientRect()];
-      row.scrollLeft += a.left + a.width / 2 - (b.left + b.width / 2);
-    }
-  }
+  const work = section === 'work';
+  const changed = section !== shownSection;
+  $('#view-polished').hidden = !work;
+  $('#view-about').hidden = work;
+  document.documentElement.classList.toggle('on-workshop', work);
+  document.documentElement.classList.toggle('on-clock', !work);
+  document.title = `${SECTIONS[section].title} · Off the Wall`;
   $('#section-title').textContent = SECTIONS[section].title;
   markNav(section);
-  // Switching section jumps the indicator; within a section it slides
-  indicator.place(tabs.find((t) => t.dataset.view === name), { instant: section !== shownSection });
   shownSection = section;
-  if (section === 'clock') startPhotos();
-  if (name === 'about') revealAbout();
-  // If the visitor had scrolled down, bring the new page's top into view under the tabs
-  const nav = $('.tabs');
-  if (scroll && window.scrollY > nav.offsetTop) window.scrollTo({ top: nav.offsetTop });
+  if (!work) { startPhotos(); revealAbout(); }
+  // A link to a box opens it and goes there; a link to Hobbies goes to it
+  if (boxes[name]) { boxes[name].set(true); jumpTo(boxes[name].btn, scroll); }
+  else if (name === 'hobbies') jumpTo($('#hobbies-title'), scroll);
+  else if (scroll || changed) window.scrollTo({ top: 0 });
+  fadeTitle();
   countView(name);
 }
+
+// The boxes on the Workshop page (the workbench and the Toolkit): each opens and closes its panel
+const boxes = Object.fromEntries(['workbench', 'toolkit'].map((id) => {
+  const btn = $(`[aria-controls="${id}"]`), panel = $(`#${id}`);
+  const set = (open) => { btn.setAttribute('aria-expanded', String(open)); panel.hidden = !open; };
+  btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    set(open);
+    history.replaceState(null, '', open ? `#${id}` : location.pathname);
+  });
+  return [id, { btn, set }];
+}));
+
+// Go to a group. On a fresh load the fonts and screenshots arrive afterwards and push the group
+// down, so go there again once they have, unless the visitor has scrolled in the meantime.
+function jumpTo(el, smooth) {
+  const go = (behavior) => el.scrollIntoView({ behavior, block: 'start' });
+  requestAnimationFrame(() => go(smooth && !still.matches ? 'smooth' : 'auto'));
+  if (smooth) return;
+  let moved = false;
+  const stop = () => { moved = true; };
+  for (const ev of ['wheel', 'touchstart', 'keydown']) addEventListener(ev, stop, { once: true, passive: true });
+  const again = () => { if (!moved) go('auto'); };
+  document.fonts?.ready.then(again);
+  if (document.readyState === 'complete') setTimeout(again, 0); else addEventListener('load', again, { once: true });
+}
+
+// The page's big title fades a little more as you scroll down past it (it already dissolves toward
+// its bottom edge). One update per frame at most; none with reduced motion.
+const marks = [...document.querySelectorAll('.watermark')];
+let fadeQueued = 0;
+function fadeTitle() {
+  if (still.matches || fadeQueued) return;
+  fadeQueued = requestAnimationFrame(() => {
+    fadeQueued = 0;
+    const height = Math.max(...marks.map((m) => m.getBoundingClientRect().height)) || 150;
+    const gone = Math.min(1, Math.max(0, window.scrollY / (height * 2)));
+    for (const m of marks) m.style.opacity = (1 - gone * 0.85).toFixed(3);
+  });
+}
+addEventListener('scroll', fadeTitle, { passive: true });
 
 // Each tab counts as its own page in the visit counter (/home/#rough and so on). The counter
 // script loads in the background, so the first count waits for it.
@@ -300,7 +327,15 @@ function countView(name) {
   else window.addEventListener('load', () => setTimeout(send, 0), { once: true });
 }
 
-window.addEventListener('hashchange', () => show(viewFromHash(), { scroll: true }));
+// Switching between Workshop and Off the Clock slides sideways (js/slide.js): Workshop sits left of
+// Off the Clock. A link within the same page (a box, Hobbies) just goes there.
+const STACK = { work: 0, clock: 1 };
+window.addEventListener('hashchange', () => {
+  const next = viewFromHash();
+  const to = sectionOf(next);
+  if (shownSection && to !== shownSection && window.otwSlide) window.otwSlide(STACK[shownSection], STACK[to], () => show(next));
+  else show(next, { scroll: true });
+});
 show(viewFromHash());
 
 if (document.documentElement.classList.contains('wipe-in')) {

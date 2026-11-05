@@ -49,13 +49,15 @@ export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'polished'}`;
 
 // Open App / Learn More / See the Code. Workshop projects get "Coming soon" and
 // "Follow along" instead of links that go nowhere; follow: false hides "Follow along".
-export function actions(p, { learnMore = true } = {}) {
+// code: false leaves out See the Code and Follow along (the home page cards).
+export function actions(p, { learnMore = true, code = true } = {}) {
   return h('div', { class: 'project-actions' },
     p.url
       ? h('a', { class: 'button primary small', href: p.url }, 'Open App ', h('span', { 'aria-hidden': 'true' }, '↗'))
       : h('span', { class: 'button small is-soon', 'aria-disabled': 'true' }, 'Coming soon'),
     learnMore ? h('a', { class: 'button small', href: projectHref(p) }, 'Learn More', h('span', { class: 'sr' }, ` about ${p.name}`)) : null,
-    p.code
+    !code ? null
+      : p.code
       ? h('a', { class: 'button small ghost', href: p.code }, 'See the Code')
       : p.follow === false ? null
         : h('a', { class: 'button small ghost', href: contact.github, title: 'The code goes up on GitHub when it’s ready' }, 'Follow along ', h('span', { 'aria-hidden': 'true' }, '↗')));
@@ -321,7 +323,7 @@ function siteMenu() {
   document.addEventListener('click', (e) => { if (open() && !header.contains(e.target)) set(false); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open()) set(false); });
   // Wider than a phone again: close it quietly
-  matchMedia('(min-width: 761px)').addEventListener?.('change', (m) => { if (m.matches && open()) set(false, { focus: false }); });
+  matchMedia('(min-width: 770px)').addEventListener?.('change', (m) => { if (m.matches && open()) set(false, { focus: false }); });
 }
 
 // Which top-bar link is the page you're on (the home page marks its own section, in js/main.js)
@@ -332,20 +334,125 @@ export function markNav(section) {
   }
 }
 
-// ---------- Footer: "Currently tinkering with" ----------
-// One plain line above the footer, naming the projects in the workshop.
+// ---------- The dot background: now and then, a few dots drift ----------
+// The grid itself is the page background (site.css) and never changes. Every 8-12 seconds a
+// layer behind everything does one small thing: either a few dots drift a couple of pixels and
+// come back, or (half the time, or when no dots are free to shift) a soft wave runs along one row. To move a dot it covers that dot with the page
+// color and draws an identical dot that drifts and returns, then removes both, so the real grid
+// shows again exactly where it was. Transforms and opacity only; nothing runs while the tab is
+// hidden, when paused (remembered), with reduced motion, or on a low battery. Phones get fewer
+// dots and smaller moves.
 
-function tinkeringLine() {
-  const slot = $('.tinkering');
-  const tinkering = projects.filter((p) => p.status === 'workshop');
-  if (!slot) return;
-  if (!tinkering.length) { slot.remove(); return; }
-  slot.replaceChildren(
-    h('span', { class: 'tinkering-label' }, 'Currently tinkering with:'), ' ',
-    ...tinkering.flatMap((p, i) => [
-      i ? (i === tinkering.length - 1 ? ' and ' : ', ') : null,
-      h('a', { href: projectHref(p) }, p.name),
-    ]).filter(Boolean));
+const GRID = 22; // a dot every 22px: centres 10px into each tile (site.css shifts the tiles by -1px)
+
+function backgroundDots() {
+  const btn = $('.bg-toggle');
+  const root = document.documentElement;
+  const page = () => getComputedStyle(document.body).backgroundImage;
+  if (!btn) return;
+  if (!/gradient/.test(page())) { btn.hidden = true; return; } // a page with its own background
+  const touch = matchMedia('(hover: none), (pointer: coarse)').matches;
+  let paused = store.get('otw-bg') === 'paused';
+  let lowBattery = false;
+  let timer = 0;
+  const live = new Set();
+  const layer = h('div', { class: 'dot-layer', 'aria-hidden': 'true' });
+  document.body.prepend(layer);
+
+  const canRun = () => !paused && !reducedMotion.matches && !lowBattery && !document.hidden;
+  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 8000 + Math.random() * 4000); };
+  const stopAll = () => { clearTimeout(timer); for (const a of [...live]) a.cancel(); };
+  const rand = (n) => Math.floor(Math.random() * n);
+  // Blueprint has no dots, only lines: there, small specks appear at the crossings instead
+  const blueprint = () => root.dataset.theme === 'blueprint';
+  const at = (i) => (blueprint() ? i * GRID - 0.5 : i * GRID + 10);
+  // Only dots on the open background (not under a card, which would hide them anyway)
+  const OPEN = 'html, body, main, section, .section-head, .view, .wrap, footer, .footer, .about-tab, .timeline, .numbers, .projects, .toolkit, .clock-layout';
+  const open = (x, y) => { const el = document.elementFromPoint(x - scrollX, y - scrollY); return !el || el.matches(OPEN); };
+
+  function drift(x, y, dx, dy, delay, fade) {
+    const dot = h('i', { class: 'dot-move', style: `left:${x}px;top:${y}px` });
+    const hole = blueprint() ? null : h('i', { class: 'dot-hole', style: `left:${x}px;top:${y}px` });
+    layer.append(...[hole, dot].filter(Boolean));
+    const a = dot.animate([
+      { transform: 'translate(0, 0)', opacity: 1 },
+      { transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`, opacity: fade },
+      { transform: 'translate(0, 0)', opacity: 1 },
+    ], { duration: touch ? 1600 : 1400, delay, easing: 'ease-in-out' });
+    live.add(a);
+    const done = () => { live.delete(a); hole?.remove(); dot.remove(); };
+    a.finished.then(done, done);
+  }
+
+  function stir() {
+    const w = root.clientWidth, ht = innerHeight;
+    const cols = [Math.ceil((scrollX + 12) / GRID), Math.floor((scrollX + w - 12) / GRID)];
+    const rows = [Math.ceil((scrollY + 12) / GRID), Math.floor((scrollY + ht - 12) / GRID)];
+    const pick = (r) => r[0] + rand(Math.max(1, r[1] - r[0] + 1));
+    const reach = touch ? 2 : 3; // pixels, at most
+    let moved = 0;
+    if (Math.random() < 0.5) {
+      // A few dots shift, each a little later and in its own direction; a couple fade slightly
+      const n = touch ? 2 + rand(2) : 3 + rand(4);
+      for (let tries = 0; moved < n && tries < 60; tries++) {
+        const x = at(pick(cols)), y = at(pick(rows));
+        if (!open(x, y)) continue;
+        const angle = Math.random() * Math.PI * 2, dist = reach - Math.random();
+        drift(x, y, Math.cos(angle) * dist, Math.sin(angle) * dist, moved * 220 + rand(180), moved < 2 ? 0.7 : 1);
+        moved++;
+      }
+    }
+    if (!moved) {
+      // One wave runs along a row, dot after dot, rising and settling: a row (from a random start)
+      // with at least a few dots on the open background
+      const all = [];
+      for (let r = rows[0]; r <= rows[1]; r++) all.push(r);
+      const start = rand(all.length);
+      const free = (r) => { let n = 0; for (let c = cols[0]; c <= cols[1]; c += 2) if (open(at(c), at(r))) n++; return n; };
+      const row = all.map((_, i) => all[(start + i) % all.length]).find((r) => free(r) >= 3);
+      if (row === undefined) { schedule(); return; }
+      const ltr = Math.random() < 0.5, step = touch ? 2 : 1;
+      const list = [];
+      for (let c = cols[0]; c <= cols[1]; c += step) list.push(c);
+      if (!ltr) list.reverse();
+      list.forEach((c, k) => {
+        const x = at(c), y = at(row);
+        if (!open(x, y)) return;
+        // up by (reach - 0.6) to (reach - 0.2) px, a touch to one side: never more than `reach` in all
+        drift(x, y, (Math.random() - 0.5) * 0.6, -(reach - 0.6 + Math.random() * 0.4), k * (touch ? 70 : 40), k % 9 === 4 ? 0.75 : 1);
+      });
+    }
+    schedule();
+  }
+
+  // The button: a pause or play icon, labelled "Pause background" / "Play background" for screen
+  // readers and on hover (never moves itself)
+  function label() {
+    const still = reducedMotion.matches;
+    const off = paused || still;
+    $('.sr', btn).textContent = off ? 'Play background' : 'Pause background';
+    btn.dataset.state = off ? 'paused' : 'playing';
+    if (still) { btn.setAttribute('aria-disabled', 'true'); btn.title = 'The background stays still while your device asks for reduced motion'; }
+    else { btn.removeAttribute('aria-disabled'); btn.title = off ? 'Play background' : 'Pause background'; }
+  }
+  btn.addEventListener('click', () => {
+    if (reducedMotion.matches) return;
+    paused = !paused;
+    store.set('otw-bg', paused ? 'paused' : 'playing');
+    label();
+    if (paused) stopAll(); else schedule();
+  });
+  const sync = () => { label(); if (canRun()) schedule(); else stopAll(); };
+  document.addEventListener('visibilitychange', sync);
+  reducedMotion.addEventListener?.('change', sync);
+  // A low battery (where the browser says so) keeps it still too
+  navigator.getBattery?.().then((b) => {
+    const check = () => { lowBattery = !b.charging && b.level <= 0.2; sync(); };
+    b.addEventListener('levelchange', check);
+    b.addEventListener('chargingchange', check);
+    check();
+  }).catch(() => {});
+  sync();
 }
 
 // ---------- Everything every page needs ----------
@@ -354,8 +461,8 @@ export function setUpPage() {
   themeButton();
   boardCursor();
   siteMenu();
-  if (!document.querySelector('.tabs')) markNav();
-  tinkeringLine();
+  backgroundDots();
+  if (!document.querySelector('#section-title')) markNav(); // the home page marks its own section
   $('.year').textContent = new Date().getFullYear();
 
   // Fade things in as they scroll into view

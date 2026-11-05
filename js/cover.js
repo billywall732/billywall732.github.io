@@ -50,40 +50,57 @@ addEventListener('pageshow', (e) => {
 });
 
 // ---------- Bricks that answer a mouse ----------
-// Mouse only, and off with reduced motion: the wall drifts a few pixels against the cursor
-// (parallax), and the bricks nearest it brighten and shift by a pixel or two. One update per
-// frame at most, transforms and opacity only, all of it behind the words.
+// Mouse only, and off with reduced motion. The wall itself stays put; the bricks under the cursor
+// swell like a lens, brighten, and trail a few pixels behind the cursor as it moves, springing
+// back when it stops. One update per frame, only while something is changing; transforms and
+// opacity only, all of it behind the words.
 
 function bricks() {
-  const wall = document.querySelector('.wall-bricks');
-  const lamp = Object.assign(document.createElement('div'), { className: 'wall-lamp' });
-  const glow = Object.assign(document.createElement('div'), { className: 'wall-lamp-bricks' });
-  lamp.append(glow);
-  document.querySelector('.wall').append(lamp);
-  const R = 170; // the lamp's radius
+  const holder = document.querySelector('.wall');
+  // The lens: its radius, and how much its bricks swell around the cursor
+  const lenses = [{ r: 190, pull: 1.14 }].map(({ r, pull }) => {
+    const lamp = Object.assign(document.createElement('div'), { className: 'wall-lamp' });
+    const glow = Object.assign(document.createElement('div'), { className: 'wall-lamp-bricks' });
+    lamp.style.width = lamp.style.height = `${r * 2}px`;
+    lamp.append(glow);
+    holder.append(lamp);
+    return { r, pull, lamp, glow };
+  });
+  const LEAN = 9; // how far (px) the bricks can trail behind a moving cursor
   let x = 0;
   let y = 0;
+  let last = null;
+  let vx = 0;
+  let vy = 0;
   let queued = 0;
   function draw() {
     queued = 0;
-    const dx = x / innerWidth - 0.5;
-    const dy = y / innerHeight - 0.5;
-    const px = -dx * 14; // parallax, at most 7px each way
-    const py = -dy * 10;
-    wall.style.transform = `translate3d(${px.toFixed(1)}px, ${py.toFixed(1)}px, 0)`;
-    // The lamp follows the cursor; its bricks line up with the wall's, nudged 1.5px toward the cursor
-    const lx = x - R;
-    const ly = y - R;
-    lamp.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
-    glow.style.transform = `translate3d(${(px - lx + dx * 3).toFixed(1)}px, ${(py - ly + dy * 3).toFixed(1)}px, 0)`;
+    vx *= 0.84;
+    vy *= 0.84;
+    const sx = Math.max(-LEAN, Math.min(LEAN, vx));
+    const sy = Math.max(-LEAN, Math.min(LEAN, vy));
+    for (const { r, pull, lamp, glow } of lenses) {
+      // The lens sits on the cursor; its bricks line up with the wall's, trail behind the cursor's
+      // movement, and swell around it (the scale is centred on the brick under it)
+      const lx = x - r;
+      const ly = y - r;
+      const tx = -lx - sx;
+      const ty = -ly - sy;
+      lamp.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
+      glow.style.transformOrigin = `${(r + 24 - tx).toFixed(1)}px ${(r + 24 - ty).toFixed(1)}px`;
+      glow.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) scale(${pull})`;
+    }
+    if (Math.abs(vx) + Math.abs(vy) > 0.15) queued = requestAnimationFrame(draw); // still settling
   }
   addEventListener('pointermove', (e) => {
     if (e.pointerType !== 'mouse') return;
     x = e.clientX;
     y = e.clientY;
-    lamp.classList.add('is-on');
+    if (last) { vx += (x - last.x) * 0.35; vy += (y - last.y) * 0.35; }
+    last = { x, y };
+    for (const l of lenses) l.lamp.classList.add('is-on');
     if (!queued) queued = requestAnimationFrame(draw);
   }, { passive: true });
-  document.documentElement.addEventListener('pointerleave', () => lamp.classList.remove('is-on'));
+  document.documentElement.addEventListener('pointerleave', () => { for (const l of lenses) l.lamp.classList.remove('is-on'); });
 }
 if (mouse.matches && !still.matches) bricks();

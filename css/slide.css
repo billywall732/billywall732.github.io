@@ -1,0 +1,39 @@
+/* The sideways slide between Workshop, Off the Clock and Contact (js/slide.js). Only /home/ and
+   /contact/ load this, so only moves between them slide; every other page navigates as before.
+   Only the main content moves: the top bar, footer and page background stay where they are. */
+
+@view-transition { navigation: auto; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+
+/* Naming the top bar makes it its own layer; keep it (and the phone menu that drops from it) above
+   the page content */
+header.nav { view-transition-name: site-header; z-index: 30; }
+footer.wrap { view-transition-name: site-footer; }
+.vt-in #main { view-transition-name: main-in; }
+
+/* The top bar, footer and background: no fade, no movement, the new page's straight away */
+::view-transition-group(root),
+::view-transition-group(site-header),
+::view-transition-group(site-footer) { animation: none; }
+::view-transition-old(root),
+::view-transition-old(site-header),
+::view-transition-old(site-footer) { display: none; }
+::view-transition-new(root),
+::view-transition-new(site-header),
+::view-transition-new(site-footer) { animation: none; }
+::view-transition-group(site-header) { z-index: 2; }
+/* Pages are different heights, so the footer isn't in the same place on each: rather than move,
+   it waits out the slide (0.4s) and appears in its new place when the content has arrived */
+::view-transition-new(site-footer) { opacity: 0; }
+/* The top bar's highlight switches at once during a slide (its own fade would be caught halfway) */
+.vt-in .site-menu a { transition: none; }
+
+/* The content: forward slides out left and in from the right; back does the opposite */
+::view-transition-old(main-out) { animation: otw-out-left 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+::view-transition-new(main-in) { animation: otw-in-right 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+html.slide-back::view-transition-old(main-out) { animation-name: otw-out-right; }
+html.slide-back::view-transition-new(main-in) { animation-name: otw-in-left; }
+@keyframes otw-out-left { from { transform: translateX(0); } to { transform: translateX(-100vw); } }
+@keyframes otw-out-right { from { transform: translateX(0); } to { transform: translateX(100vw); } }
+@keyframes otw-in-right { from { transform: translateX(100vw); } to { transform: translateX(0); } }
+@keyframes otw-in-left { from { transform: translateX(-100vw); } to { transform: translateX(0); } }

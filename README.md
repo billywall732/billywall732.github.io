@@ -24,11 +24,11 @@ When a custom domain is added to **this** repo (Settings → Pages → Custom do
 
 ## Add or change a project
 
-Everything shown comes from **`js/projects.js`**: the home page tabs, each project's page, the Toolkit lists, the "Currently tinkering with" line, the hobbies and the contact links.
+Everything shown comes from **`js/projects.js`**: the home page tabs, each project's page, the Toolkit lists, the hobbies and the contact links.
 
 1. Turn on GitHub Pages in the new project's repo (it then lives at `/<repo-name>/`).
 2. Add a screenshot to `img/` (1280 × 800 works best, `.webp` or `.png`).
-3. Copy an entry in `js/projects.js` and change it. `status` picks its tab: `'live'` (Polished Projects) and `'rough'` (Rough Around the Edges) get big cards; `'workshop'` goes in the In the Workshop list.
+3. Copy an entry in `js/projects.js` and change it. `status` picks where it shows: `'live'` gets a big card under Production Ready - Live for Use; `'rough'` and `'workshop'` go in the Projects Still on the Workbench list (rough ones first).
 4. Run `node tools/make-pages.mjs` to (re)make the pages in `projects/`.
 5. Commit and push. The site updates within a minute.
 
@@ -44,8 +44,8 @@ css/site.css          styles: dark, light and blueprint modes via CSS variables
 css/cover.css         the cover's styles, including the brick texture (a tiny SVG tile per mode)
 js/cover.js           the cover's opening, its buttons' sliding indicator, the bricks that answer a mouse, and the paint wipe into /home/
 js/projects.js        the data: edit this to change what's shown
-js/ui.js              shared: color-mode and board-cursor buttons, the "Currently tinkering with" line, card bits
-js/main.js            the home page: Workshop (#polished, #rough, #workshop) and Off the Clock (#about, #toolkit, #hobbies)
+js/ui.js              shared: color-mode and board-cursor buttons, the phone menu, card bits
+js/main.js            the home page: Workshop (one page; #workbench opens the projects still being built) and Off the Clock (one page; #hobbies goes to Hobbies & Interests)
 contact/              the Contact page: three big buttons (email, GitHub, LinkedIn)
 js/project-page.js    a project's page
 tools/make-pages.mjs  writes projects/<slug>/index.html for each project
@@ -67,7 +67,7 @@ tools/build-airports.mjs  rebuilds shared/data/airports.json (see the file for h
 reference/            the original claude.ai apps; not committed (Contrail's has real trips)
 ```
 
-The **home page** has two sections, each with three tabs shown as their own pages. **Workshop**: Polished Projects, Rough Around the Edges and In the Workshop. **Off the Clock**: About, Toolkit and Hobbies. The address picks the tab (`/home/#rough`), so each can be linked to; `/home/#off-the-clock` (and the old `#story`) open About, and old `/home/#work` links open Polished Projects. One indicator slides under the chosen tab.
+The **home page** has two sections. **Workshop** is one page under a big outlined WORKSHOP title, showing the Production Ready - Live for Use projects, then an orange dotted box, Projects Still on the Workbench, that opens the rest (`/home/#workbench`; old `#rough` and `#workshop` links open it too), and a teal dotted Toolkit box (`/home/#toolkit`). **Off the Clock** is one page under a big outlined OFF THE CLOCK title: about me, How it got here, By the numbers, then Hobbies & Interests (`/home/#hobbies`). `/home/#off-the-clock`, `#about` and the old `#story` open it, and old `/home/#work` links open Workshop.
 
 The **top bar** (copied into every page by `tools/make-pages.mjs`) is Cover, Workshop, Off the Clock, Contact and two icon-only toggles. On phones it folds into a menu button.
 
@@ -75,7 +75,7 @@ The **cover** plays a short opening once per visit (under a second; any key or t
 
 **Toolkit** lists the tools each app is built with (`toolkit` in `js/projects.js`). Only list a tool you can point to in that app's code; the file says where each one was checked.
 
-The **Hobbies** tab (Off the Clock) shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
+Hobbies & Interests (Off the Clock) shows the activity blocks next to a photo slideshow (`clockPhotos` in `js/projects.js`). Tapping a block shows its photo. The ffmpeg command to add a photo is in that file; it shrinks the photo and strips its location data.
 
 The **Board** button in the header (mouse only, hidden with reduced motion) cycles skateboard → snowboard → surfboard → off. The normal cursor always stays; the board just trails it.
 
