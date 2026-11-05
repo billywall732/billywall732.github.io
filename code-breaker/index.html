@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Krillion Code Breaker · Off the Wall</title>
-  <meta name="description" content="A practice companion for krillion.io's daily dive: practice rounds, a strategy guide and a score log toward 700 points.">
+  <meta name="description" content="Billy vs. a Claude-powered bot on krillion.io's daily dive. Press Run and watch the bot play.">
   <meta property="og:title" content="Krillion Code Breaker · Off the Wall">
-  <meta property="og:description" content="Practice rare answers and track your daily Krillion scores toward 700.">
+  <meta property="og:description" content="Billy vs. a Claude-powered bot on krillion.io's daily dive.">
   <meta property="og:image" content="https://offthewall.dev/img/code-breaker.webp">
   <meta name="twitter:image" content="https://offthewall.dev/img/code-breaker.webp">
   <meta name="twitter:card" content="summary_large_image">
@@ -28,7 +28,7 @@
   <script type="module" src="/code-breaker/app.js"></script>
 </head>
 <body>
-  <a class="skip" href="#main">Skip to the trainer</a>
+  <a class="skip" href="#main">Skip to today’s dive</a>
 
   <header class="nav wrap">
     <a class="brand" href="/home/" aria-label="Off the Wall, home">
@@ -53,25 +53,62 @@
     <header class="cb-head">
       <p class="eyebrow">Workshop · <a href="/projects/krillion-code-breaker/">about this project</a></p>
       <h1>Krillion Code Breaker</h1>
-      <p class="cb-lede">Train for <a href="https://krillion.io" rel="noopener">krillion.io</a>’s daily dive: practice finding rare answers, learn the patterns, and log your real scores on the way to a perfect 700.</p>
-      <p class="cb-label" role="note"><b>Practice companion</b>: scores are entered by you, this app does not play krillion.io for you. Not affiliated with krillion.io; the practice prompts and rarity tiers here are my own.</p>
+      <p class="cb-lede">Billy vs. the machine on <a href="https://krillion.io" rel="noopener">krillion.io</a>’s daily dive. The bot plays once a day on its own account, picks each answer with Claude, and gets one shot per prompt under the same 25-second clock. Press Run and watch it dive.</p>
+      <p class="cb-label" id="cbDemo" role="note" hidden><b>Demo data</b>: the bot isn’t connected yet, so these numbers are made up.</p>
     </header>
 
-    <nav class="cb-tabs" aria-label="Sections">
-      <div class="cb-tablist" role="tablist">
-        <button role="tab" data-tab="practice" aria-selected="true"><span class="emoji" aria-hidden="true">🤿</span>Practice</button>
-        <button role="tab" data-tab="strategy" aria-selected="false"><span class="emoji" aria-hidden="true">🧠</span>Strategy</button>
-        <button role="tab" data-tab="log" aria-selected="false"><span class="emoji" aria-hidden="true">📝</span>Score log</button>
-        <button role="tab" data-tab="progress" aria-selected="false"><span class="emoji" aria-hidden="true">📈</span>Progress</button>
-        <button role="tab" data-tab="rules" aria-selected="false"><span class="emoji" aria-hidden="true">📜</span>Rules</button>
+    <section class="card-box cb-today" aria-labelledby="cbTodayH">
+      <h2 id="cbTodayH">Today</h2>
+      <div class="cb-duel">
+        <div class="cb-side me"><span class="cb-who" id="meHandle">Billy</span><b class="cb-score" id="meScore">—</b><span class="cb-sub" id="meSub"></span></div>
+        <span class="cb-vs" aria-hidden="true">vs</span>
+        <div class="cb-side bot"><span class="cb-who" id="botHandle">The bot</span><b class="cb-score" id="botScore">—</b><span class="cb-sub" id="botSub"></span></div>
       </div>
-    </nav>
+      <div class="cb-bars" aria-hidden="true"><div class="cb-bar me"><i id="meBar"></i></div><div class="cb-bar bot"><i id="botBar"></i></div></div>
+      <p class="cb-status" role="status" aria-live="polite"><span class="cb-dot" id="cbDot"></span><span id="cbStatus">Loading…</span></p>
+      <div class="cb-row">
+        <button class="button primary" type="button" id="runBtn" disabled>Run today’s dive</button>
+        <button class="button ghost" type="button" id="refreshBtn" disabled>Refresh scores</button>
+      </div>
+    </section>
 
-    <section class="cb-panel" data-panel="practice" aria-label="Practice"></section>
-    <section class="cb-panel" data-panel="strategy" aria-label="Strategy guide" hidden></section>
-    <section class="cb-panel" data-panel="log" aria-label="Score log" hidden></section>
-    <section class="cb-panel" data-panel="progress" aria-label="Progress" hidden></section>
-    <section class="cb-panel" data-panel="rules" aria-label="Rules and scoring" hidden></section>
+    <section class="card-box cb-live" id="cbLive" aria-labelledby="cbLiveH" hidden>
+      <h2 id="cbLiveH"><span class="cb-dot running" id="cbLiveDot" aria-hidden="true"></span>Watch the bot</h2>
+      <div class="cb-live-grid">
+        <figure class="cb-screen" id="cbScreen">
+          <img id="cbFrame" alt="The bot’s browser on krillion.io" hidden>
+          <figcaption class="cb-screen-msg" id="cbScreenMsg">Waiting for the first screenshot…</figcaption>
+        </figure>
+        <ol class="cb-feed" id="cbFeed" aria-live="polite" aria-label="Play-by-play"></ol>
+      </div>
+      <p class="cb-spoiler" id="cbLiveSpoiler" hidden><span>The screen shows today’s prompts, so it stays hidden until Billy has played. The play-by-play hides prompts and answers too.</span><button class="button ghost" type="button" data-reveal>Reveal anyway</button></p>
+    </section>
+
+    <section class="card-box cb-dive" aria-labelledby="cbDiveH">
+      <h2 id="cbDiveH">The bot’s dive</h2>
+      <div id="cbDive"><p class="cb-small">No dive yet today.</p></div>
+    </section>
+
+    <section aria-labelledby="cbRecH">
+      <h2 class="cb-h2" id="cbRecH">Running record</h2>
+      <div class="cb-stats" id="cbStats"></div>
+    </section>
+
+    <section class="card-box" aria-labelledby="cbHistH">
+      <h2 id="cbHistH">History</h2>
+      <div id="cbHistory"><p class="cb-small">Nothing yet.</p></div>
+    </section>
+
+    <section class="card-box cb-fair" aria-labelledby="cbFairH">
+      <h2 id="cbFairH">How the bot plays fair</h2>
+      <ul>
+        <li><b>It only reads the screen.</b> Each prompt is read from the page text, the same words you see. It never looks at Krillion’s network traffic, code or storage for answers.</li>
+        <li><b>One dive a day.</b> The Run button works once per day (Krillion resets at midnight Eastern, 9 PM Pacific), on the bot’s own account.</li>
+        <li><b>Same clock, one answer.</b> Claude gets the prompt during the countdown and the bot types a single answer inside the 25 seconds, at a human pace.</li>
+        <li><b>A polite visitor.</b> Ads and analytics are blocked so it never adds fake views to Krillion’s numbers, and if Krillion ever shows a challenge or a rate limit, the bot stops for the day instead of working around it.</li>
+      </ul>
+      <p class="cb-small">Krillion is made by kp. Go <a href="https://krillion.io" rel="noopener">play it</a>. This page isn’t affiliated with Krillion.</p>
+    </section>
   </main>
 
   <footer class="wrap">
