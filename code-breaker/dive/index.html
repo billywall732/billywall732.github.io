@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krillion Code Breaker · Off the Wall</title>
+<meta name="description" content="Billy vs. a Claude-powered bot on the daily Krillion dive.">
+<meta name="theme-color" content="#040b16">
+<meta property="og:title" content="Krillion Code Breaker · Off the Wall">
+<meta property="og:description" content="Billy vs. a Claude-powered bot on the daily Krillion dive.">
+<meta property="og:image" content="https://offthewall.dev/img/code-breaker.webp">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
+<script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/code-breaker/dive/"}' async src="/shared/count.js"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23040b16'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%234de1ff' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23ff8a65'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #040b16;
+    --bg-2: #08162a;
+    --panel: #0b1b31;
+    --line: #17304f;
+    --ink: #e6f0ff;
+    --ink-2: #93a9c7;
+    --ink-3: #5b7192;
+    --me: #ff8a65;      /* Billy: warm coral */
+    --bot: #4de1ff;     /* the bot: sonar cyan */
+    --good: #7dffb2;
+    --warn: #ffd166;
+    --bad: #ff6b81;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --sans: "Inter Tight", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #0d2a4d 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, #020610 100%);
+    background-color: var(--bg);
+    color: var(--ink);
+    font: 16px/1.5 var(--sans);
+    min-height: 100vh;
+  }
+  a { color: var(--ink-2); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 16px 64px; }
+
+  .home { display: inline-block; margin-bottom: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; color: var(--ink-3); text-decoration: none; }
+  .home:hover { color: var(--ink); }
+  header .kicker { font: 600 12px/1 var(--mono); letter-spacing: .22em; color: var(--bot); text-transform: uppercase; }
+  header h1 { font: 800 clamp(30px, 6vw, 48px)/1.05 var(--mono); margin: 14px 0 10px; letter-spacing: -.02em; }
+  header h1 .vs { color: var(--ink-3); font-weight: 400; }
+  header p { color: var(--ink-2); max-width: 62ch; margin: 0; }
+  .demo-flag { display: inline-block; margin-top: 14px; font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--warn); border: 1px dashed var(--warn); padding: 6px 8px; border-radius: 4px; }
+  .demo-flag[hidden] { display: none; }
+
+  section { margin-top: 36px; }
+  section[hidden] { display: none; }
+  .label { font: 600 11px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .panel { background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--line); border-radius: 14px; }
+
+  /* today */
+  .today { padding: 22px; }
+  .duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; }
+  .side .who { font: 600 13px/1 var(--mono); color: var(--ink-2); }
+  .side .score { font: 800 clamp(40px, 9vw, 64px)/1 var(--mono); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .side.me .score { color: var(--me); }
+  .side.bot .score { color: var(--bot); }
+  .side.bot { text-align: right; }
+  .side .sub { font: 400 12px/1.4 var(--mono); color: var(--ink-3); margin-top: 6px; min-height: 17px; }
+  .duel .mid { font: 600 12px/1 var(--mono); color: var(--ink-3); padding-bottom: 14px; }
+  .bars { margin-top: 18px; display: grid; gap: 6px; }
+  .bar { height: 8px; border-radius: 99px; background: #0f2440; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .bar.me i { background: var(--me); }
+  .bar.bot i { background: var(--bot); }
+  .status { margin-top: 18px; display: flex; align-items: center; gap: 10px; font: 400 13px/1.4 var(--mono); color: var(--ink-2); min-height: 20px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
+  .dot.running { background: var(--bot); box-shadow: 0 0 0 0 var(--bot); animation: ping 1.4s infinite; }
+  .dot.done { background: var(--good); }
+  .dot.error { background: var(--bad); }
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(77,225,255,.6); } 100% { box-shadow: 0 0 0 12px rgba(77,225,255,0); } }
+  .actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+  button {
+    font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+    padding: 13px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  }
+  button.primary { background: var(--bot); color: #021220; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.1); }
+  button.ghost { background: transparent; color: var(--ink-2); border-color: var(--line); }
+  button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-3); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
+
+  /* friends leaderboard */
+  .board { padding: 6px 0; }
+  .frow { display: grid; grid-template-columns: 3.2em minmax(0, 1.2fr) minmax(0, 1fr) 4em; gap: 12px; align-items: center; padding: 11px 18px; border-top: 1px solid var(--line); font: 400 14px/1.3 var(--mono); }
+  .frow:first-child { border-top: 0; }
+  .frow .rank { color: var(--ink-3); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .frow .who { color: var(--ink-2); overflow-wrap: anywhere; }
+  .frow .who em { font-style: normal; font-size: 11px; color: var(--ink-3); margin-left: 6px; }
+  .frow .fbar { height: 6px; border-radius: 99px; background: #0f2440; overflow: hidden; }
+  .frow .fbar i { display: block; height: 100%; border-radius: 99px; background: var(--ink-3); }
+  .frow .fscore { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .frow.is-me .who, .frow.is-me .fscore { color: var(--me); }
+  .frow.is-me .fbar i { background: var(--me); }
+  .frow.is-bot .who, .frow.is-bot .fscore { color: var(--bot); }
+  .frow.is-bot .fbar i { background: var(--bot); }
+  @media (max-width: 520px) { .frow { grid-template-columns: 2.6em minmax(0, 1fr) 3.6em; } .frow .fbar { display: none; } }
+
+  /* live view */
+  .live { padding: 18px; }
+  .live-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .screen { margin: 0; position: relative; aspect-ratio: 1280 / 900; border-radius: 10px; overflow: hidden; background: #061226; border: 1px solid var(--line); display: grid; place-items: center; }
+  .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .screen img[hidden] { display: none; }
+  .screen figcaption { padding: 16px; text-align: center; font: 400 12px/1.6 var(--mono); color: var(--ink-3); max-width: 34ch; }
+  .screen figcaption[hidden] { display: none; }
+  .feed { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; font: 400 13px/1.4 var(--mono); }
+  .feed li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  .feed time { color: var(--ink-3); font-size: 11px; padding-top: 1px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .feed .k-prompt { color: var(--ink); font-weight: 600; }
+  .feed .k-result { color: var(--bot); font-weight: 600; }
+  .feed .k-done { color: var(--good); font-weight: 700; }
+  .feed .k-error { color: var(--bad); font-weight: 600; }
+  .feed .k-thinking { color: var(--ink-3); }
+
+  /* bot dive */
+  .dive { padding: 6px 0; }
+  .row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); }
+  .row:first-child { border-top: 0; }
+  .row .n { font: 600 12px/1 var(--mono); color: var(--ink-3); }
+  .row .q { font-size: 14px; color: var(--ink-2); }
+  .row .a { font: 600 15px/1.3 var(--mono); color: var(--ink); margin-top: 3px; overflow-wrap: anywhere; }
+  .hidden { color: transparent; text-shadow: 0 0 9px rgba(147,169,199,.75); user-select: none; }
+  .row .pts { text-align: right; font: 600 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+  .row .pts small { display: block; color: var(--ink-3); font-weight: 400; font-size: 11px; margin-top: 3px; }
+  .tier { display: inline-block; font: 700 10px/1 var(--mono); letter-spacing: .12em; padding: 4px 6px; border-radius: 4px; margin-bottom: 6px; background: #12304f; color: var(--ink-2); }
+  .tier.t-hi { background: rgba(77,225,255,.14); color: var(--bot); }
+  .tier.t-top { background: rgba(125,255,178,.14); color: var(--good); }
+  .tier.t-low { background: rgba(255,107,129,.12); color: var(--bad); }
+  .spoiler-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
+  .spoiler-note[hidden] { display: none; }
+  .live .spoiler-note { margin: 14px -18px -18px; }
+  .empty { padding: 22px 18px; color: var(--ink-3); font-size: 14px; }
+
+  /* record */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .stat { padding: 16px; }
+  .stat .k { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+  .stat .v { font: 800 24px/1.1 var(--mono); margin-top: 10px; font-variant-numeric: tabular-nums; }
+  .stat .v .m { color: var(--me); }
+  .stat .v .b { color: var(--bot); }
+  .stat .v .s { color: var(--ink-3); font-weight: 400; }
+  .stat .d { font: 400 11px/1.4 var(--mono); color: var(--ink-3); margin-top: 6px; }
+
+  /* history */
+  .hist { width: 100%; border-collapse: collapse; font: 400 14px/1.3 var(--mono); font-variant-numeric: tabular-nums; }
+  .hist th { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); text-align: right; padding: 14px 18px 10px; }
+  .hist th:first-child, .hist td:first-child { text-align: left; }
+  .hist td { padding: 11px 18px; border-top: 1px solid var(--line); text-align: right; color: var(--ink-2); }
+  .hist td.win-me { color: var(--me); font-weight: 700; }
+  .hist td.win-bot { color: var(--bot); font-weight: 700; }
+
+  /* fair play */
+  .fair { padding: 18px 22px; }
+  .fair ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--ink-2); font-size: 14px; }
+  .fair b { color: var(--ink); }
+
+  footer { margin-top: 44px; font: 400 12px/1.6 var(--mono); color: var(--ink-3); }
+
+  @media (max-width: 720px) { .live-grid { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .duel { grid-template-columns: 1fr 1fr; }
+    .duel .mid { display: none; }
+    .row { padding: 12px 14px; }
+    .hist th, .hist td { padding-left: 12px; padding-right: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .dot.running { animation: none; } .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="home" href="/code-breaker/">← Title screen</a> <a class="home" href="/home/#polished">· Off the Wall Workshop</a>
+    <div class="kicker">Krillion Code Breaker</div>
+    <h1>Billy <span class="vs">vs.</span> Bot</h1>
+    <p>One dive a day on <a href="https://krillion.io" rel="noopener">krillion.io</a>. The bot plays on its own account, answers with Claude, and gets one shot per prompt under the same 25-second clock. Press Run and watch it dive.</p>
+    <div class="demo-flag" id="demoFlag" hidden>DEMO DATA · REMOVE ?demo TO GO LIVE</div>
+  </header>
+
+  <section>
+    <div class="label" id="todayLabel">Today</div>
+    <div class="panel today">
+      <div class="duel">
+        <div class="side me">
+          <div class="who" id="meHandle">Billy</div>
+          <div class="score" id="meScore">—</div>
+          <div class="sub" id="meSub"></div>
+        </div>
+        <div class="mid">vs</div>
+        <div class="side bot">
+          <div class="who" id="botHandle">The bot</div>
+          <div class="score" id="botScore">—</div>
+          <div class="sub" id="botSub"></div>
+        </div>
+      </div>
+      <div class="bars" aria-hidden="true">
+        <div class="bar me"><i id="meBar"></i></div>
+        <div class="bar bot"><i id="botBar"></i></div>
+      </div>
+      <div class="status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Loading…</span></div>
+      <div class="actions">
+        <button class="primary" id="runBtn" disabled>Run today's dive</button>
+        <button class="ghost" id="refreshBtn" disabled>Refresh scores</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="label" id="boardLabel">Friends leaderboard</div>
+    <div class="panel board" id="board"><div class="empty">The leaderboard shows up after the bot dives.</div></div>
+  </section>
+
+  <section id="liveSection" hidden>
+    <div class="label" id="liveLabel">Watch the bot</div>
+    <div class="panel live">
+      <div class="live-grid">
+        <figure class="screen">
+          <img id="frame" alt="The bot's browser on krillion.io" hidden>
+          <figcaption id="screenMsg">Waiting for the first screenshot…</figcaption>
+        </figure>
+        <ol class="feed" id="feed" aria-live="polite" aria-label="Play-by-play"></ol>
+      </div>
+      <div class="spoiler-note" id="liveSpoiler" hidden><span>The screen shows today's prompts, so it stays hidden until Billy has played. The play-by-play hides prompts and answers too.</span><button class="ghost" data-reveal>Reveal anyway</button></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="label">The bot's dive</div>
+    <div class="panel dive" id="dive"><div class="empty">No dive yet today.</div></div>
+  </section>
+
+  <section>
+    <div class="label">Running record</div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <section>
+    <div class="label">History</div>
+    <div class="panel" id="history"><div class="empty">Nothing yet.</div></div>
+  </section>
+
+  <section>
+    <div class="label">How the bot plays fair</div>
+    <div class="panel fair">
+      <ul>
+        <li><b>It only reads the screen.</b> Each prompt comes from the page text, the same words you see. It never looks at Krillion's network traffic, code or storage for answers.</li>
+        <li><b>One dive a day</b> on its own account. Run locks once the day's dive has started.</li>
+        <li><b>Same clock, one answer.</b> Claude gets the prompt during the countdown and the bot types one answer inside the 25 seconds, at a human pace.</li>
+        <li><b>A polite visitor.</b> Ads and analytics are blocked so it never adds fake views to Krillion's numbers. If Krillion shows a challenge or a rate limit, the bot stops for the day instead of working around it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    Krillion's daily resets at midnight ET (9 PM Pacific). The bot reads only what's on screen and plays once a day.
+    Krillion is made by kp — go <a href="https://krillion.io" rel="noopener">play it</a>. This page isn't affiliated with Krillion.
+  </footer>
+</div>
+
+<script>
+// The bot's API (a Cloudflare Worker). It answers only offthewall.dev. ?demo shows sample data.
+const API = "https://krillion-code-breaker.offthewall-dev.workers.dev";
+const params = new URLSearchParams(location.search);
+const DEMO = params.has("demo");
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const fmt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
+const clock = (ms) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" });
+
+let revealed = false;   // the visitor pressed "Reveal anyway"
+let today = null;
+let todayTimer = null;
+const live = { since: 0, revealed: false, frameAt: null, timer: null, count: 0 };
+
+// ---------- data ----------
+async function api(path, opts = {}) {
+  if (DEMO) return demo(path, opts);
+  try {
+    const res = await fetch(API + path, opts);
+    const body = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, body };
+  } catch {
+    return { ok: false, status: 0, body: {} };
+  }
+}
+
+async function load() {
+  const [t, l] = await Promise.all([api("/api/today" + (revealed ? "?reveal=1" : "")), api("/api/leaderboard")]);
+  if (t.ok) { today = t.body; renderToday(t.body); } else setStatus("error", "Couldn't reach the bot.");
+  if (l.ok) renderBoard(l.body);
+  clearTimeout(todayTimer);
+  if (t.ok && (t.body.status === "running" || t.body.boardPending)) todayTimer = setTimeout(load, 10000);
+  pollLive();
+}
+
+// ---------- today ----------
+function renderToday(t) {
+  $("todayLabel").textContent = `Today · ${t.day}`;
+  $("meHandle").textContent = "Billy · @" + t.me.handle;
+  $("botHandle").textContent = "Bot · @" + t.bot.handle;
+  $("meScore").textContent = fmt(t.me.score);
+  $("botScore").textContent = fmt(t.bot.score);
+  $("meSub").textContent = t.me.score == null && t.status === "done" ? "hasn't played yet" : "";
+  $("botSub").textContent = t.bot.depthM != null ? `${fmt(t.bot.depthM)} m down` : "";
+  const max = Math.max(t.me.score || 0, t.bot.score || 0, 1);
+  $("meBar").style.width = ((t.me.score || 0) / max) * 100 + "%";
+  $("botBar").style.width = ((t.bot.score || 0) / max) * 100 + "%";
+
+  const msgs = {
+    idle: "The bot hasn't dived today. Press Run to watch it play.",
+    running: "Diving… about a minute to start, then about 3 minutes.",
+    done: verdict(t),
+    error: t.message || "The last run failed. You can try again.",
+    "needs-login": t.message || "The bot needs to sign in again.",
+    blocked: t.message || "Krillion stopped the bot, so it sits out until tomorrow.",
+  };
+  const dotCls = { running: "running", done: "done", error: "error", "needs-login": "error", blocked: "error" }[t.status] || "";
+  setStatus(dotCls, t.boardPending ? "Refreshing scores…" : msgs[t.status] || t.status);
+  $("runBtn").disabled = ["running", "done", "blocked", "needs-login"].includes(t.status);
+  $("runBtn").textContent = t.status === "error" ? "Try again" : t.status === "done" ? "Done for today" : t.status === "running" ? "Diving…" : "Run today's dive";
+  $("refreshBtn").disabled = t.status !== "done" || t.boardPending || t.refreshesLeft <= 0;
+  $("refreshBtn").title = `${t.refreshesLeft} refreshes left today`;
+  renderDive(t);
+  renderFriends(t);
+}
+
+// Everyone the bot is friends with on Krillion, as of its last read of the friends board
+function renderFriends(t) {
+  const rows = t.board || [];
+  $("boardLabel").textContent = `Friends leaderboard · ${rows.length} diver${rows.length === 1 ? "" : "s"}`;
+  if (!rows.length) {
+    $("board").innerHTML = `<div class="empty">${t.status === "running" ? "The bot reads the leaderboard when it finishes." : "The leaderboard shows up after the bot dives."}</div>`;
+    return;
+  }
+  const top = Math.max(...rows.map((r) => r.score), 1);
+  $("board").innerHTML = rows.map((r) => `<div class="frow${r.me ? " is-me" : r.bot ? " is-bot" : ""}">
+      <span class="rank">#${r.rank}</span>
+      <span class="who">@${esc(r.handle)}${r.me ? " <em>Billy</em>" : r.bot ? " <em>the bot</em>" : ""}</span>
+      <span class="fbar" aria-hidden="true"><i style="width:${Math.round(r.score / top * 100)}%"></i></span>
+      <span class="fscore">${fmt(r.score)}</span>
+    </div>`).join("");
+}
+
+function verdict(t) {
+  const m = t.me.score, b = t.bot.score;
+  if (b == null) return "The bot finished, but its score isn't on the board yet.";
+  if (m == null) return "The bot is done. Your move: play, then refresh scores.";
+  if (m > b) return `You beat the bot by ${fmt(m - b)}.`;
+  if (b > m) return `The bot wins today by ${fmt(b - m)}.`;
+  return "Dead even today.";
+}
+
+function tierClass(t) {
+  const s = String(t || "").toUpperCase();
+  if (/KRILL/.test(s)) return "t-top";
+  if (/RARE|DEEP/.test(s)) return "t-hi";
+  if (/^(TOO CLEVER|NOTHING|MISS|NOT|UNKNOWN|INVALID|WRONG)/.test(s)) return "t-low";
+  return "";
+}
+
+function renderDive(t) {
+  const el = $("dive");
+  if (!t.prompts.length) {
+    el.innerHTML = `<div class="empty">${t.status === "running" ? "Diving now… answers land here when it's done." : "No dive yet today."}</div>`;
+    return;
+  }
+  const rows = t.prompts.map((p) => {
+    const q = p.prompt == null ? `<span class="hidden">hidden prompt text</span>` : esc(p.prompt);
+    const a = p.answer == null && p.prompt == null ? `<span class="hidden">answer</span>` : p.answer == null ? "—" : `“${esc(p.answer)}”`;
+    return `<div class="row">
+      <div class="n">${String(p.n).padStart(2, "0")}</div>
+      <div><span class="tier ${tierClass(p.tier)}">${esc(p.tier || "—")}</span><div class="q">${q}</div><div class="a">${a}</div></div>
+      <div class="pts">+${fmt(p.points)}<small>${p.depthM != null ? fmt(p.depthM) + " m" : ""}</small></div>
+    </div>`;
+  }).join("");
+  const note = t.spoilersHidden
+    ? `<div class="spoiler-note"><span>Prompts and answers stay hidden until Billy has played today.</span><button class="ghost" data-reveal>Reveal anyway</button></div>`
+    : "";
+  el.innerHTML = rows + note;
+}
+
+// ---------- live view ----------
+async function pollLive() {
+  clearTimeout(live.timer);
+  const r = await api(`/api/live?since=${live.since}${revealed ? "&reveal=1" : ""}`);
+  if (!r.ok) return;
+  const L = r.body;
+  if (L.revealed !== live.revealed) { // spoiler state changed: start the feed over with the right text
+    live.revealed = L.revealed;
+    if (live.since) { live.since = 0; live.count = 0; $("feed").innerHTML = ""; return pollLive(); }
+  }
+  for (const e of L.events) {
+    live.since = Math.max(live.since, e.seq);
+    live.count++;
+    const li = document.createElement("li");
+    li.innerHTML = `<time>${clock(e.at)}</time><span class="k-${esc(e.kind)}">${esc(e.text)}</span>`;
+    $("feed").append(li);
+  }
+  if (L.events.length) $("feed").scrollTop = $("feed").scrollHeight;
+
+  const running = L.status === "running";
+  $("liveSection").hidden = !running && !live.count;
+  $("liveLabel").textContent = running ? "Watch the bot · live" : "How today's dive went";
+  $("liveSpoiler").hidden = L.revealed;
+  renderFrame(L);
+
+  if (running) live.timer = setTimeout(pollLive, 2000);
+  else if (today?.status === "running") load(); // it just finished: pick up the final scores
+}
+
+function renderFrame(L) {
+  const img = $("frame"), msg = $("screenMsg");
+  if (!L.revealed) {
+    img.hidden = true; msg.hidden = false;
+    msg.textContent = "The bot's screen shows today's prompts, so it's hidden until Billy has played.";
+    return;
+  }
+  if (!L.frameAt) {
+    img.hidden = true; msg.hidden = false;
+    msg.textContent = DEMO ? "Screenshots of the bot's browser show up here during a real dive." : "Waiting for the first screenshot…";
+    return;
+  }
+  if (L.frameAt !== live.frameAt) {
+    live.frameAt = L.frameAt;
+    const next = new Image();
+    next.onload = () => { img.src = next.src; img.hidden = false; msg.hidden = true; };
+    next.src = `${API}/api/live/frame?reveal=1&t=${L.frameAt}`;
+  }
+}
+
+// ---------- record ----------
+function renderBoard(l) {
+  const s = l.stats;
+  const streak = s.streak.who ? `${s.streak.who === "me" ? "Billy" : "Bot"} ×${s.streak.length}` : "—";
+  $("stats").innerHTML = [
+    stat("Record", `<span class="m">${s.record.me}</span><span class="s">–</span><span class="b">${s.record.bot}</span>${s.record.tie ? `<span class="s">–${s.record.tie}</span>` : ""}`, "Billy – bot – ties"),
+    stat("Streak", esc(streak), "current run of wins"),
+    stat("Average", `<span class="m">${fmt(s.average.me)}</span><span class="s"> / </span><span class="b">${fmt(s.average.bot)}</span>`, `over ${s.headToHeadDays} head-to-head days`),
+    stat("Best dive", `<span class="m">${fmt(s.best.me?.score)}</span><span class="s"> / </span><span class="b">${fmt(s.best.bot?.score)}</span>`, "Billy / bot"),
+  ].join("");
+  if (!l.days.length) { $("history").innerHTML = `<div class="empty">Nothing yet.</div>`; return; }
+  $("history").innerHTML = `<table class="hist"><thead><tr><th>Day</th><th>@${esc(l.me)}</th><th>@${esc(l.bot)}</th></tr></thead><tbody>${
+    l.days.map((d) => {
+      const both = d.me != null && d.bot != null;
+      const mw = both && d.me > d.bot, bw = both && d.bot > d.me;
+      return `<tr><td>${esc(d.day)}</td><td class="${mw ? "win-me" : ""}">${fmt(d.me)}</td><td class="${bw ? "win-bot" : ""}">${fmt(d.bot)}</td></tr>`;
+    }).join("")
+  }</tbody></table>`;
+}
+const stat = (k, v, d) => `<div class="panel stat"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+
+function setStatus(cls, text) {
+  $("dot").className = "dot " + (cls || "");
+  $("statusText").textContent = text;
+}
+
+// ---------- actions ----------
+$("runBtn").onclick = async () => {
+  $("runBtn").disabled = true;
+  setStatus("running", "Starting the bot…");
+  const r = await api("/api/run", { method: "POST" });
+  if (!r.ok && r.status !== 202 && r.status !== 409) setStatus("error", r.body.message || "Couldn't start the bot.");
+  live.since = 0; live.count = 0; live.frameAt = null; $("feed").innerHTML = "";
+  load();
+};
+$("refreshBtn").onclick = async () => {
+  $("refreshBtn").disabled = true;
+  const r = await api("/api/refresh", { method: "POST" });
+  if (!r.ok && r.status !== 202) setStatus("", r.body.message || "Couldn't refresh right now.");
+  load();
+};
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("[data-reveal]")) return;
+  revealed = true;
+  load();
+});
+
+// ---------- demo (?demo) ----------
+const demoState = { me: null };
+function demo(path) {
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  const prompts = [
+    ["Name a noodle dish", "Kuksu", "RARE", 60, 600],
+    ["Name a bird of prey", "Laggar falcon", "DEEP CUT", 85, 1450],
+    ["Name a constellation", "Camelopardalis", "RARE", 60, 2050],
+    ["Name a type of cheese", "Bryndza", "RARE", 60, 2650],
+    ["Name a card game", "Skat", "SCHOOLER", 30, 2950],
+    ["Name a mountain range", "Brooks Range", "SCHOOLER", 30, 3250],
+    ["Name a musical instrument", "Hurdy-gurdy", "SCHOOLER", 30, 3550],
+  ];
+  const reveal = demoState.me != null || path.includes("reveal=1");
+  const ok = (body, status = 200) => ({ ok: status < 300, status, body });
+  if (path === "/api/run") return ok({ status: "done" }, 409);
+  if (path === "/api/refresh") { demoState.me = 402; return ok({ status: "refreshing" }, 202); }
+  if (path.startsWith("/api/live")) return ok({ day, status: "done", revealed: reveal, frameAt: null, events: [] });
+  if (path.startsWith("/api/today")) {
+    return ok({ day, status: "done", message: null,
+      me: { handle: "bigkril", score: demoState.me }, bot: { handle: "offthewall", score: 355, depthM: 3550 },
+      spoilersHidden: !reveal, boardPending: false, refreshesLeft: 5,
+      board: [
+        { handle: "reefrunner", score: 540 }, { handle: "bigkril", score: demoState.me ?? 0, me: true },
+        { handle: "offthewall", score: 355, bot: true }, { handle: "plankton_pat", score: 290 }, { handle: "deepdiver", score: 210 },
+      ].filter((r) => r.score).sort((a, b) => b.score - a.score).map((r, i) => ({ rank: i + 1, me: false, bot: false, ...r })),
+      prompts: prompts.map(([q, a, tier, pts, d], i) => ({ n: i + 1, tier, points: pts, depthM: d, prompt: reveal ? q : null, answer: reveal ? a : null })) });
+  }
+  if (path === "/api/leaderboard") {
+    const days = [{ day, me: demoState.me, bot: 355 }, { day: "2026-11-04", me: 310, bot: 395 }, { day: "2026-11-03", me: 402, bot: 330 }, { day: "2026-11-02", me: 275, bot: 275 }];
+    const both = days.filter((d) => d.me != null);
+    const rec = { me: 0, bot: 0, tie: 0 };
+    both.forEach((d) => rec[d.me > d.bot ? "me" : d.bot > d.me ? "bot" : "tie"]++);
+    const avg = (k) => Math.round(both.reduce((s, d) => s + d[k], 0) / both.length);
+    return ok({ me: "bigkril", bot: "offthewall", days, stats: { headToHeadDays: both.length, record: rec,
+      streak: { who: demoState.me != null ? "me" : "bot", length: 1 },
+      average: { me: avg("me"), bot: avg("bot") }, best: { me: { score: 402 }, bot: { score: 395 } } } });
+  }
+  return ok({}, 404);
+}
+
+if (DEMO) $("demoFlag").hidden = false;
+load();
+</script>
+</body>
+</html>

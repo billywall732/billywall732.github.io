@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Krillion Code Breaker · Off the Wall</title>
-<meta name="description" content="Billy vs. a Claude-powered bot on the daily Krillion dive.">
-<meta name="theme-color" content="#040b16">
-<meta property="og:title" content="Krillion Code Breaker · Off the Wall">
-<meta property="og:description" content="Billy vs. a Claude-powered bot on the daily Krillion dive.">
+<meta name="description" content="Billy vs. Bot: a krill and a robot battle over krillion.io's daily dive. Press start.">
+<meta name="theme-color" content="#030a18">
+<meta property="og:title" content="Krillion Code Breaker · Billy vs. Bot">
+<meta property="og:description" content="A krill and a robot battle over krillion.io's daily dive. Press start.">
 <meta property="og:image" content="https://offthewall.dev/img/code-breaker.webp">
 <meta name="twitter:card" content="summary_large_image">
 <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data). Only this page's path is sent. -->
@@ -15,484 +15,327 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23040b16'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='%234de1ff' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23ff8a65'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter+Tight:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #040b16;
-    --bg-2: #08162a;
-    --panel: #0b1b31;
-    --line: #17304f;
+    --deep: #030a18;
+    --sea: #0a2347;
+    --me: #ff8a65;      /* Billy the krill: coral, as in the app */
+    --me-2: #ff5d8f;
+    --bot: #4de1ff;     /* the bot: sonar cyan */
+    --gold: #ffd166;
     --ink: #e6f0ff;
     --ink-2: #93a9c7;
     --ink-3: #5b7192;
-    --me: #ff8a65;      /* Billy: warm coral */
-    --bot: #4de1ff;     /* the bot: sonar cyan */
-    --good: #7dffb2;
-    --warn: #ffd166;
-    --bad: #ff6b81;
+    --pixel: "Press Start 2P", ui-monospace, monospace;
     --mono: "JetBrains Mono", ui-monospace, monospace;
-    --sans: "Inter Tight", system-ui, sans-serif;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; }
+  html, body { margin: 0; height: 100%; }
   body {
-    background:
-      radial-gradient(1200px 600px at 80% -10%, #0d2a4d 0%, transparent 60%),
-      linear-gradient(180deg, var(--bg) 0%, #020610 100%);
-    background-color: var(--bg);
+    min-height: 100vh; min-height: 100dvh;
+    background: var(--deep);
     color: var(--ink);
-    font: 16px/1.5 var(--sans);
-    min-height: 100vh;
+    font: 14px/1.5 var(--mono);
+    overflow-x: hidden;
   }
-  a { color: var(--ink-2); }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 16px 64px; }
+  a { color: inherit; }
 
-  .home { display: inline-block; margin-bottom: 18px; font: 600 12px/1 var(--mono); letter-spacing: .08em; color: var(--ink-3); text-decoration: none; }
-  .home:hover { color: var(--ink); }
-  header .kicker { font: 600 12px/1 var(--mono); letter-spacing: .22em; color: var(--bot); text-transform: uppercase; }
-  header h1 { font: 800 clamp(30px, 6vw, 48px)/1.05 var(--mono); margin: 14px 0 10px; letter-spacing: -.02em; }
-  header h1 .vs { color: var(--ink-3); font-weight: 400; }
-  header p { color: var(--ink-2); max-width: 62ch; margin: 0; }
-  .demo-flag { display: inline-block; margin-top: 14px; font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--warn); border: 1px dashed var(--warn); padding: 6px 8px; border-radius: 4px; }
-  .demo-flag[hidden] { display: none; }
-
-  section { margin-top: 36px; }
-  section[hidden] { display: none; }
-  .label { font: 600 11px/1 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .panel { background: linear-gradient(180deg, var(--panel), var(--bg-2)); border: 1px solid var(--line); border-radius: 14px; }
-
-  /* today */
-  .today { padding: 22px; }
-  .duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; }
-  .side .who { font: 600 13px/1 var(--mono); color: var(--ink-2); }
-  .side .score { font: 800 clamp(40px, 9vw, 64px)/1 var(--mono); margin-top: 10px; font-variant-numeric: tabular-nums; }
-  .side.me .score { color: var(--me); }
-  .side.bot .score { color: var(--bot); }
-  .side.bot { text-align: right; }
-  .side .sub { font: 400 12px/1.4 var(--mono); color: var(--ink-3); margin-top: 6px; min-height: 17px; }
-  .duel .mid { font: 600 12px/1 var(--mono); color: var(--ink-3); padding-bottom: 14px; }
-  .bars { margin-top: 18px; display: grid; gap: 6px; }
-  .bar { height: 8px; border-radius: 99px; background: #0f2440; overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
-  .bar.me i { background: var(--me); }
-  .bar.bot i { background: var(--bot); }
-  .status { margin-top: 18px; display: flex; align-items: center; gap: 10px; font: 400 13px/1.4 var(--mono); color: var(--ink-2); min-height: 20px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); flex: none; }
-  .dot.running { background: var(--bot); box-shadow: 0 0 0 0 var(--bot); animation: ping 1.4s infinite; }
-  .dot.done { background: var(--good); }
-  .dot.error { background: var(--bad); }
-  @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(77,225,255,.6); } 100% { box-shadow: 0 0 0 12px rgba(77,225,255,0); } }
-  .actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
-  button {
-    font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
-    padding: 13px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+  /* ---------- the arena ---------- */
+  .arena {
+    position: relative; min-height: 100vh; min-height: 100dvh; overflow: hidden;
+    display: grid; grid-template-rows: auto 1fr auto; gap: 12px;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(77,225,255,.18), transparent 70%),
+      linear-gradient(180deg, #0d3566 0%, var(--sea) 38%, #061633 70%, var(--deep) 100%);
   }
-  button.primary { background: var(--bot); color: #021220; }
-  button.primary:hover:not(:disabled) { filter: brightness(1.1); }
-  button.ghost { background: transparent; color: var(--ink-2); border-color: var(--line); }
-  button.ghost:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-3); }
-  button:disabled { opacity: .45; cursor: not-allowed; }
-  button:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
+  /* light shafts from the surface */
+  .rays { position: absolute; inset: 0; pointer-events: none; opacity: .5;
+    background: repeating-linear-gradient(105deg, transparent 0 60px, rgba(160,220,255,.05) 60px 90px, transparent 90px 170px);
+    mask-image: linear-gradient(180deg, #000, transparent 65%); }
+  /* CRT scanlines */
+  .arena::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+    background: repeating-linear-gradient(180deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); }
 
-  /* live view */
-  .live { padding: 18px; }
-  .live-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-  .screen { margin: 0; position: relative; aspect-ratio: 1280 / 900; border-radius: 10px; overflow: hidden; background: #061226; border: 1px solid var(--line); display: grid; place-items: center; }
-  .screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
-  .screen img[hidden] { display: none; }
-  .screen figcaption { padding: 16px; text-align: center; font: 400 12px/1.6 var(--mono); color: var(--ink-3); max-width: 34ch; }
-  .screen figcaption[hidden] { display: none; }
-  .feed { list-style: none; margin: 0; padding: 0; max-height: 380px; overflow-y: auto; font: 400 13px/1.4 var(--mono); }
-  .feed li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
-  .feed time { color: var(--ink-3); font-size: 11px; padding-top: 1px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .feed .k-prompt { color: var(--ink); font-weight: 600; }
-  .feed .k-result { color: var(--bot); font-weight: 600; }
-  .feed .k-done { color: var(--good); font-weight: 700; }
-  .feed .k-error { color: var(--bad); font-weight: 600; }
-  .feed .k-thinking { color: var(--ink-3); }
+  /* ---------- HUD: fighting-game health bars ---------- */
+  .hud { position: relative; z-index: 3; display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: start; max-width: 980px; width: 100%; margin: 0 auto; }
+  .fighter-hud { display: grid; gap: 6px; }
+  .fighter-hud.bot { text-align: right; }
+  .tag { font: 10px/1 var(--pixel); letter-spacing: .06em; color: var(--ink-2); }
+  .tag b { font-weight: 400; }
+  .fighter-hud.me .tag b { color: var(--me); }
+  .fighter-hud.bot .tag b { color: var(--bot); }
+  .hp { height: 18px; border: 3px solid #e6f0ff; background: #2a0d1d; box-shadow: 0 0 0 3px #000, inset 0 0 0 2px #000; position: relative; }
+  .hp i { position: absolute; top: 0; bottom: 0; width: 100%; transition: width 1.2s steps(14); }
+  .fighter-hud.me .hp i { left: 0; background: repeating-linear-gradient(90deg, var(--me) 0 8px, #ffb08f 8px 10px); }
+  .fighter-hud.bot .hp i { right: 0; background: repeating-linear-gradient(90deg, var(--bot) 0 8px, #a8f2ff 8px 10px); }
+  .score { font: 12px/1 var(--pixel); }
+  .fighter-hud.me .score { color: var(--me); }
+  .fighter-hud.bot .score { color: var(--bot); }
+  .clock { text-align: center; display: grid; gap: 6px; padding-top: 2px; }
+  .clock .round { font: 10px/1 var(--pixel); color: var(--gold); }
+  .clock .time { font: 22px/1 var(--pixel); color: var(--ink); text-shadow: 3px 3px 0 #000; }
+  .clock .rec { font: 8px/1.4 var(--pixel); color: var(--ink-2); }
 
-  /* bot dive */
-  .dive { padding: 6px 0; }
-  .row { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); }
-  .row:first-child { border-top: 0; }
-  .row .n { font: 600 12px/1 var(--mono); color: var(--ink-3); }
-  .row .q { font-size: 14px; color: var(--ink-2); }
-  .row .a { font: 600 15px/1.3 var(--mono); color: var(--ink); margin-top: 3px; overflow-wrap: anywhere; }
-  .hidden { color: transparent; text-shadow: 0 0 9px rgba(147,169,199,.75); user-select: none; }
-  .row .pts { text-align: right; font: 600 13px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
-  .row .pts small { display: block; color: var(--ink-3); font-weight: 400; font-size: 11px; margin-top: 3px; }
-  .tier { display: inline-block; font: 700 10px/1 var(--mono); letter-spacing: .12em; padding: 4px 6px; border-radius: 4px; margin-bottom: 6px; background: #12304f; color: var(--ink-2); }
-  .tier.t-hi { background: rgba(77,225,255,.14); color: var(--bot); }
-  .tier.t-top { background: rgba(125,255,178,.14); color: var(--good); }
-  .tier.t-low { background: rgba(255,107,129,.12); color: var(--bad); }
-  .spoiler-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-3); }
-  .spoiler-note[hidden] { display: none; }
-  .live .spoiler-note { margin: 14px -18px -18px; }
-  .empty { padding: 22px 18px; color: var(--ink-3); font-size: 14px; }
+  /* ---------- title ---------- */
+  .stage { position: relative; z-index: 2; display: grid; align-content: center; justify-items: center; gap: 10px; text-align: center; }
+  .kicker { font: 10px/1.6 var(--pixel); color: var(--bot); letter-spacing: .12em; }
+  h1 { margin: 0; font: 400 clamp(26px, 7.2vw, 64px)/1.15 var(--pixel); letter-spacing: .02em; }
+  h1 span { display: block; }
+  h1 .t1 { color: var(--gold); text-shadow: 0 4px 0 #e0752e, 0 8px 0 #8a2e1b, 0 12px 0 #000, 0 0 30px rgba(255,209,102,.35); }
+  h1 .t2 { font-size: .62em; margin-top: .45em; color: #fff; text-shadow: 0 3px 0 var(--me-2), 0 6px 0 #4a1030, 0 9px 0 #000; }
+  .versus { margin-top: 6px; font: 12px/1.6 var(--pixel); color: var(--ink); }
+  .versus .m { color: var(--me); } .versus .b { color: var(--bot); } .versus .v { color: var(--gold); }
 
-  /* record */
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-  .stat { padding: 16px; }
-  .stat .k { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
-  .stat .v { font: 800 24px/1.1 var(--mono); margin-top: 10px; font-variant-numeric: tabular-nums; }
-  .stat .v .m { color: var(--me); }
-  .stat .v .b { color: var(--bot); }
-  .stat .v .s { color: var(--ink-3); font-weight: 400; }
-  .stat .d { font: 400 11px/1.4 var(--mono); color: var(--ink-3); margin-top: 6px; }
+  /* ---------- fighters on the seafloor ---------- */
+  .floor { position: relative; width: min(980px, 100%); margin: 6px auto 0; height: clamp(150px, 26vw, 230px); }
+  .sand { position: absolute; left: -40px; right: -40px; bottom: 0; height: 26%;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 6px, transparent 6px 18px),
+      linear-gradient(180deg, #c9a46a 0 6px, #a8844f 6px 12px, #7e6038 12px 100%);
+    image-rendering: pixelated; }
+  .kelp { position: absolute; bottom: 20%; width: 18px; image-rendering: pixelated; }
+  .kelp.k1 { left: 2%; height: 70%; } .kelp.k2 { left: 7%; height: 46%; } .kelp.k3 { right: 3%; height: 62%; } .kelp.k4 { right: 9%; height: 38%; }
+  .kelp::before { content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(180deg, #1f8a5b 0 10px, #2fb877 10px 14px, #1f8a5b 14px 20px);
+    clip-path: polygon(30% 0, 70% 0, 100% 20%, 60% 40%, 100% 60%, 60% 80%, 80% 100%, 20% 100%, 40% 80%, 0 60%, 40% 40%, 0 20%); }
+  .sprite { position: absolute; bottom: 18%; image-rendering: pixelated; shape-rendering: crispEdges; filter: drop-shadow(0 6px 0 rgba(0,0,0,.45)); }
+  .sprite.krill { left: 12%; width: clamp(120px, 24vw, 220px); }
+  .sprite.robot { right: 13%; width: clamp(84px, 15vw, 140px); }
+  .bob-a { animation: bob 1s steps(2) infinite; }
+  .bob-b { animation: bob 1s steps(2) .5s infinite; }
+  @keyframes bob { 50% { transform: translateY(-6px); } }
 
-  /* history */
-  .hist { width: 100%; border-collapse: collapse; font: 400 14px/1.3 var(--mono); font-variant-numeric: tabular-nums; }
-  .hist th { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); text-align: right; padding: 14px 18px 10px; }
-  .hist th:first-child, .hist td:first-child { text-align: left; }
-  .hist td { padding: 11px 18px; border-top: 1px solid var(--line); text-align: right; color: var(--ink-2); }
-  .hist td.win-me { color: var(--me); font-weight: 700; }
-  .hist td.win-bot { color: var(--bot); font-weight: 700; }
+  /* the fight: a laser from the robot, a bubble blast from the krill, a POW in the middle */
+  .shot { position: absolute; bottom: 44%; height: 8px; opacity: 0; }
+  .laser { right: 26%; width: 34%; background: repeating-linear-gradient(90deg, var(--bot) 0 12px, #fff 12px 16px); box-shadow: 0 0 12px var(--bot); animation: laser 6s steps(6) infinite; }
+  .bubbles { left: 33%; width: 30%; height: 20px; bottom: 40%; background:
+      radial-gradient(circle at 10px 10px, transparent 4px, #bfefff 5px 7px, transparent 8px) 0 0 / 22px 20px repeat-x;
+    animation: bubbles 6s steps(6) 3s infinite; }
+  @keyframes laser { 0%, 8% { opacity: 0; transform: scaleX(0); transform-origin: right; } 10% { opacity: 1; } 18% { opacity: 1; transform: scaleX(1); } 22%, 100% { opacity: 0; } }
+  @keyframes bubbles { 0%, 8% { opacity: 0; transform: scaleX(0); transform-origin: left; } 10% { opacity: 1; } 18% { opacity: 1; transform: scaleX(1); } 22%, 100% { opacity: 0; } }
+  .pow { position: absolute; left: 50%; bottom: 52%; transform: translateX(-50%); font: 16px/1 var(--pixel); color: var(--gold); text-shadow: 3px 3px 0 #8a2e1b, -2px -2px 0 #000; opacity: 0; white-space: nowrap; }
+  .pow.p1 { animation: pow 6s steps(3) infinite; }
+  .pow.p2 { animation: pow 6s steps(3) 3s infinite; color: #fff; text-shadow: 3px 3px 0 var(--me-2), -2px -2px 0 #000; }
+  @keyframes pow { 0%, 16% { opacity: 0; transform: translateX(-50%) scale(.6); } 19% { opacity: 1; transform: translateX(-50%) scale(1.2); } 26% { opacity: 1; transform: translateX(-50%) scale(1); } 30%, 100% { opacity: 0; } }
+  .hit-a { animation: hitA 6s steps(2) infinite; }
+  .hit-b { animation: hitB 6s steps(2) 3s infinite; }
+  @keyframes hitA { 0%, 17% { translate: 0 0; } 19% { translate: -10px -14px; } 23% { translate: 0 0; } }
+  @keyframes hitB { 0%, 17% { translate: 0 0; } 19% { translate: 10px -6px; } 23% { translate: 0 0; } }
 
-  /* fair play */
-  .fair { padding: 18px 22px; }
-  .fair ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--ink-2); font-size: 14px; }
-  .fair b { color: var(--ink); }
+  /* rising bubbles */
+  .bubble { position: absolute; bottom: -12px; width: 6px; height: 6px; border: 2px solid rgba(190,240,255,.55); pointer-events: none; animation: rise linear infinite; }
+  @keyframes rise { to { transform: translateY(-110vh); } }
 
-  footer { margin-top: 44px; font: 400 12px/1.6 var(--mono); color: var(--ink-3); }
+  /* ---------- start ---------- */
+  .start-area { position: relative; z-index: 3; display: grid; justify-items: center; gap: 14px; padding-bottom: 6px; }
+  .start {
+    display: inline-block; text-decoration: none; font: 16px/1 var(--pixel); color: #04121f;
+    background: var(--gold); padding: 16px 22px; border: 0;
+    box-shadow: 0 6px 0 #b8772a, 0 6px 0 3px #000, 0 0 0 3px #000, 0 0 28px rgba(255,209,102,.45);
+    animation: blink 1.1s steps(1) infinite;
+  }
+  .start:hover, .start:focus-visible { animation: none; transform: translateY(2px); box-shadow: 0 4px 0 #b8772a, 0 4px 0 3px #000, 0 0 0 3px #000, 0 0 36px rgba(255,209,102,.7); outline: none; }
+  .start:focus-visible { outline: 3px dashed #fff; outline-offset: 8px; }
+  @keyframes blink { 50% { filter: brightness(.55); } }
+  .menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; font: 9px/1.8 var(--pixel); color: var(--ink-2); }
+  .menu a { text-decoration: none; }
+  .menu a:hover, .menu a:focus-visible { color: #fff; }
+  .menu a::before { content: "▸ "; color: transparent; }
+  .menu a:hover::before, .menu a:focus-visible::before { color: var(--gold); }
+  .legal { font: 10px/1.6 var(--mono); color: var(--ink-3); text-align: center; max-width: 60ch; }
+  .legal a { color: var(--ink-2); }
+  .hint { font: 8px/1 var(--pixel); color: var(--ink-3); }
 
-  @media (max-width: 720px) { .live-grid { grid-template-columns: minmax(0, 1fr); } }
+  /* wipe on start */
+  .wipe { position: fixed; inset: 0; z-index: 10; background: #fff; opacity: 0; pointer-events: none; }
+  .wipe.go { animation: flash .45s steps(3) forwards; }
+  @keyframes flash { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 1; background: var(--deep); } }
+
   @media (max-width: 640px) {
-    .stats { grid-template-columns: 1fr 1fr; }
-    .duel { grid-template-columns: 1fr 1fr; }
-    .duel .mid { display: none; }
-    .row { padding: 12px 14px; }
-    .hist th, .hist td { padding-left: 12px; padding-right: 12px; }
+    .hud { grid-template-columns: 1fr 1fr; }
+    .clock { grid-column: 1 / -1; grid-row: 2; }
+    .sprite.krill { left: 4%; } .sprite.robot { right: 6%; }
+    .kelp.k2, .kelp.k4 { display: none; }
+    .hint { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) { .dot.running { animation: none; } .bar i { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .shot, .pow { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <a class="home" href="/home/#polished">← Off the Wall · Workshop</a>
-    <div class="kicker">Krillion Code Breaker</div>
-    <h1>Billy <span class="vs">vs.</span> Bot</h1>
-    <p>One dive a day on <a href="https://krillion.io" rel="noopener">krillion.io</a>. The bot plays on its own account, answers with Claude, and gets one shot per prompt under the same 25-second clock. Press Run and watch it dive.</p>
-    <div class="demo-flag" id="demoFlag" hidden>DEMO DATA · REMOVE ?demo TO GO LIVE</div>
-  </header>
+<main class="arena">
+  <div class="rays" aria-hidden="true"></div>
+  <div id="bubbles" aria-hidden="true"></div>
 
-  <section>
-    <div class="label" id="todayLabel">Today</div>
-    <div class="panel today">
-      <div class="duel">
-        <div class="side me">
-          <div class="who" id="meHandle">Billy</div>
-          <div class="score" id="meScore">—</div>
-          <div class="sub" id="meSub"></div>
-        </div>
-        <div class="mid">vs</div>
-        <div class="side bot">
-          <div class="who" id="botHandle">The bot</div>
-          <div class="score" id="botScore">—</div>
-          <div class="sub" id="botSub"></div>
-        </div>
-      </div>
-      <div class="bars" aria-hidden="true">
-        <div class="bar me"><i id="meBar"></i></div>
-        <div class="bar bot"><i id="botBar"></i></div>
-      </div>
-      <div class="status" role="status" aria-live="polite"><span class="dot" id="dot"></span><span id="statusText">Loading…</span></div>
-      <div class="actions">
-        <button class="primary" id="runBtn" disabled>Run today's dive</button>
-        <button class="ghost" id="refreshBtn" disabled>Refresh scores</button>
-      </div>
+  <!-- HUD: today's real scores from the bot's API fill the bars; without them, both are full -->
+  <div class="hud" aria-label="Today's scores">
+    <div class="fighter-hud me">
+      <span class="tag">P1 <b>BILLY</b></span>
+      <div class="hp" role="img" id="meHp" aria-label="Billy: no score yet"><i id="meBar"></i></div>
+      <span class="score" id="meScore">READY</span>
     </div>
-  </section>
-
-  <section id="liveSection" hidden>
-    <div class="label" id="liveLabel">Watch the bot</div>
-    <div class="panel live">
-      <div class="live-grid">
-        <figure class="screen">
-          <img id="frame" alt="The bot's browser on krillion.io" hidden>
-          <figcaption id="screenMsg">Waiting for the first screenshot…</figcaption>
-        </figure>
-        <ol class="feed" id="feed" aria-live="polite" aria-label="Play-by-play"></ol>
-      </div>
-      <div class="spoiler-note" id="liveSpoiler" hidden><span>The screen shows today's prompts, so it stays hidden until Billy has played. The play-by-play hides prompts and answers too.</span><button class="ghost" data-reveal>Reveal anyway</button></div>
+    <div class="clock">
+      <span class="round" id="round">ROUND 1</span>
+      <span class="time" id="time">25</span>
+      <span class="rec" id="rec">FIGHT!</span>
     </div>
-  </section>
-
-  <section>
-    <div class="label">The bot's dive</div>
-    <div class="panel dive" id="dive"><div class="empty">No dive yet today.</div></div>
-  </section>
-
-  <section>
-    <div class="label">Running record</div>
-    <div class="stats" id="stats"></div>
-  </section>
-
-  <section>
-    <div class="label">History</div>
-    <div class="panel" id="history"><div class="empty">Nothing yet.</div></div>
-  </section>
-
-  <section>
-    <div class="label">How the bot plays fair</div>
-    <div class="panel fair">
-      <ul>
-        <li><b>It only reads the screen.</b> Each prompt comes from the page text, the same words you see. It never looks at Krillion's network traffic, code or storage for answers.</li>
-        <li><b>One dive a day</b> on its own account. Run locks once the day's dive has started.</li>
-        <li><b>Same clock, one answer.</b> Claude gets the prompt during the countdown and the bot types one answer inside the 25 seconds, at a human pace.</li>
-        <li><b>A polite visitor.</b> Ads and analytics are blocked so it never adds fake views to Krillion's numbers. If Krillion shows a challenge or a rate limit, the bot stops for the day instead of working around it.</li>
-      </ul>
+    <div class="fighter-hud bot">
+      <span class="tag">CPU <b>BOT</b></span>
+      <div class="hp" role="img" id="botHp" aria-label="Bot: no score yet"><i id="botBar"></i></div>
+      <span class="score" id="botScore">READY</span>
     </div>
-  </section>
+  </div>
 
-  <footer>
-    Krillion's daily resets at midnight ET (9 PM Pacific). The bot reads only what's on screen and plays once a day.
-    Krillion is made by kp — go <a href="https://krillion.io" rel="noopener">play it</a>. This page isn't affiliated with Krillion.
-  </footer>
-</div>
+  <div class="stage">
+    <div class="kicker">OFF THE WALL PRESENTS</div>
+    <h1><span class="t1">KRILLION</span><span class="t2">CODE BREAKER</span></h1>
+    <div class="versus"><span class="m">BILLY</span> <span class="v">VS</span> <span class="b">BOT</span></div>
+
+    <div class="floor" aria-hidden="true">
+      <div class="kelp k1"></div><div class="kelp k2"></div><div class="kelp k3"></div><div class="kelp k4"></div>
+      <div class="sprite krill"><div class="hit-a"><div class="bob-a" id="krill"></div></div></div>
+      <div class="sprite robot"><div class="hit-b"><div class="bob-b" id="robot"></div></div></div>
+      <div class="shot laser"></div>
+      <div class="shot bubbles"></div>
+      <div class="pow p1">ZAP!</div>
+      <div class="pow p2">SPLOOSH!</div>
+      <div class="sand"></div>
+    </div>
+  </div>
+
+  <div class="start-area">
+    <a class="start" id="start" href="/code-breaker/dive/">PRESS START</a>
+    <div class="hint">OR PRESS ENTER</div>
+    <nav class="menu" aria-label="More">
+      <a href="/code-breaker/dive/">TODAY'S BATTLE</a>
+      <a href="/projects/krillion-code-breaker/">HOW IT WORKS</a>
+      <a href="/home/#polished">OFF THE WALL</a>
+    </nav>
+    <p class="legal">Billy plays <a href="https://krillion.io" rel="noopener">krillion.io</a>'s daily dive; a Claude-powered bot plays it too. One dive a day each, same 25-second clock. Not affiliated with Krillion.</p>
+  </div>
+  <div class="wipe" id="wipe" aria-hidden="true"></div>
+</main>
 
 <script>
-// The bot's API (a Cloudflare Worker). It answers only offthewall.dev. ?demo shows sample data.
+// ---------- pixel sprites (original art), drawn as SVG rects ----------
+// Billy the krill, facing right. b outline, a body, c shell highlight, l legs/antennae, e eye, w glint
+const KRILL = [
+  "....................ll..",
+  "..................ll....",
+  "................ll......",
+  "..bb.....bbbbbbbbb......",
+  ".bccb..bbaaaaaaaaabb....",
+  ".bacabbaaaacaaaaaaawbb..",
+  "..baaaaaaaaaaaaaaaeeaab.",
+  ".bacabbaaaaaaaaaaaaaaab.",
+  ".bccb..bbaaaaaaaaaaabb..",
+  "..bb....lbl.lbl.lbl.l...",
+  "........l.l.l.l.l.l.l...",
+  ".......l...l...l...l....",
+];
+const KRILL_COLORS = { b: "#6e1838", a: "#ff8a65", c: "#ffc2a8", l: "#ff5d8f", e: "#0b0b14", w: "#ffffff" };
+// The bot, facing left. g frame, s steel, c cyan eyes/core, d dark, r antenna light
+const ROBOT = [
+  "......rr........",
+  "......gg........",
+  "...gggggggggg...",
+  "..gssssssssssg..",
+  "..gsccssssccsg..",
+  "..gsccssssccsg..",
+  "..gssssssssssg..",
+  "..gssddddddssg..",
+  "...gggggggggg...",
+  ".....gssssg.....",
+  "..gggggggggggg..",
+  ".gsssssssssssssg",
+  "gsgsssccccsssgsg",
+  "gsgsssccccsssgsg",
+  "gsgssssssssssgsg",
+  ".g.gssssssssg.g.",
+  "...gggg..gggg...",
+  "...gddg..gddg...",
+  "..ggddg..gddgg..",
+];
+const ROBOT_COLORS = { g: "#1b3352", s: "#9fb6d1", c: "#4de1ff", d: "#0c1626", r: "#ff5d8f" };
+
+function sprite(rows, colors) {
+  const w = Math.max(...rows.map((r) => r.length)), h = rows.length;
+  let rects = "";
+  rows.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (colors[ch]) rects += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${colors[ch]}"/>`;
+  }));
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+document.getElementById("krill").innerHTML = sprite(KRILL, KRILL_COLORS);
+document.getElementById("robot").innerHTML = sprite(ROBOT, ROBOT_COLORS);
+
+// ---------- rising bubbles ----------
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!still) {
+  const box = document.getElementById("bubbles");
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement("span");
+    b.className = "bubble";
+    const s = 4 + Math.round(Math.random() * 3) * 2;
+    b.style.cssText = `left:${Math.random() * 100}%;width:${s}px;height:${s}px;animation-duration:${7 + Math.random() * 9}s;animation-delay:${-Math.random() * 14}s`;
+    box.append(b);
+  }
+}
+
+// ---------- the HUD: today's real scores (bars out of a perfect 700) ----------
 const API = "https://krillion-code-breaker.offthewall-dev.workers.dev";
-const params = new URLSearchParams(location.search);
-const DEMO = params.has("demo");
-
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const fmt = (n) => (typeof n === "number" ? n.toLocaleString() : "—");
-const clock = (ms) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" });
-
-let revealed = false;   // the visitor pressed "Reveal anyway"
-let today = null;
-let todayTimer = null;
-const live = { since: 0, revealed: false, frameAt: null, timer: null, count: 0 };
-
-// ---------- data ----------
-async function api(path, opts = {}) {
-  if (DEMO) return demo(path, opts);
+function bar(who, score) {
+  if (score == null) return;
+  $(who + "Bar").style.width = Math.max(4, Math.min(100, score / 700 * 100)) + "%";
+  $(who + "Score").textContent = score + " PTS";
+  $(who + "Hp").setAttribute("aria-label", `${who === "me" ? "Billy" : "Bot"}: ${score} points today`);
+}
+(async () => {
   try {
-    const res = await fetch(API + path, opts);
-    const body = await res.json().catch(() => ({}));
-    return { ok: res.ok, status: res.status, body };
-  } catch {
-    return { ok: false, status: 0, body: {} };
-  }
+    const [t, l] = await Promise.all([fetch(API + "/api/today").then((r) => r.json()), fetch(API + "/api/leaderboard").then((r) => r.json())]);
+    bar("me", t.me.score);
+    bar("bot", t.bot.score);
+    const days = l.days?.length || 1;
+    $("round").textContent = "ROUND " + days;
+    const r = l.stats?.record;
+    if (r) $("rec").textContent = `RECORD ${r.me}-${r.bot}${r.tie ? "-" + r.tie : ""}`;
+    if (t.me.score != null && t.bot.score != null) {
+      $("time").textContent = "KO";
+      $("rec").textContent = (t.me.score > t.bot.score ? "BILLY WINS" : t.bot.score > t.me.score ? "BOT WINS" : "DRAW") + (r ? ` · ${r.me}-${r.bot}` : "");
+    } else if (t.status === "running") {
+      $("rec").textContent = "BOT IS DIVING";
+    }
+  } catch { /* offline or blocked: the title screen still works */ }
+})();
+
+// ---------- the round clock counts down like the game's 25 seconds ----------
+if (!still) {
+  let s = 25;
+  setInterval(() => {
+    if ($("time").textContent === "KO") return;
+    s = s <= 0 ? 25 : s - 1;
+    $("time").textContent = String(s).padStart(2, "0");
+  }, 1000);
 }
 
-async function load() {
-  const [t, l] = await Promise.all([api("/api/today" + (revealed ? "?reveal=1" : "")), api("/api/leaderboard")]);
-  if (t.ok) { today = t.body; renderToday(t.body); } else setStatus("error", "Couldn't reach the bot.");
-  if (l.ok) renderBoard(l.body);
-  clearTimeout(todayTimer);
-  if (t.ok && (t.body.status === "running" || t.body.boardPending)) todayTimer = setTimeout(load, 10000);
-  pollLive();
+// ---------- start: a quick flash, then into today's battle ----------
+function start(e) {
+  if (still) return; // go straight there
+  e?.preventDefault();
+  $("wipe").classList.add("go");
+  setTimeout(() => { location.href = "/code-breaker/dive/"; }, 380);
 }
-
-// ---------- today ----------
-function renderToday(t) {
-  $("todayLabel").textContent = `Today · ${t.day}`;
-  $("meHandle").textContent = "Billy · @" + t.me.handle;
-  $("botHandle").textContent = "Bot · @" + t.bot.handle;
-  $("meScore").textContent = fmt(t.me.score);
-  $("botScore").textContent = fmt(t.bot.score);
-  $("meSub").textContent = t.me.score == null && t.status === "done" ? "hasn't played yet" : "";
-  $("botSub").textContent = t.bot.depthM != null ? `${fmt(t.bot.depthM)} m down` : "";
-  const max = Math.max(t.me.score || 0, t.bot.score || 0, 1);
-  $("meBar").style.width = ((t.me.score || 0) / max) * 100 + "%";
-  $("botBar").style.width = ((t.bot.score || 0) / max) * 100 + "%";
-
-  const msgs = {
-    idle: "The bot hasn't dived today. Press Run to watch it play.",
-    running: "Diving… about a minute to start, then about 3 minutes.",
-    done: verdict(t),
-    error: t.message || "The last run failed. You can try again.",
-    "needs-login": t.message || "The bot needs to sign in again.",
-    blocked: t.message || "Krillion stopped the bot, so it sits out until tomorrow.",
-  };
-  const dotCls = { running: "running", done: "done", error: "error", "needs-login": "error", blocked: "error" }[t.status] || "";
-  setStatus(dotCls, t.boardPending ? "Refreshing scores…" : msgs[t.status] || t.status);
-  $("runBtn").disabled = ["running", "done", "blocked", "needs-login"].includes(t.status);
-  $("runBtn").textContent = t.status === "error" ? "Try again" : t.status === "done" ? "Done for today" : t.status === "running" ? "Diving…" : "Run today's dive";
-  $("refreshBtn").disabled = t.status !== "done" || t.boardPending || t.refreshesLeft <= 0;
-  $("refreshBtn").title = `${t.refreshesLeft} refreshes left today`;
-  renderDive(t);
-}
-
-function verdict(t) {
-  const m = t.me.score, b = t.bot.score;
-  if (b == null) return "The bot finished, but its score isn't on the board yet.";
-  if (m == null) return "The bot is done. Your move: play, then refresh scores.";
-  if (m > b) return `You beat the bot by ${fmt(m - b)}.`;
-  if (b > m) return `The bot wins today by ${fmt(b - m)}.`;
-  return "Dead even today.";
-}
-
-function tierClass(t) {
-  const s = String(t || "").toUpperCase();
-  if (/KRILL/.test(s)) return "t-top";
-  if (/RARE|DEEP/.test(s)) return "t-hi";
-  if (/^(TOO CLEVER|NOTHING|MISS|NOT|UNKNOWN|INVALID|WRONG)/.test(s)) return "t-low";
-  return "";
-}
-
-function renderDive(t) {
-  const el = $("dive");
-  if (!t.prompts.length) {
-    el.innerHTML = `<div class="empty">${t.status === "running" ? "Diving now… answers land here when it's done." : "No dive yet today."}</div>`;
-    return;
-  }
-  const rows = t.prompts.map((p) => {
-    const q = p.prompt == null ? `<span class="hidden">hidden prompt text</span>` : esc(p.prompt);
-    const a = p.answer == null && p.prompt == null ? `<span class="hidden">answer</span>` : p.answer == null ? "—" : `“${esc(p.answer)}”`;
-    return `<div class="row">
-      <div class="n">${String(p.n).padStart(2, "0")}</div>
-      <div><span class="tier ${tierClass(p.tier)}">${esc(p.tier || "—")}</span><div class="q">${q}</div><div class="a">${a}</div></div>
-      <div class="pts">+${fmt(p.points)}<small>${p.depthM != null ? fmt(p.depthM) + " m" : ""}</small></div>
-    </div>`;
-  }).join("");
-  const note = t.spoilersHidden
-    ? `<div class="spoiler-note"><span>Prompts and answers stay hidden until Billy has played today.</span><button class="ghost" data-reveal>Reveal anyway</button></div>`
-    : "";
-  el.innerHTML = rows + note;
-}
-
-// ---------- live view ----------
-async function pollLive() {
-  clearTimeout(live.timer);
-  const r = await api(`/api/live?since=${live.since}${revealed ? "&reveal=1" : ""}`);
-  if (!r.ok) return;
-  const L = r.body;
-  if (L.revealed !== live.revealed) { // spoiler state changed: start the feed over with the right text
-    live.revealed = L.revealed;
-    if (live.since) { live.since = 0; live.count = 0; $("feed").innerHTML = ""; return pollLive(); }
-  }
-  for (const e of L.events) {
-    live.since = Math.max(live.since, e.seq);
-    live.count++;
-    const li = document.createElement("li");
-    li.innerHTML = `<time>${clock(e.at)}</time><span class="k-${esc(e.kind)}">${esc(e.text)}</span>`;
-    $("feed").append(li);
-  }
-  if (L.events.length) $("feed").scrollTop = $("feed").scrollHeight;
-
-  const running = L.status === "running";
-  $("liveSection").hidden = !running && !live.count;
-  $("liveLabel").textContent = running ? "Watch the bot · live" : "How today's dive went";
-  $("liveSpoiler").hidden = L.revealed;
-  renderFrame(L);
-
-  if (running) live.timer = setTimeout(pollLive, 2000);
-  else if (today?.status === "running") load(); // it just finished: pick up the final scores
-}
-
-function renderFrame(L) {
-  const img = $("frame"), msg = $("screenMsg");
-  if (!L.revealed) {
-    img.hidden = true; msg.hidden = false;
-    msg.textContent = "The bot's screen shows today's prompts, so it's hidden until Billy has played.";
-    return;
-  }
-  if (!L.frameAt) {
-    img.hidden = true; msg.hidden = false;
-    msg.textContent = DEMO ? "Screenshots of the bot's browser show up here during a real dive." : "Waiting for the first screenshot…";
-    return;
-  }
-  if (L.frameAt !== live.frameAt) {
-    live.frameAt = L.frameAt;
-    const next = new Image();
-    next.onload = () => { img.src = next.src; img.hidden = false; msg.hidden = true; };
-    next.src = `${API}/api/live/frame?reveal=1&t=${L.frameAt}`;
-  }
-}
-
-// ---------- record ----------
-function renderBoard(l) {
-  const s = l.stats;
-  const streak = s.streak.who ? `${s.streak.who === "me" ? "Billy" : "Bot"} ×${s.streak.length}` : "—";
-  $("stats").innerHTML = [
-    stat("Record", `<span class="m">${s.record.me}</span><span class="s">–</span><span class="b">${s.record.bot}</span>${s.record.tie ? `<span class="s">–${s.record.tie}</span>` : ""}`, "Billy – bot – ties"),
-    stat("Streak", esc(streak), "current run of wins"),
-    stat("Average", `<span class="m">${fmt(s.average.me)}</span><span class="s"> / </span><span class="b">${fmt(s.average.bot)}</span>`, `over ${s.headToHeadDays} head-to-head days`),
-    stat("Best dive", `<span class="m">${fmt(s.best.me?.score)}</span><span class="s"> / </span><span class="b">${fmt(s.best.bot?.score)}</span>`, "Billy / bot"),
-  ].join("");
-  if (!l.days.length) { $("history").innerHTML = `<div class="empty">Nothing yet.</div>`; return; }
-  $("history").innerHTML = `<table class="hist"><thead><tr><th>Day</th><th>@${esc(l.me)}</th><th>@${esc(l.bot)}</th></tr></thead><tbody>${
-    l.days.map((d) => {
-      const both = d.me != null && d.bot != null;
-      const mw = both && d.me > d.bot, bw = both && d.bot > d.me;
-      return `<tr><td>${esc(d.day)}</td><td class="${mw ? "win-me" : ""}">${fmt(d.me)}</td><td class="${bw ? "win-bot" : ""}">${fmt(d.bot)}</td></tr>`;
-    }).join("")
-  }</tbody></table>`;
-}
-const stat = (k, v, d) => `<div class="panel stat"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
-
-function setStatus(cls, text) {
-  $("dot").className = "dot " + (cls || "");
-  $("statusText").textContent = text;
-}
-
-// ---------- actions ----------
-$("runBtn").onclick = async () => {
-  $("runBtn").disabled = true;
-  setStatus("running", "Starting the bot…");
-  const r = await api("/api/run", { method: "POST" });
-  if (!r.ok && r.status !== 202 && r.status !== 409) setStatus("error", r.body.message || "Couldn't start the bot.");
-  live.since = 0; live.count = 0; live.frameAt = null; $("feed").innerHTML = "";
-  load();
-};
-$("refreshBtn").onclick = async () => {
-  $("refreshBtn").disabled = true;
-  const r = await api("/api/refresh", { method: "POST" });
-  if (!r.ok && r.status !== 202) setStatus("", r.body.message || "Couldn't refresh right now.");
-  load();
-};
-document.addEventListener("click", (e) => {
-  if (!e.target.closest("[data-reveal]")) return;
-  revealed = true;
-  load();
+$("start").addEventListener("click", start);
+addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && !e.target.closest("a, button, input")) { e.preventDefault(); start(); }
 });
-
-// ---------- demo (?demo) ----------
-const demoState = { me: null };
-function demo(path) {
-  const day = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
-  const prompts = [
-    ["Name a noodle dish", "Kuksu", "RARE", 60, 600],
-    ["Name a bird of prey", "Laggar falcon", "DEEP CUT", 85, 1450],
-    ["Name a constellation", "Camelopardalis", "RARE", 60, 2050],
-    ["Name a type of cheese", "Bryndza", "RARE", 60, 2650],
-    ["Name a card game", "Skat", "SCHOOLER", 30, 2950],
-    ["Name a mountain range", "Brooks Range", "SCHOOLER", 30, 3250],
-    ["Name a musical instrument", "Hurdy-gurdy", "SCHOOLER", 30, 3550],
-  ];
-  const reveal = demoState.me != null || path.includes("reveal=1");
-  const ok = (body, status = 200) => ({ ok: status < 300, status, body });
-  if (path === "/api/run") return ok({ status: "done" }, 409);
-  if (path === "/api/refresh") { demoState.me = 402; return ok({ status: "refreshing" }, 202); }
-  if (path.startsWith("/api/live")) return ok({ day, status: "done", revealed: reveal, frameAt: null, events: [] });
-  if (path.startsWith("/api/today")) {
-    return ok({ day, status: "done", message: null,
-      me: { handle: "bigkril", score: demoState.me }, bot: { handle: "offthewall", score: 355, depthM: 3550 },
-      spoilersHidden: !reveal, boardPending: false, refreshesLeft: 5,
-      prompts: prompts.map(([q, a, tier, pts, d], i) => ({ n: i + 1, tier, points: pts, depthM: d, prompt: reveal ? q : null, answer: reveal ? a : null })) });
-  }
-  if (path === "/api/leaderboard") {
-    const days = [{ day, me: demoState.me, bot: 355 }, { day: "2026-11-04", me: 310, bot: 395 }, { day: "2026-11-03", me: 402, bot: 330 }, { day: "2026-11-02", me: 275, bot: 275 }];
-    const both = days.filter((d) => d.me != null);
-    const rec = { me: 0, bot: 0, tie: 0 };
-    both.forEach((d) => rec[d.me > d.bot ? "me" : d.bot > d.me ? "bot" : "tie"]++);
-    const avg = (k) => Math.round(both.reduce((s, d) => s + d[k], 0) / both.length);
-    return ok({ me: "bigkril", bot: "offthewall", days, stats: { headToHeadDays: both.length, record: rec,
-      streak: { who: demoState.me != null ? "me" : "bot", length: 1 },
-      average: { me: avg("me"), bot: avg("bot") }, best: { me: { score: 402 }, bot: { score: 395 } } } });
-  }
-  return ok({}, 404);
-}
-
-if (DEMO) $("demoFlag").hidden = false;
-load();
+addEventListener("pageshow", () => $("wipe").classList.remove("go")); // coming back with the Back button
 </script>
 </body>
 </html>
