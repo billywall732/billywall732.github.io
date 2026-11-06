@@ -316,7 +316,7 @@ export const projects = [
   {
     slug: 'krillion-code-breaker',
     name: 'Krillion Code Breaker',
-    kicker: 'Me vs. the Machine',
+    kicker: 'Billy vs. Bot',
     icon: '🤿',
     accent: '#23b5c4',
     tagline: 'Press Run and watch a Claude-powered bot play krillion.io’s daily dive against me.',
@@ -349,8 +349,8 @@ export const projects = [
       'While it plays it sends a play-by-play and a screenshot about once a second to the Worker, and the page polls for them.',
       'Afterwards it reads the friends leaderboard, so my score and the bot’s land side by side in the history.',
     ],
-    status: 'workshop',
-    statusNote: 'Built and tested; the bot’s first real dives are next.',
+    status: 'live',
+    statusNote: 'Plays krillion.io’s daily dive against me, once a day.',
     next: [
       'Its first week of daily dives',
       'Track which kinds of prompts the bot wins and loses',
@@ -358,7 +358,7 @@ export const projects = [
     tags: ['Playwright', 'Claude API', 'Cloudflare Workers'],
     url: '/code-breaker/',
     code: null,
-    image: null,
+    image: '/img/code-breaker.webp',
     art: 'dive',
   },
   {
