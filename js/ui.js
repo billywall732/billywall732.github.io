@@ -361,7 +361,7 @@ function backgroundDots() {
   document.body.prepend(layer);
 
   const canRun = () => !paused && !reducedMotion.matches && !lowBattery && !document.hidden;
-  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 1500 + Math.random() * 1250); };
+  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 2150 + Math.random() * 1800); };
   // At most this many dots moving at once, so a slow phone never bogs down
   const MAX_LIVE = touch ? 160 : 420;
   // A moving dot is drawn in a brighter color (--dot-hi); at rest it shows at the grid's own
