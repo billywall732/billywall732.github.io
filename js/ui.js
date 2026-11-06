@@ -361,7 +361,9 @@ function backgroundDots() {
   document.body.prepend(layer);
 
   const canRun = () => !paused && !reducedMotion.matches && !lowBattery && !document.hidden;
-  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 2500 + Math.random() * 1500); };
+  const schedule = () => { clearTimeout(timer); if (canRun()) timer = setTimeout(stir, 1500 + Math.random() * 1250); };
+  // At most this many dots moving at once, so a slow phone never bogs down
+  const MAX_LIVE = touch ? 160 : 420;
   // A moving dot is drawn in a brighter color (--dot-hi); at rest it shows at the grid's own
   // strength (--dot), so it starts and ends looking exactly like the dot it covers
   const alpha = (name) => Number((getComputedStyle(root).getPropertyValue(name).match(/[\d.]+(?=\s*\)\s*$)/) || [1])[0]);
@@ -382,7 +384,7 @@ function backgroundDots() {
     const rest = restOpacity();
     const a = dot.animate([
       { transform: 'translate(0, 0) scale(1)', opacity: rest },
-      { transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${touch ? 1.4 : 1.7})`, opacity: peak },
+      { transform: `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px) scale(${touch ? 1.6 : 2})`, opacity: peak },
       { transform: 'translate(0, 0) scale(1)', opacity: rest },
     ], { duration: touch ? 2000 : 1800, delay, easing: 'ease-in-out', fill: 'both' });
     live.add(a);
@@ -395,40 +397,54 @@ function backgroundDots() {
     const cols = [Math.ceil((scrollX + 12) / GRID), Math.floor((scrollX + w - 12) / GRID)];
     const rows = [Math.ceil((scrollY + 12) / GRID), Math.floor((scrollY + ht - 12) / GRID)];
     const pick = (r) => r[0] + rand(Math.max(1, r[1] - r[0] + 1));
-    const reach = touch ? 4 : 6; // pixels, at most
-    let moved = 0;
+    const reach = touch ? 6 : 8; // pixels, at most
+    if (live.size > MAX_LIVE) { schedule(); return; } // plenty already moving
+
+    // Two or three waves at once, each on its own row or column, starting a moment apart.
+    // Mostly rows; about one in three runs down a column, so the lines cross.
+    const waves = touch ? 2 : 2 + rand(2);
+    const used = new Set();
+    for (let i = 0; i < waves; i++) wave(Math.random() < 0.34, i * (250 + rand(350)), used);
+
+    // Half the time, a handful of scattered dots light up and drift too
     if (Math.random() < 0.5) {
-      // A handful of dots light up and drift, each a little later and in its own direction
       const n = touch ? 3 + rand(3) : 6 + rand(5);
-      for (let tries = 0; moved < n && tries < 80; tries++) {
+      for (let tries = 0, moved = 0; moved < n && tries < 80; tries++) {
         const x = at(pick(cols)), y = at(pick(rows));
         if (!open(x, y)) continue;
         const angle = Math.random() * Math.PI * 2, dist = reach - Math.random() * 1.5;
-        drift(x, y, Math.cos(angle) * dist, Math.sin(angle) * dist, moved * 180 + rand(160), 0.75 + Math.random() * 0.25);
+        drift(x, y, Math.cos(angle) * dist, Math.sin(angle) * dist, moved * 160 + rand(160), 0.75 + Math.random() * 0.25);
         moved++;
       }
     }
-    if (!moved) {
-      // One wave runs along a row, dot after dot, rising and settling: a row (from a random start)
-      // with at least a few dots on the open background
-      const all = [];
-      for (let r = rows[0]; r <= rows[1]; r++) all.push(r);
-      const start = rand(all.length);
-      const free = (r) => { let n = 0; for (let c = cols[0]; c <= cols[1]; c += 2) if (open(at(c), at(r))) n++; return n; };
-      const row = all.map((_, i) => all[(start + i) % all.length]).find((r) => free(r) >= 3);
-      if (row === undefined) { schedule(); return; }
-      const ltr = Math.random() < 0.5, step = touch ? 2 : 1;
+    schedule();
+
+    // A wave runs along a row (or down a column), dot after dot, lifting and settling.
+    // It picks a line, from a random start, with at least a few dots on the open background.
+    function wave(vertical, startDelay, used) {
+      const across = vertical ? cols : rows; // which line
+      const along = vertical ? rows : cols;  // the dots on it
+      const xy = (line, k) => (vertical ? [at(line), at(k)] : [at(k), at(line)]);
+      const lines = [];
+      for (let l = across[0]; l <= across[1]; l++) lines.push(l);
+      if (!lines.length) return;
+      const start = rand(lines.length);
+      const free = (l) => { let n = 0; for (let k = along[0]; k <= along[1]; k += 2) if (open(...xy(l, k))) n++; return n; };
+      const line = lines.map((_, i) => lines[(start + i) % lines.length]).find((l) => !used.has(`${vertical}${l}`) && free(l) >= 3);
+      if (line === undefined) return;
+      used.add(`${vertical}${line}`);
+      const step = touch ? 2 : 1;
       const list = [];
-      for (let c = cols[0]; c <= cols[1]; c += step) list.push(c);
-      if (!ltr) list.reverse();
-      list.forEach((c, k) => {
-        const x = at(c), y = at(row);
+      for (let k = along[0]; k <= along[1]; k += step) list.push(k);
+      if (Math.random() < 0.5) list.reverse();
+      list.forEach((k, n) => {
+        const [x, y] = xy(line, k);
         if (!open(x, y)) return;
-        // up by (reach - 1.5) to (reach - 0.5) px, a touch to one side: never more than `reach` in all
-        drift(x, y, (Math.random() - 0.5) * 0.8, -(reach - 1.5 + Math.random()), k * (touch ? 60 : 35), 0.8 + Math.random() * 0.2);
+        // lifts by (reach - 1.5) to (reach - 0.5) px across the line, a touch along it: never more than `reach`
+        const lift = -(reach - 1.5 + Math.random()), wobble = (Math.random() - 0.5) * 0.8;
+        drift(x, y, vertical ? lift : wobble, vertical ? wobble : lift, startDelay + n * (touch ? 50 : 30), 0.8 + Math.random() * 0.2);
       });
     }
-    schedule();
   }
 
   // The button: a pause or play icon, labelled "Pause background" / "Play background" for screen
