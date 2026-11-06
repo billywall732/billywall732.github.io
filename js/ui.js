@@ -44,8 +44,8 @@ const STATUS = { live: 'Live', rough: 'Rough edges', workshop: 'In the workshop'
 export const statusPill = (p) => h('span', { class: `status is-${p.status}` }, STATUS[p.status]);
 
 // The home page tab a project is listed on
-const TAB = { live: 'polished', rough: 'rough', workshop: 'workshop' };
-export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'polished'}`;
+const TAB = { live: 'workshop', rough: 'workbench', workshop: 'workbench' };
+export const tabHref = (p) => `/home/#${TAB[p.status] ?? 'workshop'}`;
 
 // Open App / Learn More / See the Code. Workshop projects get "Coming soon" and
 // "Follow along" instead of links that go nowhere; follow: false hides "Follow along".

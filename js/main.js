@@ -1,4 +1,4 @@
-// The home page at /home/: two pages built from js/projects.js. Workshop (#polished; #workbench and
+// The home page at /home/: two pages built from js/projects.js. Workshop (#workshop; #workbench and
 // #toolkit open its boxes) and Off the Clock (#about; #hobbies goes to Hobbies & Interests). The
 // address picks the page, so each can be linked to and the back button works.
 import { clockPhotos, hobbies, projects, toolkit } from './projects.js';
@@ -267,17 +267,19 @@ function startPhotos() {
 // and Off the Clock links say which page is open.
 
 const SECTIONS = {
-  work: { title: 'Workshop', views: ['polished', 'workbench', 'toolkit'] },
+  work: { title: 'Workshop', views: ['workshop', 'workbench', 'toolkit'] },
   clock: { title: 'Off the Clock', views: ['about', 'hobbies'] },
 };
 // Links from before (and the Off the Clock link); the old tabs go to the box or part they became
-const OLD = { work: 'polished', rough: 'workbench', workshop: 'workbench', 'off-the-clock': 'about', story: 'about' };
+const OLD = { work: 'workshop', polished: 'workshop', rough: 'workbench', 'off-the-clock': 'about', story: 'about' };
 const sectionOf = (view) => Object.keys(SECTIONS).find((k) => SECTIONS[k].views.includes(view));
 
 function viewFromHash() {
   const id = decodeURIComponent(location.hash.slice(1));
   const name = OLD[id] ?? id;
-  return sectionOf(name) ? name : 'polished';
+  // An old link (#polished, #rough...) shows the new address too
+  if (OLD[id] && sectionOf(name)) history.replaceState(null, '', `#${name}`);
+  return sectionOf(name) ? name : 'workshop';
 }
 
 let shownSection = null;

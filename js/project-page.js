@@ -54,7 +54,7 @@ if (p) {
       h('a', { href: projectHref(prev), style: accentStyle(prev) }, h('span', {}, `← Previous · ${SECTION[prev.status]}`), h('strong', {}, prev.name)),
       h('a', { href: projectHref(next), style: accentStyle(next) }, h('span', {}, `${SECTION[next.status]} · Next →`), h('strong', {}, next.name))));
 } else {
-  main.replaceChildren(h('a', { class: 'back', href: '/home/#polished' }, '← All projects'), h('h1', {}, 'That project wandered off.'));
+  main.replaceChildren(h('a', { class: 'back', href: '/home/#workshop' }, '← All projects'), h('h1', {}, 'That project wandered off.'));
 }
 
 setUpPage();
