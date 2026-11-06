@@ -188,20 +188,20 @@ export const projects = [
   },
   {
     slug: 'portfolio-ledger',
-    name: 'Portfolio Ledger',
+    name: 'Wall Street Ledger',
     kicker: 'Investing Tool',
     icon: '📈',
     accent: '#6e7ff3',
-    tagline: 'Schwab and Robinhood accounts in one place, with live prices.',
-    blurb: 'See your Schwab and Robinhood accounts in one place, with live prices and how your mix compares to your targets.',
+    tagline: 'All your investment accounts in one place, with live prices.',
+    blurb: 'See your investment accounts from different brokers in one place, with live prices and how your mix compares to your targets.',
     highlights: [
       'Import your broker statements in a couple of clicks',
       'Live prices, daily change and total gain or loss',
       'Saves privately to your own Google Drive',
     ],
-    why: 'My investments are split across two brokers, and neither one shows the whole picture or how my mix compares to the targets I set. This puts it all on one page.',
+    why: 'My investments are split across more than one broker, and none of them shows the whole picture or how my mix compares to the targets I set. This puts it all on one page.',
     how: [
-      'Import Schwab and Robinhood exports. Each import shows a preview, checked against the broker’s own totals, before anything is saved.',
+      'Import the statement exports your brokers already give you. Each import shows a preview, checked against the statement’s own totals, before anything is saved.',
       'Live prices come through a small Cloudflare Worker, which keeps API keys out of the page.',
       'Holdings save to your own Google Drive, the same way Budget Ledger does.',
     ],
@@ -209,6 +209,7 @@ export const projects = [
     statusNote: 'Imports and live prices work; getting it ready to publish.',
     next: [
       'Publish it',
+      'Import from more brokers',
       'Charts of portfolio value over time',
       'A short weekly summary of what changed',
     ],
@@ -284,7 +285,7 @@ export const projects = [
   },
   {
     slug: 'happily-ever-wall',
-    name: 'Happily Ever Wall',
+    name: 'Wall Wedding',
     kicker: 'Wedding Site',
     icon: '💍',
     accent: '#ef6f8c',
@@ -398,7 +399,7 @@ export const projects = [
 // technical tools and services only (no data sources like NOAA or OurAirports; the ESPN API is the
 // exception, since the league site is built on it). Only tools found in that app's own code (its
 // repo, or its folder here) belong in a list; a project with no code yet (Quizzical, Shred Lab,
-// Happily Ever Wall) has no list. Where each one was checked:
+// Wall Wedding) has no list. Where each one was checked:
 //   snow-surf-report: scripts/lib/sources (Open-Meteo incl. marine, NDBC, CO-OPS, SNOTEL),
 //     js/account.js (Firebase Auth, Firestore), js/alerts.js + scripts/email (Web Push,
 //     Nodemailer), .github/workflows/update-report.yml (Actions, Pages), scripts/*.mjs (Node)
