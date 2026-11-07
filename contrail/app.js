@@ -10,6 +10,7 @@ import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
+import { BackupError, checkBackup } from '/contrail/backup.js';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
@@ -1060,7 +1061,9 @@ root.addEventListener('change', async (e) => {
     csvPreview = parseFlightsCsv(await t.files[0].text(), { home: PROFILE.homeAirports || [HOME] });
     $id('csvOut').innerHTML = csvPreviewHTML();
   } else if (t.id === 'jsonFile' && t.files[0]) {
-    try { await importJson(JSON.parse(await t.files[0].text())); } catch { toast("That file isn't a Contrail backup."); }
+    // Any problem (not JSON, wrong shape, a bad field) stops here with a message; nothing is replaced
+    try { await importJson(JSON.parse(await t.files[0].text())); } catch (err) { toast(err instanceof BackupError ? err.message : "That file isn't a Contrail backup."); }
+    t.value = ''; // the same file can be picked again after fixing it
   }
 });
 root.addEventListener('click', async (e) => {
@@ -1080,10 +1083,9 @@ root.addEventListener('click', async (e) => {
 });
 // A backup from Contrail (this version), or Billy's extracted seed: { profile?, trips[], stays[] }
 async function importJson(o) {
-  if (!o || !Array.isArray(o.trips)) throw new Error('not a backup');
-  const trips = o.trips.filter((t) => Array.isArray(t.legs) && t.legs.length);
-  const stays = (o.stays || []).filter((s) => s.name && s.checkIn);
-  await store.reset({ collections: { trips, stays }, docs: { profile: o.profile || PROFILE } });
+  // Checked in full first (contrail/backup.js): only clean, known fields get through
+  const { trips, stays, profile } = checkBackup(o, (code) => Boolean(airport(code)));
+  await store.reset({ collections: { trips, stays }, docs: { profile: profile || PROFILE } });
   toast(`Restored ${trips.length} trips and ${stays.length} stays`);
 }
 

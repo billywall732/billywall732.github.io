@@ -11,3 +11,6 @@ reference/
 # Tools run with temporary installs (see tools/build-airports.mjs)
 node_modules/
 package-lock.json
+
+# Wrangler build cache
+.wrangler/

@@ -41,14 +41,14 @@ export const projects = [
     highlights: [
       'Today’s best bets for snow and surf at a glance',
       'Pin favorite spots to see snow, swell, tide and what to wear',
-      'Morning alerts by email or phone when conditions line up',
+      'Alerts in the app when conditions line up (morning emails come back with sign-in)',
     ],
     why: 'I was checking four different forecast sites every morning to decide whether to go to the mountains or the beach. I wanted one page with a simple 1–5 “should I go?” rating for every spot I care about.',
     how: [
       'Every hour, a GitHub Action pulls free public forecasts: Open-Meteo for snow and swell, NOAA for tides and buoys.',
       'It scores every mountain and beach from 1 to 5 and writes the results to a single report file.',
       'The site reads that file and draws the cards, charts and maps. There’s no server and no API key.',
-      'Your profile (level, board, pass, home base) tunes the picks, and morning alerts go out when conditions line up.',
+      'Your profile (level, board, pass, home base) tunes the picks, and the Notifications tab flags when conditions line up.',
     ],
     status: 'live',
     statusNote: 'Live and updating every hour.',
@@ -98,8 +98,8 @@ export const projects = [
     kicker: 'Money Tool',
     icon: '💸',
     accent: '#e8b130',
-    tagline: 'Everyday and wedding budgets side by side, saved to your own Google Drive.',
-    blurb: 'Track everyday spending and a wedding budget side by side. Everything saves to your own Google Drive, so your numbers stay yours.',
+    tagline: 'Everyday and wedding budgets side by side.',
+    blurb: 'Track everyday spending and a wedding budget side by side. Sign-in is coming soon; until then, try it with sample data (nothing you enter is saved yet).',
     highlights: [
       'Budget vs. spending and cash flow at a glance',
       'Bring in months of expenses from Excel in one go',
@@ -108,8 +108,8 @@ export const projects = [
     why: 'Budgeting apps want your bank login and a monthly fee, and none of them handle planning a wedding next to normal life. I wanted something free, private, and shaped exactly the way I track money.',
     how: [
       'It’s one HTML file with no server and no database.',
-      'Sign in with Google and it saves a single file to your own Drive. It can’t see anything else there.',
-      'Without signing in, it still works offline in your browser.',
+      'Once sign-in is back, it saves a single file to your own Google Drive and can’t see anything else there. Sign-in is switched off for now.',
+      'Without signing in you can try it with sample data, but nothing you enter is saved yet.',
       'Import months of expenses from an Excel template, with a preview and duplicate check before anything is added.',
     ],
     status: 'live',
@@ -403,7 +403,7 @@ export const projects = [
 //   snow-surf-report: scripts/lib/sources (Open-Meteo incl. marine, NDBC, CO-OPS, SNOTEL),
 //     js/account.js (Firebase Auth, Firestore), js/alerts.js + scripts/email (Web Push,
 //     Nodemailer), .github/workflows/update-report.yml (Actions, Pages), scripts/*.mjs (Node)
-//   fantasy-feetpics: fetch.mjs (ESPN, Google Sheets), notify.mjs (Nodemailer), worker-refresh
+//   the league repo: fetch.mjs (ESPN, Google Sheets), notify.mjs (Nodemailer), worker-refresh
 //     (a Cloudflare Worker calling the GitHub API), .github/workflows/deploy.yml (Actions, Pages)
 //   my-budget-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS, SVG charts, Web Share)
 //   portfolio-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS), worker/src (Finnhub, CoinGecko)
@@ -468,7 +468,6 @@ export const clockPhotos = [
 
 // The footer strip
 export const contact = {
-  email: 'WallWorks732@gmail.com', // your public email address; the "Email me" button shows up once it's set
   github: 'https://github.com/billywall732',
   issues: 'https://github.com/billywall732/billywall732.github.io/issues/new',
 };

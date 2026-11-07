@@ -71,7 +71,7 @@ for (const p of projects) {
 console.log(`Wrote ${readdirSync(dir).length} project pages: ${projects.map((p) => `/projects/${p.slug}/`).join(' ')}`);
 
 // The app pages (Contrail, Wallet, Code Breaker, Loop Lab) and Contact keep their own content; their header and footer come from the home page too
-const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html'];
+const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html'];
 for (const f of APP_PAGES) {
   const path = join(root, f);
   const html = readFileSync(path, 'utf8');

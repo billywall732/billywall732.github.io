@@ -31,7 +31,7 @@ This repo is named `billywall732.github.io`, which makes it the main GitHub Page
 | `/code-breaker/` | this repo: Krillion Code Breaker (Workshop) |
 | `/loop-lab/` | this repo: Loop Lab (Workshop) |
 | `/snow-surf-report/` | snow-surf-report |
-| `/fantasy-football/` | fantasy-football (built and pushed by fantasy-feetpics) |
+| `/fantasy-football/` | fantasy-football (built and pushed by the league's own repo) |
 | `/my-budget-ledger/` | my-budget-ledger |
 
 When a custom domain is added to **this** repo (Settings → Pages → Custom domain), all of them move with it: `yourdomain.com/snow-surf-report/` and so on.

@@ -2,7 +2,7 @@
 // never on any page) and serves aggregate counts to the hidden /stats/ page.
 //
 //   GET /summary?site=offthewall  →  { site, generatedAt, timezone, ranges: { today, week, month } }
-//   GET /summary?site=fantasy     →  the same, for the league's Fantasy Feetpics site
+//   GET /summary?site=fantasy     →  the same, for the league's own Fantasy Football site
 //
 // The summaries are worked out ahead of time: a scheduled run (every 10 minutes, one site each
 // time) asks GoatCounter and saves the result in Workers KV. A page load just reads that saved
@@ -19,7 +19,7 @@ const RANGES = { today: 0, week: 6, month: 29 }; // days before today, inclusive
 const STALE_MS = 20 * 60 * 1000; // older than this: refresh in the background while serving it
 // GoatCounter site → the Worker secret holding its read-only key
 const SITES = { offthewall: 'GOATCOUNTER_TOKEN', fantasy: 'GOATCOUNTER_TOKEN_FANTASY' };
-const kvKey = (site) => `summary:v4:${site}`;
+const kvKey = (site) => `summary:v5:${site}`; // v5: referrers and places count page views only
 
 export default {
   async fetch(request, env, ctx) {
@@ -108,6 +108,8 @@ async function summary(site, token, prevTz) {
     if (!res.more || !(res.hits || []).length) break;
   }
   const daily = (st) => Number(st.daily) || (st.hourly || []).reduce((a, b) => a + (Number(b) || 0), 0);
+  // The ids of real pages (not the counter's events), for the referrer and place lists below
+  const pageIds = all.filter((h) => !h.event && h.path_id != null).map((h) => h.path_id).join(',');
   const add = (o, k, n) => { o[k] = (o[k] || 0) + n; };
 
   const ranges = {};
@@ -155,7 +157,10 @@ async function summary(site, token, prevTz) {
     // The 25 busiest page-to-page moves only
     r.flows = Object.fromEntries(Object.entries(r.flows).sort((a, b) => b[1] - a[1]).slice(0, 25));
 
-    const span = { start: day(back), end: day(-1) };
+    // Referrers and places count page views only, like the totals above. (Without this,
+    // GoatCounter also counts the counter's own events, about 4 per view, so these lists
+    // added up to ~4x the page views for the same days.)
+    const span = { start: day(back), end: day(-1), include_paths: pageIds };
     const refs = await api('/stats/toprefs', { ...span, limit: 25 }).catch(() => ({ stats: [] }));
     const locs = await api('/stats/locations', { ...span, limit: 40 }).catch(() => ({ stats: [] }));
     // Referrers are sent as an origin only; keep just the host name

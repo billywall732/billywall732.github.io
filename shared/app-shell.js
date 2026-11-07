@@ -9,10 +9,12 @@ import { store } from './store.js';
 export function demoBanner(slot, appName) {
   if (!slot || store.mode !== 'demo') return;
   const subject = encodeURIComponent(`Access to ${appName}`);
-  const body = encodeURIComponent(`Hi Billy,\n\nI'd like access to ${appName}. My Google account is: \n\nThanks!`);
+  // Never ask for anyone's Google account address by email
+  const body = encodeURIComponent(`Hi Billy,\n\nI'd like access to ${appName}.\n\nThanks!`);
+  const to = `${config.contactEmail.user}@${config.contactEmail.host}`;
   slot.innerHTML = `<div class="demo-banner" role="note">
     <p><b>You're looking at a demo with sample data.</b> Changes aren't saved.</p>
-    <a class="demo-access" href="mailto:${config.contactEmail}?subject=${subject}&amp;body=${body}">Request access</a>
+    <a class="demo-access" href="mailto:${to}?subject=${subject}&amp;body=${body}">Request access</a>
   </div>`;
 }
 

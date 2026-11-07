@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · Off the Wall</title>
+  <meta name="description" content="What Off the Wall and its apps collect, and what they don't: aggregate visit counts only, no cookies.">
+  <meta property="og:title" content="Privacy · Off the Wall">
+  <meta property="og:description" content="Aggregate visit counts only, no cookies.">
+  <meta property="og:image" content="https://offthewall.dev/img/og-card.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://offthewall.dev/img/og-card.jpg">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+    // Arriving from the cover's Say Hello button: the cover's paint wipe finishes here. Only for that
+    // click (the cover leaves a note), so deep links, reloads, back/forward and reduced motion skip it.
+    try {
+      if (sessionStorage.getItem('otw-wipe')) {
+        sessionStorage.removeItem('otw-wipe');
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'navigate' && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('wipe-in');
+      }
+    } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module">import { setUpPage } from '/js/ui.js'; setUpPage();</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-menu" hidden><span class="menu-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr">Menu</span></button>
+    <nav id="site-menu" class="site-menu" aria-label="Main">
+      <a href="/">Cover</a>
+      <a href="/home/#workshop" data-section="work">Workshop</a>
+      <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
+      <a href="/contact/">Contact</a>
+      <span class="nav-toggles">
+        <button type="button" class="icon-toggle bg-toggle"><span class="bg-icon" aria-hidden="true"></span><span class="sr">Pause background</span></button>
+        <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
+        <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
+      </span>
+    </nav>
+  </header>
+
+  <!-- Three big buttons. Each word is spelled in tiles, like the cover's "Wall"; the tiles are
+       hidden from screen readers, which read the plain name instead. -->
+  <main id="main" class="privacy wrap">
+    <h1>Privacy</h1>
+    <p class="privacy-lede">What this site and its apps collect, and what they don't. Short version: page views are counted in aggregate, nothing identifies you, and there are no cookies.</p>
+
+    <h2>Visit counts</h2>
+    <p>Page views are counted with <a href="https://www.goatcounter.com/">GoatCounter</a>, in aggregate only. It keeps no IP addresses and sets no cookies. The site sends the page's path (never the rest of the address), the domain of the site that linked you here, your device type and browser family, and how far down the page you scrolled. GoatCounter uses your IP address only to look up your country and US state, then discards it.</p>
+    <p>A small Cloudflare Worker reads those totals to draw the site's statistics page: views by page, referring domain, country and US state, and device and browser family. It sees only totals, never individual visits.</p>
+
+    <h2>Snow &amp; Surf Report</h2>
+    <p>Your alert choices, pinned places and Rider Profile are saved only on your own device, in your browser. If you use “Use my location”, your location is rounded to about 7 miles before it's saved, and it's saved only on your device. The Notifications tab has a “Delete my saved data” button that removes all of it.</p>
+
+    <h2>Accounts</h2>
+    <p>Google sign-in is turned off for now, so no account data is collected. The apps keep what you enter on your own device. If sign-in comes back, this page will say what it stores before it does.</p>
+
+    <h2>Cookies</h2>
+    <p>None. Some pages remember small settings, like light or dark mode, in your browser's own storage on your device. That stays on your device and is never sent anywhere.</p>
+
+    <h2>Deleting your data</h2>
+    <p>Everything an app saved is on your device: clear it in the app (Snow &amp; Surf has a button for it) or clear this site's data in your browser. For anything else, email me using the address on the <a href="/contact/">Contact page</a> and I'll delete it.</p>
+
+    <p class="privacy-updated">Last updated November 7, 2026.</p>
+  </main>
+
+  <footer class="wrap">
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Anonymous visit counts, no cookies. · <a href="/privacy/">Privacy</a></p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -14,5 +14,7 @@ export const config = {
   // The stats Worker (worker-stats/) that the hidden /stats/ page reads; empty = not set up yet
   statsUrl: 'https://otw-stats.offthewall-dev.workers.dev',
   // Where "Request access" goes until the real request flow exists
-  contactEmail: 'WallWorks732@gmail.com',
+  // The contact address in two parts, joined only when a link is tapped, so it isn't sitting
+  // in the page's code for address-harvesting bots to pick up
+  contactEmail: { user: 'WallWorks732', host: 'gmail.com' },
 };

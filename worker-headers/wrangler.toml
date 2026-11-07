@@ -1,0 +1,14 @@
+# Security headers in front of GitHub Pages (see src/index.js).
+#
+# Deployed to its workers.dev preview address. To put it in front of the real site, the
+# offthewall.dev DNS records must be proxied by Cloudflare (orange cloud), then uncomment the
+# route below and deploy again. See README.md for the full owner steps.
+name = "otw-headers"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+# routes = [{ pattern = "offthewall.dev/*", zone_name = "offthewall.dev" }]
+
+[vars]
+SITE_HOST = "offthewall.dev"

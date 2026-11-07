@@ -1015,3 +1015,12 @@ html.wipe-in body::after {
 :root[data-theme='blueprint'] .carousel-count { font-family: var(--label); }
 :root[data-theme='blueprint'] .mediocre-bar i.on { background: var(--ink); border-color: var(--ink); }
 :root[data-theme='blueprint'] .tablist .slide-ind { background: var(--ink); }
+
+/* ---------- Privacy (/privacy/) ---------- */
+.privacy { padding-block: 32px 48px; max-width: 72ch; }
+.privacy h1 { font-size: clamp(34px, 6vw, 52px); margin: 0 0 12px; }
+.privacy h2 { font-size: 21px; margin: 28px 0 8px; }
+.privacy p { color: var(--ink-2); line-height: 1.65; margin: 0 0 12px; }
+.privacy a { color: var(--brand); }
+.privacy-lede { font-size: 17px; }
+.privacy .privacy-updated { margin-top: 28px; font-size: 13px; color: var(--muted); }

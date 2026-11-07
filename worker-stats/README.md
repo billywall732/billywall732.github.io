@@ -2,7 +2,7 @@
 
 The hidden page at **https://offthewall.dev/stats/** shows aggregate visit counts, with a toggle between two GoatCounter accounts:
 - **Off the Wall** (`offthewall`): the portfolio, its apps and Fantasy Football.
-- **Fantasy Feetpics** (`fantasy`): the league's own site. `/stats/#fantasy` opens it directly.
+- **Fantasy Football (league)** (`fantasy`): the league's own site. `/stats/#fantasy` opens it directly.
 
 This Cloudflare Worker reads both accounts and hands the page totals only. The GoatCounter key stays with the Worker and never appears on any page.
 
