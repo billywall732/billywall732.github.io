@@ -59,7 +59,7 @@
        hidden from screen readers, which read the plain name instead. -->
   <main id="main" class="privacy wrap">
     <h1>Privacy</h1>
-    <p class="privacy-lede">What this site and its apps collect, and what they don't. Short version: page views are counted in aggregate, nothing identifies you, and there are no cookies.</p>
+    <p class="privacy-lede">What this site and its apps collect, and what they don't. Short version: page views are counted in aggregate, there are no cookies, and if you sign in to Budget Ledger, your budget is private to your account.</p>
 
     <h2>Visit counts</h2>
     <p>Page views are counted with <a href="https://www.goatcounter.com/">GoatCounter</a>, in aggregate only. It keeps no IP addresses and sets no cookies. The site sends the page's path (never the rest of the address), the domain of the site that linked you here, your device type and browser family, and how far down the page you scrolled. GoatCounter uses your IP address only to look up your country and US state, then discards it.</p>
@@ -69,13 +69,16 @@
     <p>Your alert choices, pinned places and Rider Profile are saved only on your own device, in your browser. If you use “Use my location”, your location is rounded to about 7 miles before it's saved, and it's saved only on your device. The Notifications tab has a “Delete my saved data” button that removes all of it.</p>
 
     <h2>Accounts</h2>
-    <p>Google sign-in is turned off for now, so no account data is collected. The apps keep what you enter on your own device. If sign-in comes back, this page will say what it stores before it does.</p>
+    <p>Budget Ledger lets you sign in with Google so your budget is saved to your own account. Sign-in goes through <a href="https://supabase.com/">Supabase</a>, which keeps your name, email address and the link to your Google profile picture. Google shares nothing else: not your Gmail, contacts or Drive.</p>
+    <p>Your budget is stored by Supabase on servers in the US (Oregon). The database's security rules let only you read or change it; other visitors and other signed-in people can't. As the site's owner I can technically reach the database to keep it running, but I don't look through anyone's budget. A nightly copy of the database is kept in a private GitHub repository, so it can be restored if something goes wrong.</p>
+    <p>Your sign-in is remembered in your browser's own storage (not a cookie) until you sign out. Signing out also removes the copy of your budget kept on that device. The other apps don't use accounts.</p>
 
     <h2>Cookies</h2>
-    <p>None. Some pages remember small settings, like light or dark mode, in your browser's own storage on your device. That stays on your device and is never sent anywhere.</p>
+    <p>None. Some pages remember small settings, like light or dark mode, in your browser's own storage on your device; those stay on your device and are never sent anywhere. If you sign in, your sign-in is kept there too (see Accounts).</p>
 
     <h2>Deleting your data</h2>
-    <p>Everything an app saved is on your device: clear it in the app (Snow &amp; Surf has a button for it) or clear this site's data in your browser. For anything else, email me using the address on the <a href="/contact/">Contact page</a> and I'll delete it.</p>
+    <p>On your device: clear it in the app (Snow &amp; Surf has a button for it) or clear this site's data in your browser.</p>
+    <p>In Budget Ledger: Manage → Your data → “Delete my saved budget” removes it from the server straight away. Copies in older nightly backups remain until those are cleared, so to have them removed too, or to delete your account itself, email me using the address on the <a href="/contact/">Contact page</a> and I'll delete it.</p>
 
     <p class="privacy-updated">Last updated November 7, 2026.</p>
   </main>

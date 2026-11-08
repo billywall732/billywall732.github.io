@@ -60,12 +60,11 @@ const ALLOW = {
     'frame-src': ['https://snow-surf-report.firebaseapp.com', 'https://accounts.google.com'],
     'img-src': ['https://*.googleusercontent.com'],
   },
-  // Budget Ledger: Google sign-in, Google Drive, SheetJS from cdnjs
+  // Budget Ledger: saves to Supabase (sign-in is a full-page trip to Google, so no frames or
+  // Google scripts), Google profile pictures, SheetJS from cdnjs
   '/my-budget-ledger/': {
-    'script-src': ['https://accounts.google.com', 'https://cdnjs.cloudflare.com'],
-    'style-src': ['https://accounts.google.com'],
-    'connect-src': ['https://www.googleapis.com', 'https://oauth2.googleapis.com', 'https://accounts.google.com'],
-    'frame-src': ['https://accounts.google.com'],
+    'script-src': ['https://cdnjs.cloudflare.com'],
+    'connect-src': ['https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
     'img-src': ['https://*.googleusercontent.com'],
   },
   // Fantasy Football: the league's refresh Worker

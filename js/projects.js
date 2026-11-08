@@ -99,7 +99,7 @@ export const projects = [
     icon: '💸',
     accent: '#e8b130',
     tagline: 'Everyday and wedding budgets side by side.',
-    blurb: 'Track everyday spending and a wedding budget side by side. Sign-in is coming soon; until then, try it with sample data (nothing you enter is saved yet).',
+    blurb: 'Track everyday spending and a wedding budget side by side. Sign in with Google to keep it in your own private account, or try it with sample data first.',
     highlights: [
       'Budget vs. spending and cash flow at a glance',
       'Bring in months of expenses from Excel in one go',
@@ -107,9 +107,9 @@ export const projects = [
     ],
     why: 'Budgeting apps want your bank login and a monthly fee, and none of them handle planning a wedding next to normal life. I wanted something free, private, and shaped exactly the way I track money.',
     how: [
-      'It’s one HTML file with no server and no database.',
-      'Once sign-in is back, it saves a single file to your own Google Drive and can’t see anything else there. Sign-in is switched off for now.',
-      'Without signing in you can try it with sample data, but nothing you enter is saved yet.',
+      'It’s one HTML file with no build step.',
+      'Sign in with Google and your budget saves to your own account in Supabase, where security rules let only you read or change it. Google shares just your name and email.',
+      'Without signing in you can try it with sample data; nothing you enter there is saved.',
       'Import months of expenses from an Excel template, with a preview and duplicate check before anything is added.',
     ],
     status: 'live',
@@ -118,7 +118,7 @@ export const projects = [
       'Yearly summaries and year-over-year comparisons',
       'Smarter categories for imported expenses',
     ],
-    tags: ['HTML', 'Google Drive', 'Charts'],
+    tags: ['HTML', 'Supabase', 'Charts'],
     url: '/my-budget-ledger/cover.html',
     code: 'https://github.com/billywall732/my-budget-ledger',
     image: '/img/budget-ledger.webp',
@@ -203,7 +203,7 @@ export const projects = [
     how: [
       'Import the statement exports your brokers already give you. Each import shows a preview, checked against the statement’s own totals, before anything is saved.',
       'Live prices come through a small Cloudflare Worker, which keeps API keys out of the page.',
-      'Holdings save to your own Google Drive, the same way Budget Ledger does.',
+      'Holdings save to your own Google Drive.',
     ],
     status: 'rough',
     statusNote: 'Imports and live prices work; getting it ready to publish.',
@@ -413,7 +413,7 @@ export const projects = [
 export const toolkit = {
   'snow-and-surf-report': ['Firebase Auth', 'Firestore', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer'],
   'fantasy-football': ['ESPN Fantasy API', 'Node.js', 'GitHub Actions', 'Cloudflare Workers', 'Nodemailer', 'GitHub Pages'],
-  'budget-ledger': ['Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
+  'budget-ledger': ['Supabase', 'Google Sign-In', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
   contrail: ['D3', 'TopoJSON', 'Nominatim geocoding', 'Clipboard API'],
   wallet: ['Clipboard API', 'File downloads (Blob)', 'localStorage'],
   'portfolio-ledger': ['Cloudflare Workers', 'Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS'],
