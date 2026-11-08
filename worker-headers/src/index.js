@@ -53,12 +53,9 @@ const ALLOW = {
     'connect-src': ['https://krillion-code-breaker.offthewall-dev.workers.dev'],
     'img-src': ['https://krillion-code-breaker.offthewall-dev.workers.dev'],
   },
-  // Snow & Surf: Firebase (sign-in and saved settings) and Google's sign-in window
+  // Snow & Surf: saved settings in Supabase (sign-in is a full-page trip to Google)
   '/snow-surf-report/': {
-    'script-src': ['https://www.gstatic.com', 'https://apis.google.com'],
-    'connect-src': ['https://*.googleapis.com', 'https://www.gstatic.com', 'https://snow-surf-report.firebaseapp.com'],
-    'frame-src': ['https://snow-surf-report.firebaseapp.com', 'https://accounts.google.com'],
-    'img-src': ['https://*.googleusercontent.com'],
+    'connect-src': ['https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
   },
   // Budget Ledger: saves to Supabase (sign-in is a full-page trip to Google, so no frames or
   // Google scripts), Google profile pictures, SheetJS from cdnjs

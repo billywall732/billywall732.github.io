@@ -41,14 +41,14 @@ export const projects = [
     highlights: [
       'Today’s best bets for snow and surf at a glance',
       'Pin favorite spots to see snow, swell, tide and what to wear',
-      'Alerts in the app when conditions line up (morning emails come back with sign-in)',
+      'Morning alerts by email or phone when conditions line up',
     ],
     why: 'I was checking four different forecast sites every morning to decide whether to go to the mountains or the beach. I wanted one page with a simple 1–5 “should I go?” rating for every spot I care about.',
     how: [
       'Every hour, a GitHub Action pulls free public forecasts: Open-Meteo for snow and swell, NOAA for tides and buoys.',
       'It scores every mountain and beach from 1 to 5 and writes the results to a single report file.',
       'The site reads that file and draws the cards, charts and maps. There’s no server and no API key.',
-      'Your profile (level, board, pass, home base) tunes the picks, and the Notifications tab flags when conditions line up.',
+      'Your profile (level, board, pass, home base) tunes the picks. Sign in with Google and the same Action emails you, or notifies your phone, on mornings something lines up.',
     ],
     status: 'live',
     statusNote: 'Live and updating every hour.',
@@ -56,7 +56,7 @@ export const projects = [
       'A mountain bike trail conditions tab, based on recent rain',
       'A one-sentence morning verdict written by AI',
     ],
-    tags: ['JavaScript', 'GitHub Actions', 'Firebase', 'NOAA data'],
+    tags: ['JavaScript', 'GitHub Actions', 'Supabase', 'NOAA data'],
     url: '/snow-surf-report/?cover',
     code: 'https://github.com/billywall732/snow-surf-report',
     image: '/img/snow-surf.webp',
@@ -411,7 +411,7 @@ export const projects = [
 //   wallet/: navigator.clipboard, saveFile (Blob downloads), localStorage
 //   code-breaker/: an SVG score chart, localStorage. loop-lab/: Web Audio, localStorage
 export const toolkit = {
-  'snow-and-surf-report': ['Firebase Auth', 'Firestore', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer'],
+  'snow-and-surf-report': ['Supabase', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer', 'Open-Meteo'],
   'fantasy-football': ['ESPN Fantasy API', 'Node.js', 'GitHub Actions', 'Cloudflare Workers', 'Nodemailer', 'GitHub Pages'],
   'budget-ledger': ['Supabase', 'Google Sign-In', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
   contrail: ['D3', 'TopoJSON', 'Nominatim geocoding', 'Clipboard API'],
