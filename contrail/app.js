@@ -3,7 +3,7 @@
 // flights and stays, CSV and JSON import, and a Settings tab. Card research (Claude) is gone
 // from this app; What's in My Wallet? covers it.
 /* global d3, topojson */
-import { store } from '/shared/store.js';
+import { connectStore, store } from '/shared/store.js';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
 import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js';
@@ -1029,11 +1029,11 @@ function renderSettings() {
       <label class="fl" for="jsonFile">Restore from a JSON file<input type="file" id="jsonFile" accept="application/json,.json"></label>
       <p class="lw" style="margin:0">Restoring replaces everything currently in Contrail.</p>
     </div>
-    <div class="panel">
+    ${store.mode === 'demo' ? `<div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Sample data</h3>
       <p class="lw" style="margin:0">The demo starts with Alex &amp; Jordan's made-up travels. Clear them to see Contrail empty, or bring them back.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn" data-clear>Clear sample data</button><button type="button" class="btn" data-sample>Load sample data</button></div>
-    </div>
+    </div>` : ''}
   </div></div>`;
 }
 function csvPreviewHTML() {
@@ -1073,8 +1073,8 @@ root.addEventListener('click', async (e) => {
     const data = { app: 'Contrail', version: 1, exportedAt: new Date().toISOString(), profile: PROFILE, trips: await store.list('trips'), stays: await store.list('stays') };
     saveFile(`contrail-backup-${isoDate(new Date())}.json`, JSON.stringify(data, null, 2));
   }
-  if (b.dataset.clear !== undefined && twoStep(b, 'clear', 'Tap again to clear')) { await store.reset({ docs: { profile: { displayName: '', homeAirports: PROFILE.homeAirports || ['LAX'], cards: [] } } }); toast('Sample data cleared'); }
-  if (b.dataset.sample !== undefined) { await store.reset(contrailDemo(airport)); toast('Sample data loaded'); }
+  if (b.dataset.clear !== undefined && store.mode === 'demo' && twoStep(b, 'clear', 'Tap again to clear')) { await store.reset({ docs: { profile: { displayName: '', homeAirports: PROFILE.homeAirports || ['LAX'], cards: [] } } }); toast('Sample data cleared'); }
+  if (b.dataset.sample !== undefined && store.mode === 'demo') { await store.reset(contrailDemo(airport)); toast('Sample data loaded'); }
   if (b.dataset.csvCancel !== undefined) { csvPreview = null; $id('csvOut').innerHTML = ''; $id('csvFile').value = ''; }
   if (b.dataset.csvGo !== undefined && csvPreview?.trips) {
     const n = csvPreview.flights; for (const t of csvPreview.trips) await store.put('trips', t);
@@ -1153,8 +1153,9 @@ function renderAll() {
   setFilt(prefs.get('filters') === 'open');
 })();
 
-demoBanner($id('demoBanner'), 'Contrail');
-await store.reset(contrailDemo(airport));
+// Approved members get their own trips; everyone else gets Alex & Jordan's sample travels
+demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'));
+if (store.mode === 'demo') await store.reset(contrailDemo(airport));
 await load();
 let t0 = prefs.get('tab') || 'overview'; try { const h = location.hash.slice(1); if (TABS.includes(h)) t0 = h; } catch { /* ignore */ }
 TAB = t0;

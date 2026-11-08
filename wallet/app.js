@@ -2,7 +2,7 @@
 // feature works as before; storage goes through shared/store.js, the travel profile comes
 // straight from Contrail's trips and stays, and the Claude features are off in the demo
 // ("Pick from the catalog" fills in a card instead).
-import { store } from "/shared/store.js";
+import { connectStore, readAppData, store } from "/shared/store.js";
 import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
@@ -10,7 +10,6 @@ import { contrailDemo } from "/contrail/demo-data.js";
 import { walletDemo } from "/wallet/demo-data.js";
 
 setUpApp();
-demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?");
 const AI_OFF = "Claude features are available to approved users.";
 let CATALOG = [];
 // Claude-only controls are disabled in the demo, with the reason on hover and beside them
@@ -165,7 +164,7 @@ const VP = () => S.activeProfile === "all" ? S.pulls : S.pulls.filter(p => p.own
 const viewPeople = () => S.activeProfile === "all" ? S.profiles : S.profiles.filter(p => p.id === S.activeProfile);
 
 // ---------- persistence ----------
-// shared/store.js: in the demo nothing outlives the page; approved users save to their account (Phase 2).
+// shared/store.js: in the demo nothing outlives the page; approved members save to their account.
 const P = { timer: null };
 function setSaveState(kind, text) {
   const el = $("#saveState"); if (!el) return;
@@ -180,8 +179,10 @@ function persist() {
 async function initStorage() {
   const catalog = (await (await fetch("/shared/data/cards.json")).json()).cards;
   CATALOG = catalog;
-  await store.reset({ docs: { wallet: walletDemo(catalog) } });
-  S = normalize(await store.getDoc("wallet"));
+  // Approved members get their own wallet; everyone else gets the sample one
+  demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?", await connectStore("wallet"));
+  if (store.mode === "demo") await store.reset({ docs: { wallet: walletDemo(catalog) } });
+  S = normalize((await store.getDoc("wallet")) || {});
   render(); setSaveState(...saveLabel());
   await loadTravel(); render();
 }
@@ -190,11 +191,12 @@ async function initStorage() {
 const CONTRAIL_URL = "/contrail/";
 let TRAVEL = null;
 async function loadTravel() {
-  // Demo: Contrail's sample trips. Approved users get their own trips from their account (Phase 2).
+  // Demo: Contrail's sample trips. Members: their own Contrail trips, if they're approved for
+  // Contrail too (otherwise no travel profile).
   try {
     await loadAirports();
-    const demo = contrailDemo(airport);
-    TRAVEL = travelSummary(demo.collections.trips.map(deriveTrip).filter(Boolean), demo.collections.stays, demo.docs.profile);
+    const data = store.mode === "demo" ? contrailDemo(airport) : await readAppData("contrail");
+    TRAVEL = data ? travelSummary(data.collections.trips.map(deriveTrip).filter(Boolean), data.collections.stays, data.docs.profile || {}) : null;
   } catch (e) { TRAVEL = null; }
 }
 // Compact version for Claude prompts.

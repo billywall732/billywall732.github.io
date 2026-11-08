@@ -1,7 +1,7 @@
 // Contrail's analytics page: nine sections of charts built from the same trips and stays as the
 // app. SVG and D3, colors from the app's CSS variables so every chart follows the color mode.
 /* global d3, topojson */
-import { store } from '/shared/store.js';
+import { connectStore, store } from '/shared/store.js';
 import { airlineName, airport, deriveTrip, loadAirports, nightsOf, RENTAL } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
 import { demoBanner, setUpApp } from '/shared/app-shell.js';
@@ -22,11 +22,12 @@ const [WORLD, US] = await Promise.all([
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json').then((r) => r.json()),
   fetch('https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json').then((r) => r.json()),
 ]);
-demoBanner($id('demoBanner'), 'Contrail');
-// Demo: the same sample data as the app (edits made on the app page aren't kept between pages).
-// ?sample=none starts empty, as after "Clear sample data" in Contrail's settings.
+// Approved members see their own trips. Demo: the same sample data as the app (edits made on
+// the app page aren't kept between pages); ?sample=none starts empty, as after "Clear sample
+// data" in Contrail's settings.
+demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'));
 const noSample = new URLSearchParams(location.search).get('sample') === 'none';
-await store.reset(noSample ? { docs: { profile: { homeAirports: ['LAX'] } } } : contrailDemo(airport));
+if (store.mode === 'demo') await store.reset(noSample ? { docs: { profile: { homeAirports: ['LAX'] } } } : contrailDemo(airport));
 
 const STATE_NAMES = { AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming', PR: 'Puerto Rico' };
 // OurAirports country names that the world map spells differently

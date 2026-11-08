@@ -42,12 +42,16 @@ const BASE = {
 const ALLOW = {
   // The stats page reads the stats Worker
   '/stats/': { 'connect-src': ['https://otw-stats.offthewall-dev.workers.dev'] },
-  // Contrail: D3 + TopoJSON from cdnjs, map outlines from jsDelivr, OpenStreetMap place search
+  // Contrail: D3 + TopoJSON from cdnjs, map outlines from jsDelivr, OpenStreetMap place search,
+  // members' saved data in Supabase
   '/contrail/': {
     'script-src': ['https://cdnjs.cloudflare.com'],
-    'connect-src': ['https://cdn.jsdelivr.net', 'https://nominatim.openstreetmap.org'],
+    'connect-src': ['https://cdn.jsdelivr.net', 'https://nominatim.openstreetmap.org', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
   },
-  '/wallet/': { 'script-src': ['https://cdnjs.cloudflare.com'], 'connect-src': ['https://cdn.jsdelivr.net'] },
+  '/wallet/': {
+    'script-src': ['https://cdnjs.cloudflare.com'],
+    'connect-src': ['https://cdn.jsdelivr.net', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
+  },
   // Krillion Code Breaker: its Worker (scores, the live play-by-play and screenshots)
   '/code-breaker/': {
     'connect-src': ['https://krillion-code-breaker.offthewall-dev.workers.dev'],
