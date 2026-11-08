@@ -11,9 +11,13 @@ map tiles, add the origin there, or the browser will block it.
 
 ## Status
 
-The Worker is deployed to its preview address, https://otw-headers.offthewall-dev.workers.dev,
-which proxies offthewall.dev and scores **A** on securityheaders.com. The real site doesn't go
-through it yet: the DNS records are DNS-only (grey cloud), so visitors reach GitHub Pages directly.
+Live since November 7, 2026: the offthewall.dev records are proxied by Cloudflare (orange
+cloud), SSL/TLS is Full (strict), and the Worker runs on the `offthewall.dev/*` route.
+securityheaders.com grades the site **A**.
+
+Cloudflare's own Web Analytics beacon (`static.cloudflareinsights.com`) is deliberately not in
+the CSP: the privacy page promises GoatCounter is the only counter. Keep Web Analytics switched
+off for offthewall.dev in the Cloudflare dashboard.
 
 ## Owner steps to switch it on
 

@@ -8,7 +8,7 @@ main = "src/index.js"
 compatibility_date = "2026-11-01"
 workers_dev = true
 
-# routes = [{ pattern = "offthewall.dev/*", zone_name = "offthewall.dev" }]
+routes = [{ pattern = "offthewall.dev/*", zone_name = "offthewall.dev" }]
 
 [vars]
 SITE_HOST = "offthewall.dev"
