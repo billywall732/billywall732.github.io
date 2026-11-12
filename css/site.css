@@ -930,6 +930,7 @@ footer.wrap { margin-top: 72px; }
 
 .contact-lede { max-width: 30em; margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
 .contact-buttons { display: grid; gap: 16px; width: min(100%, 440px); margin: 36px 0 0; padding: 0; list-style: none; }
+.contact-address { margin: 24px 0 0; font-size: 15px; color: var(--ink-2); overflow-wrap: anywhere; }
 .big-pill {
   display: flex;
   align-items: center;
