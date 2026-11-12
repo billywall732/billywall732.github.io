@@ -67,10 +67,14 @@
     <p class="contact-lede">Found a bug, got an idea, or just want to say hi? Here’s where to find me</p>
     <ul class="contact-buttons">
       <li>
-        <!-- A plain mailto: link so it works without JavaScript too; the privacy page sends people here to delete their data -->
+        <!-- A plain mailto: link so it works without JavaScript too; the privacy page sends people here to
+             delete their data. email_off stops Cloudflare's Email Address Obfuscation from swapping it for a
+             /cdn-cgi/l/email-protection link that only works with JavaScript. -->
+        <!--email_off-->
         <a class="big-pill" href="mailto:WallWorks732@gmail.com" aria-label="Contact Me (email)">
           <span class="tiles" aria-hidden="true"><span class="t">C</span><span class="t">o</span><span class="t">n</span><span class="t">t</span><span class="t">a</span><span class="t">c</span><span class="t">t</span><span class="gap"> </span><span class="t">M</span><span class="t">e</span></span>
         </a>
+        <!--/email_off-->
       </li>
       <li>
         <a class="big-pill" href="https://github.com/billywall732" target="_blank" rel="me noopener noreferrer" aria-label="GitHub (opens in a new tab)">
@@ -84,7 +88,7 @@
       </li>
     </ul>
     <!-- The address as text too, for anyone whose computer has no mail app set up to open mailto: links -->
-    <p class="contact-address">Or email me directly: <a href="mailto:WallWorks732@gmail.com">WallWorks732@gmail.com</a></p>
+    <!--email_off--><p class="contact-address">Or email me directly: <a href="mailto:WallWorks732@gmail.com">WallWorks732@gmail.com</a></p><!--/email_off-->
   </main>
 
   <footer class="wrap">

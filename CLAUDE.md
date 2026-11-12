@@ -59,6 +59,7 @@ prototype/, photos/, reference/  local only (not committed)
 - When a project changes in a way worth telling feed readers, bump its `updated` (YYYY-MM-DD). Every public page has the `<link rel="alternate" type="application/atom+xml" href="/feed.xml">` tag (not the redirect pages or hidden /stats/); add it to new pages. The other repos' apps (Snow & Surf, Budget Ledger, the league) don't have it yet.
 - Anchors on /home/: `#workshop`, `#workbench`, `#toolkit`, `#off-the-clock` (`#about`), `#hobbies`; old `#rough`, `#polished`, `#story`, `#work` are mapped in `js/main.js`.
 - The Contact page uses a plain `mailto:` and shows the address as text (Billy's choice, Nov 2026: it must work without JavaScript, since /privacy/ sends people there to delete their data). The apps' "Email Billy" links still build it from `config.contactEmail`.
+- Cloudflare's Email Address Obfuscation is on: on the live site it rewrites any email address in the HTML into a `/cdn-cgi/l/email-protection` link that needs JavaScript. Wrap addresses that must work without JavaScript in `<!--email_off-->` … `<!--/email_off-->`. Local previews don't show this, so check such changes on offthewall.dev.
 
 ## Preview locally
 From the repo folder: `python -m http.server 8080`, then open http://localhost:8080/home/. Root-relative paths (`/css/...`) need the server to be rooted here. Links to the other repos' apps (`/snow-surf-report/` etc.) only work on the live site. The CSP Worker doesn't run locally, so check CSP-sensitive changes on the live site too.
