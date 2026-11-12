@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- What's in My Wallet? home-screen icon: a leather wallet with cards peeking out, in the Off
+       the Wall app-icon style (one object on a dark glow in the app's color, two swooshes) -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#6b4f1c"/><stop offset="1" stop-color="#150e04"/></radialGradient>
+    <linearGradient id="leather" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a0643a"/><stop offset="1" stop-color="#6e3f1f"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-opacity=".85">
+    <path d="M358 79 A205 205 0 0 1 449 186"/><path d="M154 434 A205 205 0 0 1 63 326"/>
+  </g>
+  <!-- cards -->
+  <g transform="rotate(-9 210 200)"><rect x="128" y="128" width="200" height="128" rx="16" fill="#23b5c4"/><rect x="150" y="160" width="40" height="30" rx="6" fill="#ffd45a"/><rect x="150" y="214" width="120" height="12" rx="6" fill="#fff" fill-opacity=".7"/></g>
+  <g transform="rotate(7 300 190)"><rect x="200" y="116" width="200" height="128" rx="16" fill="#9775fa"/><rect x="222" y="148" width="40" height="30" rx="6" fill="#ffd45a"/><rect x="222" y="202" width="120" height="12" rx="6" fill="#fff" fill-opacity=".7"/></g>
+  <!-- wallet -->
+  <rect x="104" y="214" width="304" height="196" rx="36" fill="#000" fill-opacity=".35" transform="translate(10 14)"/>
+  <rect x="104" y="214" width="304" height="196" rx="36" fill="url(#leather)"/>
+  <rect x="120" y="230" width="272" height="164" rx="24" fill="none" stroke="#e9c48a" stroke-width="5" stroke-dasharray="14 10"/>
+  <rect x="314" y="270" width="112" height="86" rx="26" fill="#5c3418"/>
+  <rect x="326" y="282" width="88" height="62" rx="18" fill="none" stroke="#e9c48a" stroke-width="4" stroke-dasharray="10 8"/>
+  <circle cx="378" cy="313" r="15" fill="#ffd45a"/><circle cx="374" cy="309" r="5" fill="#fff" fill-opacity=".8"/>
+  <path d="M132 242 L200 242" stroke="#fff" stroke-opacity=".35" stroke-width="10" stroke-linecap="round"/>
+</svg>

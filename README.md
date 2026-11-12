@@ -117,6 +117,8 @@ Both are a bubble-letter W, drawn as one zig-zag line traced several times (shad
 | `img/icon-home.svg` → `apple-touch-icon.png` (180), `img/icon-192.png`, `img/icon-512.png` | phone home screens | orange W with a cream outline on the dark background |
 | `img/icon-home-maskable.svg` → `img/icon-maskable-512.png` | Android launchers that crop icons to a circle or squircle | the same W, shrunk into the safe middle |
 
+Each app (Contrail, Wallet, Code Breaker, Loop Lab) also has its own home-screen icon: `<app>/app-icon.svg` makes `<app>/icon-180.png` (iPhone) and `icon-192/512.png` (Android, in `<app>/manifest.webmanifest`), and its pages link to those instead of the site icon. Same style as Fantasy Football's: one object on a dark glow in the app's color, with two white swooshes. Snow & Surf and Budget Ledger have theirs in their own repos.
+
 The PNGs are screenshots of the SVGs at exact sizes. After changing an SVG, open it in a browser at that size (for example with Playwright: a 180 × 180 window on `/img/icon-home.svg`) and save the screenshot over the PNG. Browsers and phones cache icons hard (Cloudflare lets them keep files for 4 hours, and iPhones keep home-screen icons longer), so every page links to them with a version, like `/apple-touch-icon.png?v=2`. After changing an icon, bump that number everywhere (the pages, `tools/make-pages.mjs` and `site.webmanifest`) so phones fetch the new one.
 
 ## Visit counts

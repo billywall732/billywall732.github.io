@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Krillion Code Breaker home-screen icon: a cartoon krill with bubbles in deep water, in the
+       Off the Wall app-icon style (one object on a dark glow in the app's color, two swooshes) -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="78%"><stop offset="0" stop-color="#0d5a78"/><stop offset="1" stop-color="#020814"/></radialGradient>
+    <radialGradient id="shell" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#ffb08f"/><stop offset="1" stop-color="#f0623a"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-opacity=".85">
+    <path d="M358 79 A205 205 0 0 1 449 186"/><path d="M154 434 A205 205 0 0 1 63 326"/>
+  </g>
+  <!-- bubbles -->
+  <g fill="none" stroke="#bff6ff" stroke-width="7"><circle cx="146" cy="160" r="20"/><circle cx="186" cy="112" r="12"/><circle cx="120" cy="104" r="9"/></g>
+  <!-- antennae -->
+  <g fill="none" stroke="#ffc2a8" stroke-width="7" stroke-linecap="round"><path d="M372 214 C392 184 404 166 420 152"/><path d="M380 228 C406 216 424 212 444 214"/></g>
+  <!-- legs -->
+  <g stroke="#ffc2a8" stroke-width="9" stroke-linecap="round"><path d="M306 300 L314 344"/><path d="M270 316 L274 356"/><path d="M234 326 L234 362"/><path d="M200 330 L196 360"/></g>
+  <!-- body: segments from tail to head, each over the last -->
+  <g stroke="#c94a26" stroke-width="5" fill="url(#shell)">
+    <path d="M150 300 L102 272 L96 320 L106 352 Z" stroke-linejoin="round"/>
+    <circle cx="150" cy="306" r="30"/>
+    <circle cx="190" cy="306" r="36"/>
+    <circle cx="234" cy="298" r="42"/>
+    <circle cx="280" cy="280" r="48"/>
+    <ellipse cx="334" cy="246" rx="62" ry="54"/>
+  </g>
+  <path d="M300 214 C318 200 344 198 362 206" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="10" stroke-linecap="round"/>
+  <!-- eye -->
+  <circle cx="356" cy="236" r="17" fill="#081018"/><circle cx="361" cy="230" r="6" fill="#fff"/>
+</svg>

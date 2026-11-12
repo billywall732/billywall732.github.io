@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Loop Lab home-screen icon: a 4 x 4 beat-pad grid with a pattern lit up, in the Off the Wall
+       app-icon style (one object on a dark glow in the app's color, two swooshes) -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#7a1d55"/><stop offset="1" stop-color="#16030d"/></radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-opacity=".85">
+    <path d="M358 79 A205 205 0 0 1 449 186"/><path d="M154 434 A205 205 0 0 1 63 326"/>
+  </g>
+  <rect x="122" y="122" width="268" height="268" rx="38" fill="#000" fill-opacity=".4" transform="translate(10 14)"/>
+  <rect x="122" y="122" width="268" height="268" rx="38" fill="#241523" stroke="#3b2638" stroke-width="6"/>
+  <!-- pads: off, then the lit ones (kick pink, snare cyan, hats yellow) -->
+  <g fill="#3d2a3b">
+    <rect x="140" y="140" width="52" height="52" rx="12"/><rect x="204" y="140" width="52" height="52" rx="12"/><rect x="268" y="140" width="52" height="52" rx="12"/><rect x="332" y="140" width="52" height="52" rx="12"/>
+    <rect x="140" y="204" width="52" height="52" rx="12"/><rect x="204" y="204" width="52" height="52" rx="12"/><rect x="268" y="204" width="52" height="52" rx="12"/><rect x="332" y="204" width="52" height="52" rx="12"/>
+    <rect x="140" y="268" width="52" height="52" rx="12"/><rect x="204" y="268" width="52" height="52" rx="12"/><rect x="268" y="268" width="52" height="52" rx="12"/><rect x="332" y="268" width="52" height="52" rx="12"/>
+    <rect x="140" y="332" width="52" height="52" rx="12"/><rect x="204" y="332" width="52" height="52" rx="12"/><rect x="268" y="332" width="52" height="52" rx="12"/><rect x="332" y="332" width="52" height="52" rx="12"/>
+  </g>
+  <g filter="url(#glow)">
+    <rect x="140" y="140" width="52" height="52" rx="12" fill="#ffd166"/><rect x="268" y="140" width="52" height="52" rx="12" fill="#ffd166"/>
+    <rect x="204" y="204" width="52" height="52" rx="12" fill="#23d5e4"/><rect x="332" y="204" width="52" height="52" rx="12" fill="#23d5e4"/>
+    <rect x="140" y="268" width="52" height="52" rx="12" fill="#ff4fa3"/><rect x="268" y="268" width="52" height="52" rx="12" fill="#ff4fa3"/>
+    <rect x="332" y="332" width="52" height="52" rx="12" fill="#ff4fa3"/><rect x="204" y="332" width="52" height="52" rx="12" fill="#ffd166"/>
+  </g>
+  <g fill="#fff" fill-opacity=".55">
+    <rect x="148" y="146" width="20" height="8" rx="4"/><rect x="276" y="146" width="20" height="8" rx="4"/><rect x="212" y="210" width="20" height="8" rx="4"/><rect x="340" y="210" width="20" height="8" rx="4"/>
+    <rect x="148" y="274" width="20" height="8" rx="4"/><rect x="276" y="274" width="20" height="8" rx="4"/><rect x="340" y="338" width="20" height="8" rx="4"/><rect x="212" y="338" width="20" height="8" rx="4"/>
+  </g>
+</svg>

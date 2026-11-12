@@ -1,0 +1,21 @@
+{
+  "name": "Loop Lab",
+  "short_name": "Loop Lab",
+  "start_url": "/loop-lab/",
+  "scope": "/loop-lab/",
+  "display": "browser",
+  "background_color": "#16030d",
+  "theme_color": "#16030d",
+  "icons": [
+    {
+      "src": "/loop-lab/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/loop-lab/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

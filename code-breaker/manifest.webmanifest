@@ -1,0 +1,21 @@
+{
+  "name": "Krillion Code Breaker",
+  "short_name": "Code Breaker",
+  "start_url": "/code-breaker/",
+  "scope": "/code-breaker/",
+  "display": "browser",
+  "background_color": "#020814",
+  "theme_color": "#020814",
+  "icons": [
+    {
+      "src": "/code-breaker/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/code-breaker/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
