@@ -23,7 +23,11 @@ const NONE = 'None recorded in this range.';
 const APPS = { 'snow-surf-report': 'Snow and Surf Report', 'fantasy-football': 'Fantasy Football', 'my-budget-ledger': 'Budget Ledger', contrail: 'Contrail', wallet: 'What’s in My Wallet?' };
 // The league site counts its cover as /cover and each tab as /<tab> (/standings, /ice…)
 const LEAGUE_TABS = { standings: 'Standings', matchups: 'Matchups', ice: 'Ice', power: 'Power', teams: 'Teams', wire: 'Wire & Trades', draft: 'Draft', awards: 'Awards', history: 'History', rules: 'League Rules' };
+// Display only: any older /fantasy-…/ address of the league app is shown as its public one,
+// /fantasy-football/. The recorded counts keep the path they were counted under.
+const shownPath = (path) => String(path).replace(/^\/fantasy-(?!football\/)[a-z]+\//, '/fantasy-football/');
 function pageName(path) {
+  path = shownPath(path);
   if (SITE === 'fantasy') {
     if (path === '/cover' || path === '/') return 'Cover';
     const tab = path.replace(/^\//, '');
@@ -279,7 +283,7 @@ function render() {
   };
   const table = pages.length
     ? `<div class="table-scroll"><table class="page-table"><thead><tr><th>Page or app</th><th class="n">Views</th></tr></thead><tbody>
-      ${pages.map((p) => `<tr><td><details><summary><span class="pn">${esc(pageName(p.path))}</span> <span class="sub">${esc(p.path)}</span></summary>${detail(p.path)}</details></td>
+      ${pages.map((p) => `<tr><td><details><summary><span class="pn">${esc(pageName(p.path))}</span> <span class="sub">${esc(shownPath(p.path))}</span></summary>${detail(p.path)}</details></td>
         <td class="n"><span class="vbar"><i style="--w:${Math.max(2, Math.round(p.views / maxViews * 100))}%"></i><b>${fmt(p.views)}</b><em>${pct(p.views, r.views)}</em></span></td></tr>`).join('')}
       </tbody></table></div>`
     : `<p class="empty">${EMPTY}</p>`;

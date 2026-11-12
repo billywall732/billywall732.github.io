@@ -234,9 +234,14 @@ function boardCursor() {
   let last = null; // the previous pointer position, for the lean
   let level = 0; // a timer that levels the board out once the pointer stops
 
+  // Over anything clickable or any card, the board steps aside and the normal cursor shows, so it
+  // never sits on top of link, button or card text
+  const INTERACTIVE = 'a, button, [role="button"], [role="tab"], summary, label, input, select, textarea, .project, .workshop-item, .hobby, .kit, .stat-card';
+
   // Straight to the pointer on every move, no easing; CSS puts the board's center on the hotspot
   function onMove(e) {
     if (e.pointerType && e.pointerType !== 'mouse') { hide(); return; }
+    if (e.target.closest?.(INTERACTIVE)) { hide(); return; }
     const tilt = reducedMotion.matches || !last ? 0 : Math.max(-20, Math.min(20, (e.clientX - last.x) * 1.6));
     last = { x: e.clientX, y: e.clientY };
     board.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) rotate(${tilt.toFixed(1)}deg)`;

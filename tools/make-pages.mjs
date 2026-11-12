@@ -70,7 +70,36 @@ for (const p of projects) {
   mkdirSync(join(dir, p.slug), { recursive: true });
   writeFileSync(join(dir, p.slug, 'index.html'), page(p));
 }
-console.log(`Wrote ${readdirSync(dir).length} project pages: ${projects.map((p) => `/projects/${p.slug}/`).join(' ')}`);
+console.log(`Wrote ${projects.length} project pages: ${projects.map((p) => `/projects/${p.slug}/`).join(' ')}`);
+
+// Old addresses of renamed projects: a tiny page that sends visitors on to the new one (GitHub Pages
+// can't do server redirects). Add a line here whenever a slug changes, and never remove one.
+const RENAMED = {
+  'portfolio-ledger': 'wall-street-ledger', // renamed Nov 12, 2026
+  'happily-ever-wall': 'wall-wedding', // renamed Nov 12, 2026
+};
+const redirect = (to, name) => `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${esc(name)} · Off the Wall</title>
+  <!-- This project moved; made by tools/make-pages.mjs -->
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=/projects/${to}/">
+  <link rel="canonical" href="https://offthewall.dev/projects/${to}/">
+</head>
+<body>
+  <p>This page moved: <a href="/projects/${to}/">${esc(name)}</a></p>
+</body>
+</html>
+`;
+for (const [from, to] of Object.entries(RENAMED)) {
+  const target = projects.find((p) => p.slug === to);
+  if (!target) throw new Error(`Redirect ${from} → ${to}: no project has the slug ${to}`);
+  mkdirSync(join(dir, from), { recursive: true });
+  writeFileSync(join(dir, from, 'index.html'), redirect(to, target.name));
+}
+console.log(`Wrote ${Object.keys(RENAMED).length} redirects: ${Object.entries(RENAMED).map(([a, b]) => `/projects/${a}/ → /projects/${b}/`).join(', ')}`);
 
 // The app pages (Contrail, Wallet, Code Breaker, Loop Lab) and Contact keep their own content; their header and footer come from the home page too
 const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html'];

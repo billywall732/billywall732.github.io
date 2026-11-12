@@ -101,7 +101,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* overflow-x: clip: nothing may widen the page sideways. The slide between Workshop, Off the Clock
+   and Contact moves the page by 100vw, which includes a desktop scrollbar, so mid-slide the page was
+   ~15px too wide and a horizontal scrollbar showed. clip (not hidden) keeps position: sticky working. */
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: clip; }
 body {
   margin: 0;
   font: 16px/1.6 var(--sans);
@@ -921,53 +924,15 @@ footer.wrap { margin-top: 72px; }
 @media (prefers-reduced-motion: reduce) { .kit-tools li { box-shadow: none; } }
 
 /* ---------- Contact (/contact/) ---------- */
-/* Three big orange pills, centered, with lettering like the cover's Wall: white letters on small
-   bricks, set evenly with a slight hand-laid tilt. A soft orange shadow instead of a hard outline;
-   with a mouse, hovering lifts the pill and straightens its bricks. These are the only big pills on
-   the site. */
+/* Three pills in the site's standard button style, full width in a centered column: Contact Me in
+   orange (.button.primary), GitHub and LinkedIn in white (.button). */
 
 .contact { display: grid; justify-items: center; padding-block: 8px 24px; text-align: center; }
 
 .contact-lede { max-width: 30em; margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
 .contact-buttons { display: grid; gap: 16px; width: min(100%, 440px); margin: 36px 0 0; padding: 0; list-style: none; }
 .contact-address { margin: 24px 0 0; font-size: 15px; color: var(--ink-2); overflow-wrap: anywhere; }
-.big-pill {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 72px;
-  padding: 12px 28px;
-  text-decoration: none;
-  background: var(--splat);
-  border: 1.5px solid #e2561a;
-  border-radius: 999px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -3px 0 rgba(120, 40, 5, 0.25), 0 10px 26px -14px rgba(255, 106, 31, 0.75);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-.tiles { display: inline-flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px; }
-.tiles .t {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.05em;
-  padding: 0.04em 0.1em 0.07em;
-  font: 800 clamp(21px, 2.6vw, 25px)/1 var(--display);
-  color: #fff;
-  background: #e2561a; /* a shade deeper than the pill, like the cover's bricks (white on it reads at 3.7:1, fine for large text) */
-  border-radius: 0.16em;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -0.08em 0 rgba(110, 35, 5, 0.35);
-  text-shadow: 0 1px 0 rgba(110, 35, 5, 0.35);
-  transform: rotate(var(--r, 0deg));
-  transition: transform 0.2s ease;
-}
-.tiles .t:nth-child(odd) { --r: -1.5deg; }
-.tiles .t:nth-child(even) { --r: 1.5deg; }
-.tiles .gap { width: 0.4em; }
-@media (hover: hover) and (pointer: fine) {
-  .big-pill:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -3px 0 rgba(120, 40, 5, 0.25), 0 16px 32px -14px rgba(255, 106, 31, 0.9); }
-  .big-pill:hover .t { --r: 0deg; }
-}
-.big-pill:active { transform: translateY(1px); }
-@media (max-width: 600px) { .big-pill { min-height: 64px; } }
+.contact-buttons .button { width: 100%; justify-content: center; }
 
 /* ---------- Arriving from the cover: its paint rolls off the page ---------- */
 
