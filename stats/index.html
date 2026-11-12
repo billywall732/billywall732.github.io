@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
-  <link rel="stylesheet" href="/stats/stats.css?v=3">
+  <link rel="stylesheet" href="/stats/stats.css?v=4">
   <!-- A fresh copy of the script each visit (GitHub Pages lets browsers keep files for 10 minutes) -->
   <script type="module">import(`/stats/stats.js?t=${Date.now()}`);</script>
 </head>
@@ -31,19 +31,28 @@
         <a class="st-back" href="/">← Back to Off the Wall</a>
       </div>
       <h1>Visit counts</h1>
-      <p class="stats-note">Aggregate counts only: views per page, hour and weekday, referrer domains, countries and US states, device types, browser families and screen sizes, plus bucketed visit length, scroll depth, outbound domains and page-to-page moves. No IP addresses, no cookies, no individual visitors. Visit numbers are <b>estimates</b>.</p>
-      <p class="st-since">Counts started Nov 1, 2026, with the site’s own counter. Device, browser, entry, exit and time-on-page counts begin then; the league’s earlier views have page and place only.</p>
+      <!-- One line up top; the details fold away so the numbers start near the top of the screen -->
+      <p class="stats-note st-lede">Aggregate counts only: no cookies, no IP addresses, no individual visitors.</p>
+      <details class="st-about">
+        <summary>About these numbers</summary>
+        <p>Counted: views per page, hour and weekday, referrer domains, countries and US states, device types, browser families and screen sizes, plus bucketed visit length, scroll depth, outbound domains and page-to-page moves. Visit numbers are <b>estimates</b>.</p>
+        <p>Counts started Nov 1, 2026, with the site’s own counter. Device, browser, entry, exit and time-on-page counts begin then; the league’s earlier views have page and place only.</p>
+        <p>Countries and states are shown as shares: GoatCounter works places out a little differently from page views, so its place counts run slightly above the totals.</p>
+      </details>
     </header>
+    <!-- Stays pinned to the top while scrolling, so the site and range can change from anywhere -->
     <div class="st-controls">
       <div class="range-tabs site-tabs" role="tablist" aria-label="Site">
         <button role="tab" data-site="offthewall" aria-selected="true">Off the Wall</button>
-        <button role="tab" data-site="fantasy" aria-selected="false">Fantasy Football (league)</button>
+        <!-- .lg words are dropped on phones, so the pinned bar fits on one row -->
+        <button role="tab" data-site="fantasy" aria-selected="false" aria-label="Fantasy Football (league)"><span class="lg">Fantasy Football (</span>league<span class="lg">)</span></button>
       </div>
       <div class="range-tabs" role="tablist" aria-label="Time range">
         <button role="tab" data-range="today" aria-selected="false">Today</button>
-        <button role="tab" data-range="week" aria-selected="true">Last 7 days</button>
-        <button role="tab" data-range="month" aria-selected="false">Last 30 days</button>
+        <button role="tab" data-range="week" aria-selected="true" aria-label="Last 7 days"><span class="lg">Last </span>7 days</button>
+        <button role="tab" data-range="month" aria-selected="false" aria-label="Last 30 days"><span class="lg">Last </span>30 days</button>
       </div>
+      <span class="st-updated" id="st-updated" aria-live="off"></span>
     </div>
     <div id="stats" aria-live="polite"><p class="stats-note">Loading…</p></div>
   </main>

@@ -32,7 +32,7 @@ function pageName(path) {
   if (path === '/') return 'Cover';
   const m = path.match(/^\/home\/(?:#(.+))?$/);
   if (m) return m[1] ? `Home · ${m[1]} tab` : 'Home';
-  const pr = path.match(/^\/projects\/([^/]+)\/$/);
+  const pr = path.match(/^\/projects\/([^/]+)\/?$/); // the counter may drop the trailing slash
   if (pr) return `Project page · ${pr[1]}`;
   const app = path.split('/')[1];
   const rest = path.slice(app.length + 2);
@@ -57,14 +57,33 @@ const dayShort = (d) => dayDate(d).toLocaleDateString('en-US', { month: 'short',
 const hourName = (h) => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`;
 const hourSpan = (h) => `${hourName(h)}–${hourName((h + 1) % 24)}`;
 
-// Bar list with counts and shares (biggest first, or in the given order for buckets)
-function bars(rows, { max = 8, none = NONE, name = (k) => k, keepOrder = false } = {}) {
+// Bar list with counts and shares (biggest first, or in the given order for buckets).
+// share: true shows the share only, for lists whose counts don't add up to the views (places).
+function bars(rows, { max = 8, none = NONE, name = (k) => k, keepOrder = false, share = false } = {}) {
   rows = keepOrder ? (rows.some((r) => r[1] > 0) ? rows : []) : topOf(rows);
   if (!rows.length) return `<p class="empty">${none}</p>`;
   const total = rows.reduce((a, r) => a + r[1], 0), top = Math.max(...rows.map((r) => r[1]));
   const shown = rows.slice(0, max);
-  return `<ul class="bars">${shown.map(([k, n]) => `<li><span class="bl" title="${esc(name(k))}">${esc(name(k))}</span><i style="--w:${Math.max(2, Math.round(n / top * 100))}%"></i><b>${fmt(n)}</b><em>${pct(n, total)}</em></li>`).join('')}</ul>${rows.length > max ? `<p class="sub more">+${rows.length - max} more</p>` : ''}`;
+  return `<ul class="bars${share ? ' share' : ''}">${shown.map(([k, n]) => `<li><span class="bl" title="${esc(name(k))}">${esc(name(k))}</span><i style="--w:${Math.max(2, Math.round(n / top * 100))}%"></i>${share ? `<b>${pct(n, total)}</b>` : `<b>${fmt(n)}</b><em>${pct(n, total)}</em>`}</li>`).join('')}</ul>${rows.length > max ? `<p class="sub more">+${rows.length - max} more</p>` : ''}`;
 }
+
+// "Updated 12 min ago" beside the tabs, from when the Worker worked the numbers out
+function ago(iso) {
+  const min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min} min ago`;
+  const h = Math.round(min / 60);
+  return h < 24 ? `${h} hr ago` : new Date(iso).toLocaleString();
+}
+function showUpdated() {
+  const el = $('#st-updated'); if (!el) return;
+  el.textContent = DATA ? `Updated ${ago(DATA.generatedAt)}` : '';
+  el.title = DATA ? new Date(DATA.generatedAt).toLocaleString() : '';
+}
+setInterval(showUpdated, 60000);
+// A thin line under the pinned tabs once the page has scrolled under them
+const bar = document.querySelector('.st-controls');
+addEventListener('scroll', () => bar?.classList.toggle('stuck', bar.getBoundingClientRect().top <= 0 && scrollY > 0), { passive: true });
 const panel = (title, sub, body, cls = '') => `<section class="stat-panel ${cls}"><h2>${title}</h2>${sub ? `<p class="sub">${sub}</p>` : ''}${body}</section>`;
 
 // The trend: views per hour (today, up to now) or per day. Plain SVG drawn at the panel's own
@@ -257,8 +276,8 @@ function render() {
     <section class="stat-panel"><h2>Views per page and app</h2><p class="sub">${RANGE_LABEL[RANGE][0].toUpperCase() + RANGE_LABEL[RANGE].slice(1)}. Open a row for its devices, browsers, referrer domains and time on page.</p>${table}</section>
     <div class="stat-grid">
       ${panel('Referrer domains', 'Domain only, never the full address', bars(mergeRefs(r.referrers), { none }))}
-      ${panel('Countries', 'Worked out by GoatCounter from the visitor’s network; it keeps no IP addresses', bars(r.countries.map((x) => [x.name, x.views]), { none }))}
-      ${panel('US states', 'The finest place detail kept', bars(r.regions.map((x) => [x.name, x.views]), { none }))}
+      ${panel('Countries', 'Share of views, worked out by GoatCounter from the visitor’s network (it keeps no IP addresses)', bars(r.countries.map((x) => [x.name, x.views]), { none, share: true }))}
+      ${panel('US states', 'Share of US views; the finest place detail kept', bars(r.regions.map((x) => [x.name, x.views]), { none, share: true }))}
       ${panel('Devices', 'Phone, tablet, or laptop/desktop', bars(Object.entries(r.devices), { none, name: (k) => DEVICE[k] || k }))}
       ${panel('Browsers', 'Browser family only, no versions', bars(Object.entries(r.browsers), { none }))}
       ${panel('Entry and exit', 'Where visits start and end, and how long a page stays on screen', entryExit(r))}
@@ -267,6 +286,7 @@ function render() {
     <p class="stats-note">Counts and buckets only. Visit length, scroll depth, outbound clicks, page-to-page moves and screen size started Nov 3, 2026.</p>
     ${audience(r)}
     <p class="stats-note">Counts from ${esc(dayShort(r.start))} to ${esc(dayShort(r.end))} (${esc(DATA.timezone)}), worked out ${new Date(DATA.generatedAt).toLocaleString()}. They refresh about every 20 minutes.</p>`;
+  showUpdated();
 }
 
 document.addEventListener('click', (e) => {

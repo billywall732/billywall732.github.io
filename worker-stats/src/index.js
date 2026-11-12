@@ -19,7 +19,7 @@ const RANGES = { today: 0, week: 6, month: 29 }; // days before today, inclusive
 const STALE_MS = 20 * 60 * 1000; // older than this: refresh in the background while serving it
 // GoatCounter site → the Worker secret holding its read-only key
 const SITES = { offthewall: 'GOATCOUNTER_TOKEN', fantasy: 'GOATCOUNTER_TOKEN_FANTASY' };
-const kvKey = (site) => `summary:v5:${site}`; // v5: referrers and places count page views only
+const kvKey = (site) => `summary:v6:${site}`; // v6: referrers and places over the same days as the views
 
 export default {
   async fetch(request, env, ctx) {
@@ -94,6 +94,16 @@ async function summary(site, token, prevTz) {
   } catch { /* keep the known zone */ }
   const day = (offset) => new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(Date.now() - offset * 864e5));
   const weekday = (d) => new Date(`${d}T12:00:00Z`).getUTCDay(); // 0 = Sunday
+  // Midnight starting a day in the account's zone, as a UTC time. GoatCounter's referrer and place
+  // lists take times as well as dates; asking from midnight to midnight in this zone lines them up
+  // with the page views (counted per day in this zone). Plain dates are UTC days, 7 or 8 hours off.
+  const offsetAt = (ms) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
+      .formatToParts(new Date(ms)).filter((x) => x.type !== 'literal').map((x) => [x.type, Number(x.value)]));
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - ms;
+  };
+  const midnight = (d) => { const g = Date.parse(`${d}T00:00:00Z`); return new Date(g - offsetAt(g)).toISOString().replace(/\.\d+Z$/, 'Z'); };
+  const dayAfter = (d) => new Date(Date.parse(`${d}T12:00:00Z`) + 864e5).toISOString().slice(0, 10);
 
   // Every page and event once, with its per-day (and per-hour) counts for the last 31 days.
   // GoatCounter treats the end date as exclusive and the dates as UTC while each path's per-day
@@ -159,8 +169,9 @@ async function summary(site, token, prevTz) {
 
     // Referrers and places count page views only, like the totals above. (Without this,
     // GoatCounter also counts the counter's own events, about 4 per view, so these lists
-    // added up to ~4x the page views for the same days.)
-    const span = { start: day(back), end: day(-1), include_paths: pageIds };
+    // added up to ~4x the page views for the same days.) And over the same days: midnight to
+    // midnight in the account's zone, not UTC days (which added ~8 hours of the day before).
+    const span = { start: midnight(r.start), end: midnight(dayAfter(r.end)), include_paths: pageIds };
     const refs = await api('/stats/toprefs', { ...span, limit: 25 }).catch(() => ({ stats: [] }));
     const locs = await api('/stats/locations', { ...span, limit: 40 }).catch(() => ({ stats: [] }));
     // Referrers are sent as an origin only; keep just the host name
