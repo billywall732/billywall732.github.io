@@ -129,7 +129,9 @@ Every public page loads `shared/count.js`, the site's own small counter, which r
 - device type and browser family (no versions);
 - entry page, time-on-page bucket and an estimated exit page.
 
-There are no cookies and nothing is stored in the browser, so "Anonymous visit counts, no cookies." in the footer stays true. The fantasy league's own site keeps its separate counter.
+There are no cookies and nothing is stored in a visitor's browser, so "Anonymous visit counts, no cookies." in the footer stays true. The fantasy league's own site keeps its separate counter.
+
+**Leaving your own visits out:** open `/stats/` and tap "Don't count my visits", or open any counted page with `#toggle-goatcounter` on the end (GoatCounter's own convention). Either saves `skipgc` in that browser's storage, and `shared/count.js` then sends nothing from it, across the whole site, the apps and the league. It's per browser and per device, so set it on each one you use (Safari on the iPhone, each browser on the laptop). A home-screen app that opens on its own (like Snow and Surf Report) keeps separate storage, so it's still counted. Safari can clear a site's storage if you don't visit for a few weeks; the Stats page shows whether this browser is counted.
 
 The counts are on a hidden page, `/stats/`. It's linked from nowhere, isn't indexed and isn't counted itself. It reads the counts through `worker-stats/` (setup in that folder's README) and shows only aggregates.
 

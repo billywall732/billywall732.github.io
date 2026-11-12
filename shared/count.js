@@ -32,8 +32,20 @@
   let settings = {};
   try { settings = JSON.parse(me.dataset.goatcounterSettings || '{}'); } catch { /* defaults */ }
 
-  // Not counted: local copies, pages shown inside another page, and automated browsers
-  const off = location.protocol === 'file:' || /^(localhost|127\.|\[::1\]|0\.0\.0\.0)/.test(location.hostname)
+  // The owner's own browsers can opt out, GoatCounter's way: open any page with #toggle-goatcounter
+  // on the end of the address (or use the switch on /stats/). That saves "skipgc" in this browser's
+  // localStorage, for this whole site (the apps and the league share it). Visitors never get it.
+  let skipped = false;
+  try {
+    if (location.hash === '#toggle-goatcounter') {
+      if (localStorage.getItem('skipgc') === 't') localStorage.removeItem('skipgc'); else localStorage.setItem('skipgc', 't');
+      alert(localStorage.getItem('skipgc') === 't' ? 'Visits from this browser are no longer counted.' : 'Visits from this browser are counted again.');
+    }
+    skipped = localStorage.getItem('skipgc') === 't';
+  } catch { /* storage blocked: count as usual */ }
+
+  // Not counted: local copies, pages shown inside another page, automated browsers, and opted-out ones
+  const off = skipped || location.protocol === 'file:' || /^(localhost|127\.|\[::1\]|0\.0\.0\.0)/.test(location.hostname)
     || window !== window.top || navigator.webdriver || /bot|crawl|spider|headless|lighthouse/i.test(navigator.userAgent);
 
   function send(params) {

@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
-  <link rel="stylesheet" href="/stats/stats.css?v=4">
+  <link rel="stylesheet" href="/stats/stats.css?v=5">
   <!-- A fresh copy of the script each visit (GitHub Pages lets browsers keep files for 10 minutes) -->
   <script type="module">import(`/stats/stats.js?t=${Date.now()}`);</script>
 </head>
@@ -39,6 +39,8 @@
         <p>Counts started Nov 1, 2026, with the site’s own counter. Device, browser, entry, exit and time-on-page counts begin then; the league’s earlier views have page and place only.</p>
         <p>Countries and states are shown as shares: GoatCounter works places out a little differently from page views, so its place counts run slightly above the totals.</p>
       </details>
+      <!-- Keep your own visits out of the counts, per browser (shared/count.js reads the same switch) -->
+      <p class="st-self"><span id="st-self-state">Checking this browser…</span> <button type="button" class="st-self-btn" id="st-self" hidden></button></p>
     </header>
     <!-- Stays pinned to the top while scrolling, so the site and range can change from anywhere -->
     <div class="st-controls">

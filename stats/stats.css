@@ -15,6 +15,11 @@
 .st-about summary { cursor: pointer; width: fit-content; font-weight: 600; color: var(--ink-2); }
 .st-about summary:hover { color: var(--ink); }
 .st-about p { margin: 8px 0 0; padding-left: 10px; border-left: 3px solid color-mix(in srgb, var(--brand) 60%, transparent); }
+/* "Your visits in this browser": counted or not, and the switch */
+.st-self { margin: 2px 0 0; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.st-self b { color: var(--ink); }
+.st-self-btn { font: 600 13px var(--sans); padding: 5px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); cursor: pointer; }
+.st-self-btn:hover { border-color: var(--ink); }
 /* Pinned to the top while scrolling, on the page's own background so content slides under it */
 .st-controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; position: sticky; top: 0; z-index: 5; margin-inline: -8px; padding: 10px 8px; background: var(--bg); border-bottom: 1px solid transparent; }
 .st-controls.stuck { border-bottom-color: var(--rule); box-shadow: 0 8px 16px -14px rgba(0, 0, 0, .6); }

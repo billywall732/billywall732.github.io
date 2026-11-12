@@ -81,6 +81,24 @@ function showUpdated() {
   el.title = DATA ? new Date(DATA.generatedAt).toLocaleString() : '';
 }
 setInterval(showUpdated, 60000);
+// Your own visits: a per-browser switch, the same one shared/count.js checks ("skipgc" in this
+// browser's storage, for the whole site, apps and league included). Each browser and device has its
+// own storage, so set it once on each (a laptop's browsers separately, and the iPhone).
+function selfSwitch() {
+  const state = $('#st-self-state'), btn = $('#st-self');
+  let skipped;
+  try { skipped = localStorage.getItem('skipgc') === 't'; } catch { state.textContent = 'This browser blocks site storage, so it can’t be left out of the counts.'; return; }
+  state.innerHTML = skipped ? 'Your visits in this browser: <b>not counted</b>.' : 'Your visits in this browser: <b>counted</b>.';
+  btn.textContent = skipped ? 'Count them again' : 'Don’t count my visits';
+  btn.hidden = false;
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#st-self')) return;
+  try { if (localStorage.getItem('skipgc') === 't') localStorage.removeItem('skipgc'); else localStorage.setItem('skipgc', 't'); } catch { /* shown by selfSwitch */ }
+  selfSwitch();
+});
+selfSwitch();
+
 // A thin line under the pinned tabs once the page has scrolled under them
 const bar = document.querySelector('.st-controls');
 addEventListener('scroll', () => bar?.classList.toggle('stuck', bar.getBoundingClientRect().top <= 0 && scrollY > 0), { passive: true });
