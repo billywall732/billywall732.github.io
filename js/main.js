@@ -357,6 +357,10 @@ function countView(name) {
 // Off the Clock. A link within the same page (a box, Hobbies) just goes there.
 const STACK = { work: 0, clock: 1 };
 window.addEventListener('hashchange', () => {
+  // The skip link (#main) and other plain anchors aren't views: the browser jumps there, and the
+  // page stays put (otherwise skipping on Off the Clock would switch to Workshop)
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (id && !sectionOf(OLD[id] ?? id) && document.getElementById(id)) return;
   const next = viewFromHash();
   const to = sectionOf(next);
   if (shownSection && to !== shownSection && window.otwSlide) window.otwSlide(STACK[shownSection], STACK[to], () => show(next));
