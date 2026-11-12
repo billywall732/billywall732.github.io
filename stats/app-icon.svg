@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The Stats page's home-screen icon: a bar chart with a trend line, in the Off the Wall app-icon
+       style (one object on a dark glow in the page's color, two swooshes). icon-180/192/512.png are
+       screenshots of this file at those sizes. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#7a300f"/><stop offset="1" stop-color="#150703"/></radialGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa45c"/><stop offset="1" stop-color="#ff6a1f"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-opacity=".85">
+    <path d="M358 79 A205 205 0 0 1 449 186"/><path d="M154 434 A205 205 0 0 1 63 326"/>
+  </g>
+  <!-- the card -->
+  <rect x="120" y="128" width="272" height="256" rx="36" fill="#000" fill-opacity=".4" transform="translate(10 14)"/>
+  <rect x="120" y="128" width="272" height="256" rx="36" fill="#1d1a17" stroke="#3a332c" stroke-width="6"/>
+  <path d="M150 344 H362" stroke="#5a5048" stroke-width="6" stroke-linecap="round"/>
+  <!-- bars -->
+  <rect x="158" y="268" width="38" height="76" rx="9" fill="url(#bar)"/>
+  <rect x="214" y="222" width="38" height="122" rx="9" fill="url(#bar)"/>
+  <rect x="270" y="248" width="38" height="96" rx="9" fill="url(#bar)"/>
+  <rect x="326" y="182" width="38" height="162" rx="9" fill="url(#bar)" transform="translate(-6 0)"/>
+  <!-- trend line -->
+  <path d="M177 238 L233 192 L289 214 L339 156" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#fff"><circle cx="177" cy="238" r="11"/><circle cx="233" cy="192" r="11"/><circle cx="289" cy="214" r="11"/><circle cx="339" cy="156" r="13"/></g>
+</svg>
