@@ -70,7 +70,7 @@ tools/make-pages.mjs  writes projects/<slug>/index.html for each project, then r
 tools/make-feed.mjs   writes feed.xml (Atom) from js/projects.js; don't edit feed.xml by hand
 img/                  project screenshots; img/clock/ has the Off the Clock photos
 photos/               your original photos (not committed: big, with location data)
-icon.svg              the tab icon
+icon.svg              the tab icon (img/icon-home.svg makes the home-screen icons; see Icons)
 contrail/             Contrail, the flight and hotel log (app.js, csv.js import, demo-data.js, analytics/, cover/)
 wallet/               What's in My Wallet?, the card tracker (app.js, demo-data.js, cover/)
 code-breaker/         Krillion Code Breaker, a practice companion for krillion.io (app.js, prompts.js)
@@ -106,6 +106,18 @@ Both run as **demos**: anyone can click around made-up data for "Alex & Jordan",
 - Each app's CSS is scoped under `.contrail-app` / `.wallet-app` so it can't affect the rest of the site.
 - **Lounges** (`shared/data/lounges.json`): airports marked `needsReview` come from general knowledge and haven't been checked. Each lounge list shows when it was last checked.
 - **Cards** (`shared/data/cards.json`): fees and earning rates as of 2026. They change often; update them here.
+
+## Icons
+
+Both are a bubble-letter W, drawn as one zig-zag line traced several times (shadow, outline, shading, face, shine), so they don't depend on fonts.
+
+| File | Where it shows | Design |
+|---|---|---|
+| `icon.svg` | browser tabs and bookmarks | cream W with a comic shadow on an orange tile |
+| `img/icon-home.svg` → `apple-touch-icon.png` (180), `img/icon-192.png`, `img/icon-512.png` | phone home screens | orange W with a cream outline on the dark background |
+| `img/icon-home-maskable.svg` → `img/icon-maskable-512.png` | Android launchers that crop icons to a circle or squircle | the same W, shrunk into the safe middle |
+
+The PNGs are screenshots of the SVGs at exact sizes. After changing an SVG, open it in a browser at that size (for example with Playwright: a 180 × 180 window on `/img/icon-home.svg`) and save the screenshot over the PNG. Browsers and phones cache icons hard, so a new one can take a while to show up.
 
 ## Visit counts
 

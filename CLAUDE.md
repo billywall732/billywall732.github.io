@@ -73,4 +73,3 @@ From the repo folder: `py -m http.server 8080` (on this PC `python` is the Windo
 - Contrail Gmail import (restricted Google scope: Testing mode + privacy page update).
 - Update `/privacy/` whenever a feature adds data handling (Gmail import, Wallet Claude chat, Wall Street Ledger on Drive, wedding RSVPs).
 - Wall Wedding RSVPs: embedded Tally form + Cloudflare Worker confirmation email via Tally webhook (needs CSP `frame-src` for Tally).
-- Home-screen icon: a bubble-letter "W" (`apple-touch-icon.png`, `img/icon-192/512.png`, `site.webmanifest`).

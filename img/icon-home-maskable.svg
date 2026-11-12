@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- img/icon-home.svg for Android's "maskable" slot: launchers may crop to a circle, squircle or
+       teardrop, keeping only the middle 80%, so the W is shrunk to 78% to stay inside it. -->
+  <defs><path id="w" d="M118 150 L182 372 L256 236 L330 372 L394 150"/></defs>
+  <rect width="512" height="512" fill="#121110"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(256 256) scale(.78) translate(-256 -256)">
+    <use href="#w" stroke="#000" stroke-opacity=".5" stroke-width="132" transform="translate(10 16)"/>
+    <use href="#w" stroke="#f1ede4" stroke-width="132"/>
+    <use href="#w" stroke="#c9440f" stroke-width="94"/>
+    <use href="#w" stroke="#ff6a1f" stroke-width="80" transform="translate(0 -7)"/>
+    <path d="M104 176 L122 238" stroke="#fff" stroke-opacity=".9" stroke-width="17"/>
+    <path d="M128 268 L131 278" stroke="#fff" stroke-opacity=".9" stroke-width="17"/>
+    <path d="M262 214 L287 258" stroke="#fff" stroke-opacity=".75" stroke-width="15"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The home-screen icon (apple-touch-icon.png, img/icon-192.png, img/icon-512.png): an orange
+       bubble-letter W with a cream outline on the site's dark background. Square, edge to edge:
+       phones round the corners themselves. The W is one zig-zag line drawn several times: shadow,
+       cream outline, darker orange shading, the orange face, then white shine.
+       icon-home-maskable.svg is the same W shrunk into Android's safe circle. How to make the
+       PNGs: README, "Icons". -->
+  <defs><path id="w" d="M118 150 L182 372 L256 236 L330 372 L394 150"/></defs>
+  <rect width="512" height="512" fill="#121110"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <use href="#w" stroke="#000" stroke-opacity=".5" stroke-width="132" transform="translate(10 16)"/>
+    <use href="#w" stroke="#f1ede4" stroke-width="132"/>
+    <use href="#w" stroke="#c9440f" stroke-width="94"/>
+    <use href="#w" stroke="#ff6a1f" stroke-width="80" transform="translate(0 -7)"/>
+    <path d="M104 176 L122 238" stroke="#fff" stroke-opacity=".9" stroke-width="17"/>
+    <path d="M128 268 L131 278" stroke="#fff" stroke-opacity=".9" stroke-width="17"/>
+    <path d="M262 214 L287 258" stroke="#fff" stroke-opacity=".75" stroke-width="15"/>
+  </g>
+</svg>
