@@ -105,6 +105,16 @@ const ART = {
     return `<rect class="${on ? 'a-solid' : 'a-line'}" x="${44 + c * 28}" y="${30 + r * 34}" width="20" height="24" rx="5"${on ? '' : ' style="stroke-width:2.5"'}/>`;
   })).join('')}
     <path class="a-line" d="M124 18v150"/>`,
+  // A day on the water: the sun, a center-console boat flying a dive flag, and the waves
+  boat: `<circle class="a-ring" cx="238" cy="48" r="20"/>
+    <path class="a-fill" d="M62 118 H236 L214 148 H86 Z"/>
+    <rect class="a-solid" x="134" y="92" width="34" height="26" rx="5"/>
+    <path class="a-line" d="M124 84 H178 M130 84 V92 M172 84 V92"/>
+    <path class="a-line" d="M76 118 V60"/>
+    <rect class="a-fill" x="76" y="60" width="34" height="24" rx="2"/>
+    <path class="a-line" d="M76 60 L110 84"/>
+    <path class="a-line" d="M14 166 q20 -12 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/>
+    <circle class="a-dot" cx="40" cy="40" r="3"/><circle class="a-dot" cx="270" cy="112" r="2.5"/>`,
 };
 
 function placeholder(art = 'chart') {

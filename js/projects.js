@@ -33,7 +33,7 @@
 //   code        its GitHub repo, or null
 //   follow      false hides the "Follow along" link (shown when there's no repo yet)
 //   image       a screenshot of its cover page in img/ (1280 x 800), or null
-//   art         when there's no image: 'chart', 'trivia', 'snowboard', 'wedding', 'dive' or 'steps'
+//   art         when there's no image: 'chart', 'trivia', 'snowboard', 'wedding', 'dive', 'steps' or 'boat'
 //
 // Polished and rough projects show as big cards, in the order below; the first
 // polished one is the widest. Workshop projects go in the compact list.
@@ -416,6 +416,41 @@ export const projects = [
     code: null,
     image: null,
     art: 'steps',
+  },
+  {
+    slug: 'keys-boating-report',
+    name: 'Keys Boating Report',
+    kicker: 'Boating Forecast',
+    icon: '🚤',
+    accent: '#2b8ad9',
+    tagline: 'Wind, tides and seas for the Florida Keys, and what the day on the water is good for.',
+    blurb: 'A morning boating report for the Florida Keys: wind, seas, tides and visibility rolled into a simple go / maybe / stay-in call, plus the day’s best bet, whether that’s lobstering, diving, a sandbar day or offshore fishing.',
+    highlights: [
+      'A 1–5 boating rating for the bayside, the reef and offshore',
+      'The best activity for the day: lobstering, diving and snorkeling, a sandbar day, or offshore fishing',
+      'Lobster season built in: the two-day mini season in late July and the regular season from August 6 to March 31',
+    ],
+    why: 'Planning a day on the water in the Keys means checking the wind, the tide chart, the marine forecast and the lobster calendar one by one. I wanted one morning answer to “is it a good boat day, and what should we do with it?”',
+    how: [
+      'Pull free public data each morning: NOAA buoys and reef stations for wind and seas, NOAA tide stations for the tides, and the National Weather Service marine forecast for the Keys waters.',
+      'Score the day for each kind of trip: calm, clear water for diving and lobstering; light wind and the right tide for the sandbar; a workable sea state for running offshore.',
+      'Check the calendar: lobster mini season and the regular season, with a reminder to confirm the current FWC rules (bag limits, closed areas) before heading out.',
+      'Built like Snow and Surf Report: a scheduled GitHub Action writes one report file and the page draws it, with no server.',
+    ],
+    status: 'workshop',
+    statusNote: 'Planning the data sources and the scoring.',
+    updated: '2026-11-12',
+    next: [
+      'Pick the buoys and tide stations from Key Largo to Key West',
+      'A first daily rating for boating conditions',
+      'Activity picks, with the lobster season calendar',
+    ],
+    tags: ['JavaScript', 'Marine forecasts', 'Daily report'],
+    url: null,
+    code: null,
+    follow: false, // no repo yet
+    image: null,
+    art: 'boat',
   },
 ];
 

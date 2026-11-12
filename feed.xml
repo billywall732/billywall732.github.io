@@ -10,6 +10,15 @@
   <author><name>Billy Wall</name><uri>https://offthewall.dev/</uri></author>
   <icon>https://offthewall.dev/img/icon-192.png</icon>
   <entry>
+    <title>Keys Boating Report</title>
+    <id>https://offthewall.dev/projects/keys-boating-report/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/keys-boating-report/"/>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>Wind, tides and seas for the Florida Keys, and what the day on the water is good for.</summary>
+    <content type="html">&lt;p&gt;A morning boating report for the Florida Keys: wind, seas, tides and visibility rolled into a simple go / maybe / stay-in call, plus the day’s best bet, whether that’s lobstering, diving, a sandbar day or offshore fishing.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Planning the data sources and the scoring.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Pick the buoys and tide stations from Key Largo to Key West&lt;/li&gt;&lt;li&gt;A first daily rating for boating conditions&lt;/li&gt;&lt;li&gt;Activity picks, with the lobster season calendar&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+  <entry>
     <title>Loop Lab</title>
     <id>https://offthewall.dev/projects/loop-lab/</id>
     <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/loop-lab/"/>
