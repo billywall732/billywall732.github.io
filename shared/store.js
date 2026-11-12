@@ -5,6 +5,8 @@
 //   getDoc(name) / setDoc(name, value)   single documents (profile, wallet)
 //   subscribe(fn)               called after any change, with the collection or doc name
 //   reset(seed)                 replace everything (demo: load sample data; import)
+//   deleteAll()                 delete everything this app saved for the member, from the server
+//                               ("Delete my saved data"); in the demo it just empties the page
 //
 // Two backends:
 //   demo     in memory: nothing is saved and a reload starts over (everyone not approved)
@@ -31,6 +33,7 @@ function memoryBackend() {
       for (const [c, recs] of Object.entries(seed.collections ?? {})) for (const r of recs) (cols[c] ??= {})[r.id ||= newId()] = copy(r);
       for (const [n, v] of Object.entries(seed.docs ?? {})) docs[n] = copy(v);
     },
+    async deleteAll() { cols = {}; docs = {}; },
   };
 }
 
@@ -83,6 +86,13 @@ function accountBackend(app, db, userId) {
       const oldDocs = (await must(documents().select('name').eq('app', app))).filter((row) => !docNames.has(row.name));
       for (const row of oldDocs) await must(documents().delete().eq('app', app).eq('name', row.name));
     },
+    // Every row this member has for this app, in both tables. Row-level security already limits
+    // a delete to the member's own rows; the user_id filter says so here too. Safe to run again
+    // if it stops part-way.
+    async deleteAll() {
+      await must(records().delete().eq('user_id', userId).eq('app', app));
+      await must(documents().delete().eq('user_id', userId).eq('app', app));
+    },
   };
 }
 
@@ -98,6 +108,7 @@ export const store = {
   getDoc: (n) => backend.getDoc(n),
   setDoc: async (n, v) => { await backend.setDoc(n, v); changed(n); },
   reset: async (seed) => { await backend.reset(seed); changed('*'); },
+  deleteAll: async () => { await backend.deleteAll(); changed('*'); },
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
 };
 

@@ -1033,7 +1033,11 @@ function renderSettings() {
       <h3 style="font-size:20px;text-transform:uppercase">Sample data</h3>
       <p class="lw" style="margin:0">The demo starts with Alex &amp; Jordan's made-up travels. Clear them to see Contrail empty, or bring them back.</p>
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn" data-clear>Clear sample data</button><button type="button" class="btn" data-sample>Load sample data</button></div>
-    </div>` : ''}
+    </div>` : `<div class="panel">
+      <h3 style="font-size:20px;text-transform:uppercase">Delete my saved data</h3>
+      <p class="lw" style="margin:0">Your trips, stays, cards and settings are saved to your account. Deleting them removes them from the server for good, so download a backup first if you might want them back. Copies in older nightly backups remain until those are cleared; to have them removed too, email me from the <a href="/contact/">Contact page</a>.</p>
+      <div class="row" style="justify-content:flex-start"><button type="button" class="btn danger" data-delete-saved>Delete my saved Contrail data</button></div>
+    </div>`}
   </div></div>`;
 }
 function csvPreviewHTML() {
@@ -1067,8 +1071,16 @@ root.addEventListener('change', async (e) => {
   }
 });
 root.addEventListener('click', async (e) => {
-  const b = e.target.closest('[data-export],[data-clear],[data-sample],[data-csv-go],[data-csv-cancel],[data-theme-next]'); if (!b) return;
+  const b = e.target.closest('[data-export],[data-clear],[data-sample],[data-csv-go],[data-csv-cancel],[data-theme-next],[data-delete-saved]'); if (!b) return;
   if (b.dataset.themeNext !== undefined) document.querySelector('.theme-toggle')?.click();
+  // Members only. Two checks, like Budget Ledger's, because this can't be undone.
+  if (b.dataset.deleteSaved !== undefined && store.mode === 'account') {
+    if (!confirm("Delete your saved Contrail data from your account? This can't be undone. Download a backup first if you might want it back.")) return;
+    if (!confirm('Last check: permanently delete every trip, stay, card and setting saved to your account?')) return;
+    b.disabled = true;
+    try { await store.deleteAll(); toast('Your saved Contrail data is deleted'); }
+    catch (err) { console.error(err); b.disabled = false; toast("Couldn't delete everything. Try again; nothing extra is lost."); }
+  }
   if (b.dataset.export !== undefined) {
     const data = { app: 'Contrail', version: 1, exportedAt: new Date().toISOString(), profile: PROFILE, trips: await store.list('trips'), stays: await store.list('stays') };
     saveFile(`contrail-backup-${isoDate(new Date())}.json`, JSON.stringify(data, null, 2));

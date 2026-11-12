@@ -165,7 +165,9 @@ const viewPeople = () => S.activeProfile === "all" ? S.profiles : S.profiles.fil
 
 // ---------- persistence ----------
 // shared/store.js: in the demo nothing outlives the page; approved members save to their account.
-const P = { timer: null };
+// timer: a save waiting its 300 ms; saving: the save in progress; deleting: "Delete my saved data"
+// is running, so nothing may be saved (it would put the wallet back)
+const P = { timer: null, saving: Promise.resolve(), deleting: false };
 function setSaveState(kind, text) {
   const el = $("#saveState"); if (!el) return;
   el.innerHTML = `<span class="dot ${kind}"></span><span>${esc(text)}</span>`;
@@ -173,7 +175,9 @@ function setSaveState(kind, text) {
 const saveLabel = () => store.mode === "demo" ? ["local", "Demo: changes aren't saved"] : ["ok", "Saved to your account"];
 function persist() {
   S.updatedAt = Date.now();
-  clearTimeout(P.timer); P.timer = setTimeout(() => store.setDoc("wallet", JSON.parse(JSON.stringify(S))), 300);
+  clearTimeout(P.timer);
+  if (P.deleting) return;
+  P.timer = setTimeout(() => { P.saving = store.setDoc("wallet", JSON.parse(JSON.stringify(S))).catch(err => console.error("Couldn't save", err)); }, 300);
   setSaveState(...saveLabel());
 }
 async function initStorage() {
@@ -987,6 +991,7 @@ function vData() {
       <div class="row" style="margin-top:8px"><button class="btn" data-act="import-text">Restore from text</button></div>
       <p class="note">Restoring replaces everything currently in the hub.</p></div>
     <div class="panel"><h2 style="margin-bottom:6px">Start over</h2><p class="note" style="margin-top:0">Removes every card, pull and watchlist entry.</p><button class="btn danger" data-act="wipe">Erase all data</button></div>
+    ${store.mode === "account" ? `<div class="panel"><h2 style="margin-bottom:6px">Delete my saved data</h2><p class="note" style="margin-top:0">Your wallet (cards, people, pulls, watchlist and settings) is saved to your account. Deleting it removes it from the server for good, so download a backup first if you might want it back. Copies in older nightly backups remain until those are cleared; to have them removed too, email me from the <a href="/contact/">Contact page</a>.</p><button class="btn danger" data-act="delete-saved">Delete my saved wallet</button></div>` : ""}
   </div></div>`;
 }
 
@@ -1209,8 +1214,35 @@ document.addEventListener("click", e => {
     case "copy-json": { const txt = JSON.stringify(S, null, 2); navigator.clipboard.writeText(txt).then(() => toast("Copied"), () => { const ta = $("#importText"); ta.value = txt; ta.select(); toast("Selected below; copy it with your keyboard"); }); break; }
     case "import-text": try { importState(JSON.parse($("#importText").value)); } catch { toast("That text isn't valid backup JSON."); } break;
     case "wipe": if (twoStep(t, "wipe", "Tap again to erase everything")) { S = normalize({ settings: S.settings, profiles: S.profiles, activeProfile: "all", cards: [], pulls: [], research: [] }); persist(); render(); toast("All data erased"); } break;
+    case "delete-saved": deleteSaved(t); break;
   }
 });
+
+// "Delete my saved data" (members only): removes the wallet from the server, unlike "Erase all
+// data", which saves an empty wallet. Two checks, like Budget Ledger's, because it can't be undone.
+async function deleteSaved(btn) {
+  if (store.mode !== "account") return;
+  if (!confirm("Delete your saved wallet from your account? This can't be undone. Download a backup first if you might want it back.")) return;
+  if (!confirm("Last check: permanently delete every card, person, pull and setting saved to your account?")) return;
+  // A change made just before this may still be waiting to save (typing in a number field waits
+  // 500 ms before persist(), which waits 300 ms more) or be on its way to the server. Drop the
+  // waiting ones and let the one in flight land first, so none can write the wallet back after
+  // the delete; no new saves start until it's done.
+  P.deleting = true;
+  clearTimeout(inputT); clearTimeout(P.timer);
+  btn.disabled = true;
+  try {
+    await P.saving;
+    await store.deleteAll();
+    // Start the page empty, without saving: nothing is written back until something changes
+    S = normalize({});
+    render(); toast("Your saved wallet is deleted");
+  } catch (err) {
+    console.error(err); btn.disabled = false; toast("Couldn't delete everything. Try again; nothing extra is lost.");
+  } finally {
+    P.deleting = false;
+  }
+}
 document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "cardForm") {

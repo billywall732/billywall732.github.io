@@ -61,11 +61,15 @@ prototype/, photos/, reference/  local only (not committed)
 - The Contact page uses a plain `mailto:` and shows the address as text (Billy's choice, Nov 2026: it must work without JavaScript, since /privacy/ sends people there to delete their data). The apps' "Email Billy" links still build it from `config.contactEmail`.
 - Cloudflare's Email Address Obfuscation is on: on the live site it rewrites any email address in the HTML into a `/cdn-cgi/l/email-protection` link that needs JavaScript. Wrap addresses that must work without JavaScript in `<!--email_off-->` … `<!--/email_off-->`. Local previews don't show this, so check such changes on offthewall.dev.
 
+## Saved data (Contrail, Wallet)
+- `shared/store.js` is the only place that talks to the `app_records` / `app_docs` tables; members' rows are tagged with `app`. `store.deleteAll()` backs each app's "Delete my saved data" button (members only, two confirm dialogs, like Budget Ledger's).
+- Wallet saves on delays (number fields wait 500 ms, then `persist()` waits 300 ms). Anything that deletes or replaces the wallet must cancel those first, or a late save writes it back.
+- To test member-only features without touching the real database, intercept requests to the Supabase URL in Playwright and answer from an in-memory fake, with a fake session in localStorage (`sb-yxdmuznxcqcauyehhfmp-auth-token`).
+
 ## Preview locally
-From the repo folder: `python -m http.server 8080`, then open http://localhost:8080/home/. Root-relative paths (`/css/...`) need the server to be rooted here. Links to the other repos' apps (`/snow-surf-report/` etc.) only work on the live site. The CSP Worker doesn't run locally, so check CSP-sensitive changes on the live site too.
+From the repo folder: `py -m http.server 8080` (on this PC `python` is the Windows Store stub), then open http://localhost:8080/home/. Root-relative paths (`/css/...`) need the server to be rooted here. Links to the other repos' apps (`/snow-surf-report/` etc.) only work on the live site. The CSP Worker doesn't run locally, so check CSP-sensitive changes on the live site too.
 
 ## Later (noted, not started)
-- "Delete my saved data" for Contrail and Wallet (Snow & Surf and Budget Ledger have it).
 - Contrail Gmail import (restricted Google scope: Testing mode + privacy page update).
 - Update `/privacy/` whenever a feature adds data handling (Gmail import, Wallet Claude chat, Wall Street Ledger on Drive, wedding RSVPs).
 - Wall Wedding RSVPs: embedded Tally form + Cloudflare Worker confirmation email via Tally webhook (needs CSP `frame-src` for Tally).
