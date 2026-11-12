@@ -45,7 +45,8 @@ js/ui.js               shared helpers (h(), cards, header toggles, phone menu, b
 js/cover.js, js/slide.js   cover animation; sideways slide between Workshop/Off the Clock/Contact
 css/site.css           main styles (dark / light / blueprint themes via CSS variables)
 shared/                app code shared by Contrail + Wallet (auth, store, trips, config, data/)
-tools/make-pages.mjs   writes projects/<slug>/ and copies the header/footer into app pages
+tools/make-pages.mjs   writes projects/<slug>/, copies the header/footer into app pages, runs make-feed.mjs
+tools/make-feed.mjs    writes feed.xml (Atom, one entry per project); GENERATED, don't hand-edit
 worker-headers/, worker-stats/   Cloudflare Workers (deployed separately with wrangler)
 prototype/, photos/, reference/  local only (not committed)
 ```
@@ -54,7 +55,8 @@ prototype/, photos/, reference/  local only (not committed)
 - `js/projects.js` is an ES module and the existing single source of truth. `js/main.js` and `js/project-page.js` import it directly in the browser (no fetch, no build).
 - Status values: `live` → big cards; `rough` and `workshop` → "Projects Still on the Workbench" list. The Off the Clock counts are computed from these.
 - Each project has `tags` (short, for its card) and `toolkit` (the Toolkit box). A tool named in `tags` must also be in `toolkit`; only list tools found in that app's code. The note at the end of `js/projects.js` says where each one was checked.
-- **Run `node tools/make-pages.mjs`** after adding/removing a project or changing a slug, name or tagline, and after changing the header/footer in `home/index.html`. It regenerates `projects/*` and refreshes the header/footer in the app, contact and privacy pages. Other data edits show up without it.
+- **Run `node tools/make-pages.mjs`** after adding/removing a project, changing a slug, name or tagline, bumping a project's `updated` date, or changing the header/footer in `home/index.html`. It regenerates `projects/*` and `feed.xml` and refreshes the header/footer in the app, contact and privacy pages. Other data edits show up without it.
+- When a project changes in a way worth telling feed readers, bump its `updated` (YYYY-MM-DD). Every public page has the `<link rel="alternate" type="application/atom+xml" href="/feed.xml">` tag (not the redirect pages or hidden /stats/); add it to new pages. The other repos' apps (Snow & Surf, Budget Ledger, the league) don't have it yet.
 - Anchors on /home/: `#workshop`, `#workbench`, `#toolkit`, `#off-the-clock` (`#about`), `#hobbies`; old `#rough`, `#polished`, `#story`, `#work` are mapped in `js/main.js`.
 - The Contact page uses a plain `mailto:` and shows the address as text (Billy's choice, Nov 2026: it must work without JavaScript, since /privacy/ sends people there to delete their data). The apps' "Email Billy" links still build it from `config.contactEmail`.
 

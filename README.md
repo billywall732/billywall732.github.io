@@ -43,10 +43,12 @@ Everything shown comes from **`js/projects.js`**: the home page tabs, each proje
 1. Turn on GitHub Pages in the new project's repo (it then lives at `/<repo-name>/`).
 2. Add a screenshot to `img/` (1280 × 800 works best, `.webp` or `.png`).
 3. Copy an entry in `js/projects.js` and change it. `status` picks where it shows: `'live'` gets a big card under Production Ready - Live for Use; `'rough'` and `'workshop'` go in the Projects Still on the Workbench list (rough ones first).
-4. Run `node tools/make-pages.mjs` to (re)make the pages in `projects/`.
+4. Run `node tools/make-pages.mjs` to (re)make the pages in `projects/` and the feed at `/feed.xml`.
 5. Commit and push. The site updates within a minute.
 
-Step 4 is only needed when you add or remove a project, or change a slug, name or tagline. Other edits show up without it.
+Step 4 is only needed when you add or remove a project, change a slug, name or tagline, or change a project's `updated` date. Other edits show up without it.
+
+**Feed:** `/feed.xml` is an Atom feed with one entry per project, made by `tools/make-feed.mjs` (step 4 runs it). Feed readers show an entry again when its `updated` date in `js/projects.js` changes, so bump that date when a project changes in a way worth telling people. Every page links to the feed with `<link rel="alternate" type="application/atom+xml" href="/feed.xml">`; add that line to any new page.
 
 ## Files
 
@@ -64,7 +66,8 @@ js/main.js            the home page: Workshop (one page; #workbench opens the pr
 contact/              the Contact page: three big buttons (email, GitHub, LinkedIn)
 docs/                 screenshots for this README
 js/project-page.js    a project's page
-tools/make-pages.mjs  writes projects/<slug>/index.html for each project
+tools/make-pages.mjs  writes projects/<slug>/index.html for each project, then runs make-feed.mjs
+tools/make-feed.mjs   writes feed.xml (Atom) from js/projects.js; don't edit feed.xml by hand
 img/                  project screenshots; img/clock/ has the Off the Clock photos
 photos/               your original photos (not committed: big, with location data)
 icon.svg              the tab icon

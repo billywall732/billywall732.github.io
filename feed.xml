@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Made by tools/make-feed.mjs from js/projects.js; don't edit by hand -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Off the Wall · Billy Wall</title>
+  <subtitle>Apps I built because I wanted them to exist: what's live and what's on the workbench.</subtitle>
+  <id>https://offthewall.dev/</id>
+  <link rel="self" type="application/atom+xml" href="https://offthewall.dev/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://offthewall.dev/home/"/>
+  <updated>2026-11-12T12:00:00Z</updated>
+  <author><name>Billy Wall</name><uri>https://offthewall.dev/</uri></author>
+  <icon>https://offthewall.dev/img/icon-192.png</icon>
+  <entry>
+    <title>Loop Lab</title>
+    <id>https://offthewall.dev/projects/loop-lab/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/loop-lab/"/>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>A 16-step loop maker with sounds built from scratch in the browser.</summary>
+    <content type="html">&lt;p&gt;A one-bar step sequencer: six sounds, a 16-step grid, tempo, and play. Every sound is synthesized with Web Audio, so there are no samples, no sign-in and nothing uploaded.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Six sounds, three save slots and WAV export all work.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Still deciding what comes next&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/loop-lab/&quot;&gt;Open Loop Lab&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Wall Street Ledger</title>
+    <id>https://offthewall.dev/projects/wall-street-ledger/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/wall-street-ledger/"/>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>All your investment accounts in one place, with live prices.</summary>
+    <content type="html">&lt;p&gt;See your investment accounts from different brokers in one place, with live prices and how your mix compares to your targets.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Imports and live prices work; getting it ready to publish.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Publish it&lt;/li&gt;&lt;li&gt;Import from more brokers&lt;/li&gt;&lt;li&gt;Charts of portfolio value over time&lt;/li&gt;&lt;li&gt;A short weekly summary of what changed&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+  <entry>
+    <title>Wall Wedding</title>
+    <id>https://offthewall.dev/projects/wall-wedding/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/wall-wedding/"/>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>Schedule, travel, registry and RSVPs for our wedding guests.</summary>
+    <content type="html">&lt;p&gt;Everything guests need for the big day: the schedule, travel and places to stay, the registry, and RSVPs, all in one place.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Planning the pages.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;The RSVP form (Tally)&lt;/li&gt;&lt;li&gt;Travel and places to stay&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+  <entry>
+    <title>Fantasy Football</title>
+    <id>https://offthewall.dev/projects/fantasy-football/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/fantasy-football/"/>
+    <updated>2026-11-11T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Standings, live scores, awards and who owes an ice, for one fantasy league.</summary>
+    <content type="html">&lt;p&gt;Everything about our fantasy league in one place: standings, live scores, awards, and who owes a Smirnoff Ice.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Live for the 2026 season.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;More season awards and head-to-head history&lt;/li&gt;&lt;li&gt;A recap of each week’s best and worst moments&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/fantasy-football/&quot;&gt;Open Fantasy Football&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Budget Ledger</title>
+    <id>https://offthewall.dev/projects/budget-ledger/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/budget-ledger/"/>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Everyday and wedding budgets side by side.</summary>
+    <content type="html">&lt;p&gt;Track everyday spending and a wedding budget side by side. Sign in with Google to keep it in your own private account, or try it with sample data first.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Live and in daily use.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Yearly summaries and year-over-year comparisons&lt;/li&gt;&lt;li&gt;Smarter categories for imported expenses&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/my-budget-ledger/cover.html&quot;&gt;Open Budget Ledger&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Contrail</title>
+    <id>https://offthewall.dev/projects/contrail/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/contrail/"/>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Every flight and hotel on one map, with the lounges my cards get me into.</summary>
+    <content type="html">&lt;p&gt;A flight and hotel log: trips as flight strips, routes on a world map, a countdown to the next departure, and which lounges your cards open at every airport.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Live: a demo with sample data for everyone, and saved data for approved members.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Gmail import of flight and hotel confirmations&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/contrail/cover/&quot;&gt;Open Contrail&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Snow and Surf Report</title>
+    <id>https://offthewall.dev/projects/snow-and-surf-report/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/snow-and-surf-report/"/>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Hourly snow and surf ratings for 76 mountains and 52 beaches.</summary>
+    <content type="html">&lt;p&gt;Find the best snow and surf every morning. Ratings for 76 mountains and 52 beaches, matched to your level, your board and your ski pass.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Live and updating every hour.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;A mountain bike trail conditions tab, based on recent rain&lt;/li&gt;&lt;li&gt;A one-sentence morning verdict written by AI&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/snow-surf-report/?cover&quot;&gt;Open Snow and Surf Report&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>What’s in My Wallet?</title>
+    <id>https://offthewall.dev/projects/wallet/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/wallet/"/>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Every card I carry, which one to use, and when to keep, call or downgrade.</summary>
+    <content type="html">&lt;p&gt;A credit card tracker: the best card for each kind of spending, credits used and left, sign-up bonus progress, 5/24, and a dated plan for every annual fee.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Live: a demo with sample data for everyone, and saved data for approved members.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Claude card research and chat for approved users&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/wallet/cover/&quot;&gt;Open What’s in My Wallet?&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Krillion Code Breaker</title>
+    <id>https://offthewall.dev/projects/krillion-code-breaker/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/krillion-code-breaker/"/>
+    <updated>2026-11-07T12:00:00Z</updated>
+    <category term="live" label="Live"/>
+    <summary>Press Run and watch a Claude-powered bot play krillion.io’s daily dive against me.</summary>
+    <content type="html">&lt;p&gt;A bot that plays krillion.io’s daily trivia dive once a day on its own account, picking each answer with Claude under the same 25-second clock. Press Run on the page and watch it play live, then see whether it beat my score.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Live:&lt;/strong&gt; Plays krillion.io’s daily dive against me, once a day.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Track which kinds of prompts the bot wins and loses&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/code-breaker/&quot;&gt;Open Krillion Code Breaker&lt;/a&gt;&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>Quizzical</title>
+    <id>https://offthewall.dev/projects/quizzical/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/quizzical/"/>
+    <updated>2026-10-31T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>A daily round of trivia, the same questions for everyone.</summary>
+    <content type="html">&lt;p&gt;A fresh round of trivia every day, the same questions for everyone. Keep your streak alive and see how you stack up against friends.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Sketching the question format.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Build the question bank&lt;/li&gt;&lt;li&gt;A first playable version&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+  <entry>
+    <title>Shred Lab</title>
+    <id>https://offthewall.dev/projects/shred-lab/</id>
+    <link rel="alternate" type="text/html" href="https://offthewall.dev/projects/shred-lab/"/>
+    <updated>2026-10-31T12:00:00Z</updated>
+    <category term="workbench" label="On the Workbench"/>
+    <summary>A snowboarding game where your setup changes how you ride.</summary>
+    <content type="html">&lt;p&gt;A snowboarding game where your setup matters. Build your board, bindings and stance, then feel the difference on every run.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Prototyping how the board handles.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;A first playable run&lt;/li&gt;&lt;li&gt;The gear builder&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+</feed>

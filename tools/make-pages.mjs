@@ -1,5 +1,6 @@
-// Writes a page for every project in js/projects.js, at projects/<slug>/index.html.
-// Run it after adding a project or changing a name or tagline:
+// Writes a page for every project in js/projects.js, at projects/<slug>/index.html, and then
+// /feed.xml (tools/make-feed.mjs). Run it after adding a project, changing a name or tagline, or
+// bumping a project's `updated` date:
 //   node tools/make-pages.mjs
 // The header and footer are copied from the home page (home/index.html), so change them there.
 // Each page is a small shell; js/project-page.js fills it in from the data.
@@ -30,6 +31,7 @@ const page = (p) => `<!doctype html>
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/atom+xml" title="Off the Wall: projects" href="/feed.xml">
   <meta name="theme-color" content="#121110">
   <!-- This file is made by tools/make-pages.mjs; edit js/projects.js instead -->
   <script>
@@ -79,3 +81,6 @@ for (const f of APP_PAGES) {
   if (next !== html) writeFileSync(path, next);
 }
 console.log(`Refreshed the header and footer of ${APP_PAGES.join(', ')}`);
+
+// The Atom feed comes from the same data
+await import('./make-feed.mjs');

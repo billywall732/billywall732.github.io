@@ -21,6 +21,9 @@
 //               in Projects Still on the Workbench (rough first). The Off the Clock counts come
 //               from these too.
 //   statusNote  where it stands right now
+//   updated     the day this entry last changed in a way worth telling feed readers (YYYY-MM-DD).
+//               Bump it when you change the project, then run node tools/make-pages.mjs (it
+//               rewrites /feed.xml too)
 //   next        what's next (the project page's "What's next")
 //   tags        what it's built with, short, for the card. Any tool named here should also be in
 //               toolkit (generic words like 'JavaScript' or 'Game' don't need to be).
@@ -57,6 +60,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Live and updating every hour.',
+    updated: '2026-11-08',
     next: [
       'A mountain bike trail conditions tab, based on recent rain',
       'A one-sentence morning verdict written by AI',
@@ -89,6 +93,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Live for the 2026 season.',
+    updated: '2026-11-11',
     next: [
       'More season awards and head-to-head history',
       'A recap of each week’s best and worst moments',
@@ -121,6 +126,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Live and in daily use.',
+    updated: '2026-11-08',
     next: [
       'Yearly summaries and year-over-year comparisons',
       'Smarter categories for imported expenses',
@@ -154,6 +160,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Live: a demo with sample data for everyone, and saved data for approved members.',
+    updated: '2026-11-08',
     next: [
       'Gmail import of flight and hotel confirmations',
     ],
@@ -185,6 +192,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Live: a demo with sample data for everyone, and saved data for approved members.',
+    updated: '2026-11-08',
     next: [
       'Claude card research and chat for approved users',
     ],
@@ -215,6 +223,7 @@ export const projects = [
     ],
     status: 'rough',
     statusNote: 'Imports and live prices work; getting it ready to publish.',
+    updated: '2026-11-12',
     next: [
       'Publish it',
       'Import from more brokers',
@@ -251,6 +260,7 @@ export const projects = [
     ],
     status: 'workshop',
     statusNote: 'Sketching the question format.',
+    updated: '2026-10-31',
     next: [
       'Build the question bank',
       'A first playable version',
@@ -283,6 +293,7 @@ export const projects = [
     ],
     status: 'workshop',
     statusNote: 'Prototyping how the board handles.',
+    updated: '2026-10-31',
     next: [
       'A first playable run',
       'The gear builder',
@@ -314,6 +325,7 @@ export const projects = [
     ],
     status: 'workshop',
     statusNote: 'Planning the pages.',
+    updated: '2026-11-12',
     next: [
       'The RSVP form (Tally)',
       'Travel and places to stay',
@@ -362,6 +374,7 @@ export const projects = [
     ],
     status: 'live',
     statusNote: 'Plays krillion.io’s daily dive against me, once a day.',
+    updated: '2026-11-07',
     next: [
       'Track which kinds of prompts the bot wins and loses',
     ],
@@ -393,6 +406,7 @@ export const projects = [
     ],
     status: 'workshop',
     statusNote: 'Six sounds, three save slots and WAV export all work.',
+    updated: '2026-11-12',
     next: [
       'Still deciding what comes next',
     ],
