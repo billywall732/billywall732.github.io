@@ -7,7 +7,7 @@ const main = $('main');
 const i = projects.findIndex((p) => p.slug === main.dataset.slug);
 const p = projects[i];
 // The home page section each status is listed under
-const SECTION = { live: 'Polished Projects', rough: 'Rough Around the Edges', workshop: 'In the Workshop' };
+const SECTION = { live: 'Production Ready', rough: 'On the Workbench', workshop: 'On the Workbench' };
 
 function section(title, ...body) {
   const id = title.toLowerCase().replace(/[^a-z]+/g, '-');

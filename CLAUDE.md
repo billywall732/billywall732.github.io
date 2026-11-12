@@ -20,7 +20,7 @@ Guidance for Claude Code in this repo: **offthewall.dev** ("Off the Wall"), Bill
 
 ## Projects
 Live: Snow & Surf Report, Fantasy Football, Budget Ledger, Contrail, What's in My Wallet?, Krillion Code Breaker.
-Workbench: Wall Street Ledger (slug/folder `portfolio-ledger`, status `rough`), Quizzical, Shred Lab, Wall Wedding (slug `happily-ever-wall`), Loop Lab.
+Workbench: Wall Street Ledger (slug `wall-street-ledger`, local folder `portfolio-ledger`, status `rough`), Quizzical, Shred Lab, Wall Wedding (slug `wall-wedding`), Loop Lab.
 
 | Address | Where the code lives |
 |---|---|
@@ -53,7 +53,7 @@ prototype/, photos/, reference/  local only (not committed)
 ## How pages get their data
 - `js/projects.js` is an ES module and the existing single source of truth. `js/main.js` and `js/project-page.js` import it directly in the browser (no fetch, no build).
 - Status values: `live` → big cards; `rough` and `workshop` → "Projects Still on the Workbench" list. The Off the Clock counts are computed from these.
-- `toolkit` is a separate object keyed by slug (a comment above it says where each tool was verified; parts of that comment are stale, e.g. it still mentions Firebase/Drive where apps now use Supabase).
+- Each project has `tags` (short, for its card) and `toolkit` (the Toolkit box). A tool named in `tags` must also be in `toolkit`; only list tools found in that app's code. The note at the end of `js/projects.js` says where each one was checked.
 - **Run `node tools/make-pages.mjs`** after adding/removing a project or changing a slug, name or tagline, and after changing the header/footer in `home/index.html`. It regenerates `projects/*` and refreshes the header/footer in the app, contact and privacy pages. Other data edits show up without it.
 - Anchors on /home/: `#workshop`, `#workbench`, `#toolkit`, `#off-the-clock` (`#about`), `#hobbies`; old `#rough`, `#polished`, `#story`, `#work` are mapped in `js/main.js`.
 - The Contact page uses a plain `mailto:` and shows the address as text (Billy's choice, Nov 2026: it must work without JavaScript, since /privacy/ sends people there to delete their data). The apps' "Email Billy" links still build it from `config.contactEmail`.

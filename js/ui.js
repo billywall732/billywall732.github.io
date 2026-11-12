@@ -40,7 +40,7 @@ export const accentStyle = (p) => `--accent:${p.accent};--accent-ink:${inkOn(p.a
 // ---------- Bits of a project ----------
 
 export const iconTile = (p) => h('span', { class: 'icon-tile', 'aria-hidden': 'true' }, p.icon);
-const STATUS = { live: 'Live', rough: 'Rough edges', workshop: 'In the workshop' };
+const STATUS = { live: 'Live', rough: 'On the Workbench', workshop: 'On the Workbench' };
 export const statusPill = (p) => h('span', { class: `status is-${p.status}` }, STATUS[p.status]);
 
 // The home page tab a project is listed on

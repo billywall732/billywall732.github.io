@@ -16,11 +16,16 @@
 //   highlights  up to 3 short points: what they can do with it
 //   why         why I built it
 //   how         how it works, as a few short steps
-//   status      which tab it's on: 'live' (Polished Projects), 'rough' (Rough Around
-//               the Edges: works, but not finished) or 'workshop' (still being built)
+//   status      where it's listed: 'live' (Production Ready - Live for Use, big cards), or
+//               'rough' (works, not finished) and 'workshop' (still being built), which both go
+//               in Projects Still on the Workbench (rough first). The Off the Clock counts come
+//               from these too.
 //   statusNote  where it stands right now
-//   next        what's next
-//   tags        what it's built with
+//   next        what's next (the project page's "What's next")
+//   tags        what it's built with, short, for the card. Any tool named here should also be in
+//               toolkit (generic words like 'JavaScript' or 'Game' don't need to be).
+//   toolkit     the Toolkit box: its main tools, six at most (see the note at the end of the file),
+//               or leave it out for a project with no code yet
 //   url         where it lives ('/my-repo/' for another GitHub Pages repo), or null
 //   code        its GitHub repo, or null
 //   follow      false hides the "Follow along" link (shown when there's no repo yet)
@@ -56,7 +61,8 @@ export const projects = [
       'A mountain bike trail conditions tab, based on recent rain',
       'A one-sentence morning verdict written by AI',
     ],
-    tags: ['JavaScript', 'GitHub Actions', 'Supabase', 'NOAA data'],
+    tags: ['JavaScript', 'GitHub Actions', 'Supabase', 'Open-Meteo + NOAA'],
+    toolkit: ['Supabase', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer', 'Open-Meteo + NOAA'],
     url: '/snow-surf-report/?cover',
     code: 'https://github.com/billywall732/snow-surf-report',
     image: '/img/snow-surf.webp',
@@ -87,7 +93,8 @@ export const projects = [
       'More season awards and head-to-head history',
       'A recap of each week’s best and worst moments',
     ],
-    tags: ['Node', 'ESPN API', 'GitHub Actions'],
+    tags: ['Node.js', 'ESPN Fantasy API', 'GitHub Actions', 'Cloudflare Workers'],
+    toolkit: ['ESPN Fantasy API', 'Node.js', 'GitHub Actions', 'Cloudflare Workers', 'Nodemailer', 'GitHub Pages'],
     url: '/fantasy-football/',
     code: null,
     image: '/img/fantasy-football.webp',
@@ -119,6 +126,7 @@ export const projects = [
       'Smarter categories for imported expenses',
     ],
     tags: ['HTML', 'Supabase', 'Charts'],
+    toolkit: ['Supabase', 'Google Sign-In', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
     url: '/my-budget-ledger/cover.html',
     code: 'https://github.com/billywall732/my-budget-ledger',
     image: '/img/budget-ledger.webp',
@@ -149,7 +157,8 @@ export const projects = [
     next: [
       'Gmail import of flight and hotel confirmations',
     ],
-    tags: ['JavaScript', 'D3', 'OurAirports'],
+    tags: ['JavaScript', 'D3', 'OurAirports', 'Supabase'],
+    toolkit: ['D3', 'TopoJSON', 'Supabase', 'OurAirports', 'Nominatim geocoding', 'Clipboard API'],
     url: '/contrail/cover/',
     code: 'https://github.com/billywall732/billywall732.github.io/tree/main/contrail',
     image: '/img/contrail.webp',
@@ -179,13 +188,14 @@ export const projects = [
     next: [
       'Claude card research and chat for approved users',
     ],
-    tags: ['JavaScript', 'Rules engine', 'Claude'],
+    tags: ['JavaScript', 'Rules engine', 'Supabase'],
+    toolkit: ['Supabase', 'Clipboard API', 'File downloads (Blob)', 'localStorage'],
     url: '/wallet/cover/',
     code: 'https://github.com/billywall732/billywall732.github.io/tree/main/wallet',
     image: '/img/wallet.webp',
   },
   {
-    slug: 'portfolio-ledger',
+    slug: 'wall-street-ledger',
     name: 'Wall Street Ledger',
     kicker: 'Investing Tool',
     icon: '📈',
@@ -195,13 +205,13 @@ export const projects = [
     highlights: [
       'Import your broker statements in a couple of clicks',
       'Live prices, daily change and total gain or loss',
-      'Saves privately to your own Google Drive',
+      'Saves privately to your own account',
     ],
     why: 'My investments are split across more than one broker, and none of them shows the whole picture or how my mix compares to the targets I set. This puts it all on one page.',
     how: [
       'Import the statement exports your brokers already give you. Each import shows a preview, checked against the statement’s own totals, before anything is saved.',
       'Live prices come through a small Cloudflare Worker, which keeps API keys out of the page.',
-      'Holdings save to your own Google Drive.',
+      'Sign in with Google and your holdings will save to your own account in Supabase, like the other apps here, where only you can read them.',
     ],
     status: 'rough',
     statusNote: 'Imports and live prices work; getting it ready to publish.',
@@ -211,7 +221,9 @@ export const projects = [
       'Charts of portfolio value over time',
       'A short weekly summary of what changed',
     ],
-    tags: ['Cloudflare Workers', 'Live prices', 'Google Drive'],
+    tags: ['Cloudflare Workers', 'Live prices', 'Supabase'],
+    // Supabase is the plan (Nov 2026); the code still saves to Google Drive until it moves over
+    toolkit: ['Cloudflare Workers', 'Supabase', 'Google Sign-In', 'IndexedDB', 'SheetJS'],
     url: null,
     code: null,
     follow: false, // no repo yet
@@ -282,7 +294,7 @@ export const projects = [
     art: 'snowboard',
   },
   {
-    slug: 'happily-ever-wall',
+    slug: 'wall-wedding',
     name: 'Wall Wedding',
     kicker: 'Wedding Site',
     icon: '💍',
@@ -297,16 +309,16 @@ export const projects = [
     why: 'Wedding website builders are fine, but this one is ours and fits right in with everything else here.',
     how: [
       'A simple site with the schedule, travel tips, places to stay and the registry.',
-      'Guests RSVP with a short form.',
+      'Guests RSVP with a short Tally form right on the page, and get a confirmation email.',
       'A countdown keeps everyone excited.',
     ],
     status: 'workshop',
     statusNote: 'Planning the pages.',
     next: [
-      'The RSVP form',
+      'The RSVP form (Tally)',
       'Travel and places to stay',
     ],
-    tags: ['HTML', 'CSS', 'RSVPs'],
+    tags: ['HTML', 'CSS', 'Tally'],
     url: null,
     code: null,
     image: null,
@@ -351,10 +363,10 @@ export const projects = [
     status: 'live',
     statusNote: 'Plays krillion.io’s daily dive against me, once a day.',
     next: [
-      'Its first week of daily dives',
       'Track which kinds of prompts the bot wins and loses',
     ],
     tags: ['Playwright', 'Claude API', 'Cloudflare Workers'],
+    toolkit: ['Playwright', 'Claude API', 'Cloudflare Workers', 'Cloudflare D1', 'GitHub Actions'],
     url: '/code-breaker/',
     code: null,
     image: '/img/code-breaker.webp',
@@ -380,12 +392,12 @@ export const projects = [
       'Patterns save to three slots in your browser; the WAV export renders four loops offline.',
     ],
     status: 'workshop',
-    statusNote: 'One working instrument and one pattern, playing cleanly.',
+    statusNote: 'Six sounds, three save slots and WAV export all work.',
     next: [
-      'Swing and per-step velocity',
-      'Chain patterns into a short song',
+      'Still deciding what comes next',
     ],
     tags: ['JavaScript', 'Web Audio'],
+    toolkit: ['Web Audio API', 'localStorage'],
     url: '/loop-lab/',
     code: null,
     image: null,
@@ -393,31 +405,22 @@ export const projects = [
   },
 ];
 
-// The Toolkit tab (Off the Clock): the main tools each app is built with, by slug: six at most,
-// technical tools and services only (no data sources like NOAA or OurAirports; the ESPN API is the
-// exception, since the league site is built on it). Only tools found in that app's own code (its
-// repo, or its folder here) belong in a list; a project with no code yet (Quizzical, Shred Lab,
-// Wall Wedding) has no list. Where each one was checked:
-//   snow-surf-report: scripts/lib/sources (Open-Meteo incl. marine, NDBC, CO-OPS, SNOTEL),
-//     js/account.js (Firebase Auth, Firestore), js/alerts.js + scripts/email (Web Push,
+// About each project's toolkit (the Toolkit box on Workshop): six tools at most. Only tools found
+// in that app's own code (its repo, or its folder here) belong in it, plus a data source the app is
+// built on (Open-Meteo + NOAA, OurAirports, the ESPN API). Features that are built but switched off
+// don't count yet (Wallet's Claude chat, until its Worker is set up). A project with no code yet
+// (Quizzical, Shred Lab, Wall Wedding) has no toolkit. Where each one was checked (Nov 2026):
+//   snow-surf-report: scripts/fetch-report.mjs (Open-Meteo incl. marine; NOAA NDBC buoys and
+//     CO-OPS tides), js/account.js (Supabase), js/alerts.js + scripts/email (Web Push,
 //     Nodemailer), .github/workflows/update-report.yml (Actions, Pages), scripts/*.mjs (Node)
 //   the league repo: fetch.mjs (ESPN, Google Sheets), notify.mjs (Nodemailer), worker-refresh
 //     (a Cloudflare Worker calling the GitHub API), .github/workflows/deploy.yml (Actions, Pages)
-//   my-budget-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS, SVG charts, Web Share)
-//   portfolio-ledger: index.html (Google sign-in, Drive v3, IndexedDB, SheetJS), worker/src (Finnhub, CoinGecko)
-//   contrail/: d3 + topojson + world-atlas/us-atlas, Nominatim (app.js), OurAirports (tools/build-airports.mjs)
-//   wallet/: navigator.clipboard, saveFile (Blob downloads), localStorage
+//   my-budget-ledger: index.html (Supabase with Google sign-in, IndexedDB, SheetJS, SVG charts, Web Share)
+//   portfolio-ledger: index.html (Google sign-in, Drive v3 for now, IndexedDB, SheetJS), worker/src (Finnhub, CoinGecko)
+//   contrail/: d3 + topojson + world-atlas/us-atlas, Nominatim (app.js), OurAirports
+//     (tools/build-airports.mjs), Supabase for members (shared/store.js)
+//   wallet/: Supabase for members (shared/store.js), navigator.clipboard, saveFile (Blob downloads), localStorage
 //   code-breaker/: an SVG score chart, localStorage. loop-lab/: Web Audio, localStorage
-export const toolkit = {
-  'snow-and-surf-report': ['Supabase', 'Web Push', 'Node.js', 'GitHub Actions', 'Nodemailer', 'Open-Meteo'],
-  'fantasy-football': ['ESPN Fantasy API', 'Node.js', 'GitHub Actions', 'Cloudflare Workers', 'Nodemailer', 'GitHub Pages'],
-  'budget-ledger': ['Supabase', 'Google Sign-In', 'IndexedDB', 'SheetJS', 'SVG charts', 'Web Share API'],
-  contrail: ['D3', 'TopoJSON', 'Nominatim geocoding', 'Clipboard API'],
-  wallet: ['Clipboard API', 'File downloads (Blob)', 'localStorage'],
-  'portfolio-ledger': ['Cloudflare Workers', 'Google Sign-In', 'Google Drive API', 'IndexedDB', 'SheetJS'],
-  'krillion-code-breaker': ['Playwright', 'Claude API', 'Cloudflare Workers', 'Cloudflare D1', 'GitHub Actions'],
-  'loop-lab': ['Web Audio API', 'localStorage'],
-};
 
 // "Off the clock". rating is how good I am, out of 5. photos are the ones in
 // clockPhotos below that tapping the block shows (tap again for the next one).

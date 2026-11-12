@@ -1,7 +1,7 @@
 // The home page at /home/: two pages built from js/projects.js. Workshop (#workshop; #workbench and
 // #toolkit open its boxes) and Off the Clock (#about; #hobbies goes to Hobbies & Interests). The
 // address picks the page, so each can be linked to and the back button works.
-import { clockPhotos, hobbies, projects, toolkit } from './projects.js';
+import { clockPhotos, hobbies, projects } from './projects.js';
 import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, spotlight, statusPill } from './ui.js';
 
 const byStatus = (s) => projects.filter((p) => p.status === s);
@@ -50,9 +50,9 @@ $('.workshop-list').replaceChildren(...(workshop.length ? workshop.map((p) => h(
 
 // ---------- Workshop, Toolkit: each app's main tools, as checked in its code ----------
 
-$('.toolkit').replaceChildren(...projects.filter((p) => toolkit[p.slug]?.length).map((p) => h('section', { class: 'kit', style: accentStyle(p), 'aria-labelledby': `kit-${p.slug}` },
+$('.toolkit').replaceChildren(...projects.filter((p) => p.toolkit?.length).map((p) => h('section', { class: 'kit', style: accentStyle(p), 'aria-labelledby': `kit-${p.slug}` },
   h('h3', { id: `kit-${p.slug}` }, h('a', { href: projectHref(p) }, p.name)),
-  h('ul', { class: 'kit-tools' }, toolkit[p.slug].map((t) => h('li', {}, t))))));
+  h('ul', { class: 'kit-tools' }, p.toolkit.map((t) => h('li', {}, t))))));
 
 // ---------- Off the clock, About: photos, the two numbers, the line through How it got here ----------
 
