@@ -9,7 +9,14 @@ Guidance for Claude Code in this repo: **offthewall.dev** ("Off the Wall"), Bill
 - Visit counts: GoatCounter via `shared/count.js` (no cookies), read by the hidden `/stats/` page through `worker-stats/`.
 - Security headers (incl. CSP) are added by a Cloudflare Worker in `worker-headers/`. **If a page starts loading a new third-party origin, its CSP allowlist there must be updated** or the browser will block it.
 - Nightly DB backup goes to a private GitHub repo (`offthewall-db`), not this one.
-- Billy plans in Notion (Billy HQ: Projects, Idea Backlog, Learning Plans). Claude may not have access; Billy relays what's needed.
+- Billy plans in Notion (Billy HQ: Projects, Idea Backlog, Learning Plans), reachable through the Notion connector when it's connected.
+
+## Keep Notion's record current (every shipped change)
+Notion holds the record of every edit and every planned edit for offthewall.dev and the apps. After each change is pushed live:
+- **Billy HQ → Projects → "offthewall.dev (site)"**: add a bullet under **Changelog** for today's date (create the date heading if needed): what changed, the commit hash, and a mention of its Idea Backlog item. Keep **Planned next** in step.
+- **Billy HQ → Idea Backlog**: move the matching item to **Shipped** and put what shipped (date, commit) in "Next step"; if there was no item, create one already Shipped, linked to its project(s). Add any new ideas or follow-ups that came up as **Idea** or **Planned**.
+- **Projects**: keep each app's Status (Production Ready / Rough / Workbench) and name in step with `js/projects.js`; add a Projects page for a new project.
+- If Notion isn't connected, list the updates in the reply so Billy can add them.
 
 ## How to work here
 - Explore first. Small, reviewable changes. **Show the diff before every commit. Never push without Billy's OK.**
