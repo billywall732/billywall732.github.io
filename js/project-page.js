@@ -1,7 +1,7 @@
 // A project's own page, at /projects/<slug>/. Everything comes from js/projects.js;
 // the page's <main data-slug="..."> says which project it is.
 import { projects } from './projects.js';
-import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, statusPill, tabHref } from './ui.js';
+import { $, accentStyle, actions, h, iconTile, preview, projectHref, setUpPage, statusPill, tabHref } from '/js/ui.js?v=2';
 
 const main = $('main');
 const i = projects.findIndex((p) => p.slug === main.dataset.slug);

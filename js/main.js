@@ -2,7 +2,7 @@
 // #toolkit open its boxes) and Off the Clock (#about; #hobbies goes to Hobbies & Interests). The
 // address picks the page, so each can be linked to and the back button works.
 import { clockPhotos, hobbies, projects } from './projects.js';
-import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, spotlight, statusPill } from './ui.js';
+import { $, accentStyle, actions, h, iconTile, markNav, preview, projectHref, setUpPage, spotlight, statusPill } from '/js/ui.js?v=2';
 
 const byStatus = (s) => projects.filter((p) => p.status === s);
 

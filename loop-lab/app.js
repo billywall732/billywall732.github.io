@@ -1,6 +1,6 @@
 // Loop Lab: a 16-step loop maker. Six sounds, all synthesized with Web Audio (no samples).
 // Patterns are saved in this browser only; the WAV export renders offline and downloads a file.
-import { setUpPage } from '/js/ui.js';
+import { setUpPage } from '/js/ui.js?v=2';
 
 const $ = (s) => document.querySelector(s);
 const STEPS = 16;

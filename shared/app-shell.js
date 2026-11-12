@@ -1,7 +1,7 @@
 // What every app page shares: the site's header and footer behavior (color mode, board cursor,
 // footer strip) and the demo banner. The header and footer HTML are copied into each app page
 // from home/index.html by tools/make-pages.mjs.
-import { setUpPage } from '/js/ui.js';
+import { setUpPage } from '/js/ui.js?v=2';
 import { config } from './config.js';
 import { store } from './store.js';
 import { loadAuth } from './auth-loader.js';

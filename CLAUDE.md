@@ -73,6 +73,9 @@ prototype/, photos/, reference/  local only (not committed)
 - Wallet saves on delays (number fields wait 500 ms, then `persist()` waits 300 ms). Anything that deletes or replaces the wallet must cancel those first, or a late save writes it back.
 - To test member-only features without touching the real database, intercept requests to the Supabase URL in Playwright and answer from an in-memory fake, with a fake session in localStorage (`sb-yxdmuznxcqcauyehhfmp-auth-token`).
 
+## Caching: version what you change
+Cloudflare lets browsers keep files for 4 hours, and its edge can serve the old copy right after a deploy, so a changed script or icon can stay stale for hours. Shared scripts load with a version: `/js/ui.js?v=2`, the entry scripts (`/js/main.js?v=2`, `/js/project-page.js?v=2`, the apps' `app.js?v=2`) and `/shared/app-shell.js?v=2`. When you change one, bump its number **everywhere it's loaded** (every import and `src`, and `tools/make-pages.mjs`). The same address must be used everywhere on a page, or the browser runs two copies of the module (two board cursors, for one). Icons use `?v=` too (README, "Icons").
+
 ## Preview locally
 From the repo folder: `py -m http.server 8080` (on this PC `python` is the Windows Store stub), then open http://localhost:8080/home/. Root-relative paths (`/css/...`) need the server to be rooted here. Links to the other repos' apps (`/snow-surf-report/` etc.) only work on the live site. The CSP Worker doesn't run locally, so check CSP-sensitive changes on the live site too.
 
