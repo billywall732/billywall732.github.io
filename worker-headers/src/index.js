@@ -45,10 +45,14 @@ const ALLOW = {
   // The admin page: sign-in and the admin_* database functions in Supabase
   '/admin/': { 'connect-src': ['https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'] },
   // Contrail: D3 + TopoJSON from cdnjs, map outlines from jsDelivr, OpenStreetMap place search,
-  // members' saved data in Supabase
+  // members' saved data in Supabase. Gmail import: Google's sign-in library (its script, style
+  // and window), the Gmail API, token revoke, and the AI Worker that reads booking emails.
   '/contrail/': {
-    'script-src': ['https://cdnjs.cloudflare.com'],
-    'connect-src': ['https://cdn.jsdelivr.net', 'https://nominatim.openstreetmap.org', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
+    'script-src': ['https://cdnjs.cloudflare.com', 'https://accounts.google.com'],
+    'style-src': ['https://accounts.google.com'],
+    'connect-src': ['https://cdn.jsdelivr.net', 'https://nominatim.openstreetmap.org', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co',
+      'https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://gmail.googleapis.com', 'https://otw-ai.offthewall-dev.workers.dev'],
+    'frame-src': ['https://accounts.google.com'],
   },
   '/wallet/': {
     'script-src': ['https://cdnjs.cloudflare.com'],

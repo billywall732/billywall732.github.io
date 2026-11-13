@@ -3,7 +3,7 @@
 // from home/index.html by tools/make-pages.mjs.
 import { setUpPage } from '/js/ui.js?v=2';
 import { config } from './config.js';
-import { store } from '/shared/store.js?v=2';
+import { store } from '/shared/store.js?v=3';
 import { loadAuth } from './auth-loader.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

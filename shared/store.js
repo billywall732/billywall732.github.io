@@ -154,7 +154,9 @@ export async function readAppData(app) {
     const auth = await loadAuth();
     if (!(await must(auth.db.rpc('is_app_member', { p_app: app })))) return null;
     const other = accountBackend(app, auth.db, access.user.id);
-    return { collections: { trips: await other.list('trips'), stays: await other.list('stays') }, docs: { profile: await other.getDoc('profile') } };
+    // Hidden records (cancelled, or an undone email import) aren't part of the travel history
+    const shown = (rows) => rows.filter((r) => !r.hidden);
+    return { collections: { trips: shown(await other.list('trips')), stays: shown(await other.list('stays')) }, docs: { profile: await other.getDoc('profile') } };
   } catch {
     return null;
   }

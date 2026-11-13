@@ -1,0 +1,33 @@
+# The AI Worker for the apps (see README.md in this folder). One endpoint so far:
+#   POST /v1/contrail/parse-email   one booking email's text → a flight, stay or cancellation
+#
+# The Claude API key is a secret, set once and never written here:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+name = "otw-ai"
+main = "src/index.js"
+compatibility_date = "2025-10-01"
+workers_dev = true
+
+# Logs keep only the task, a hash of the email, the status and token counts (see src/index.js);
+# never an email's text or what Claude sent back.
+[observability]
+enabled = true
+
+# Per-person daily counters (keys like usage:email:<user id>:<date>; they expire after 2 days)
+[[kv_namespaces]]
+binding = "USAGE"
+id = "REPLACE_WITH_KV_ID"
+
+[vars]
+SUPABASE_URL = "https://yxdmuznxcqcauyehhfmp.supabase.co"
+# The publishable key from shared/auth.js: public by design. The Worker reads the caller's own
+# members row with the caller's own sign-in, so row-level security still applies.
+SUPABASE_KEY = "sb_publishable_wq-M9vvKebeudJjhiuZicA_-SSeSAgu"
+ALLOWED_ORIGINS = "https://offthewall.dev,http://localhost:8080"
+# Kill switch: "false" makes every AI request answer 503 straight away (no Claude calls)
+AI_ENABLED = "true"
+MODEL = "claude-haiku-5-5"
+# Email parsing per person per day (Pacific time): BACKFILL_LIMIT for the first BACKFILL_DAYS
+# after their first sync, then the "AI a day" number on the admin page
+BACKFILL_LIMIT = "300"
+BACKFILL_DAYS = "7"
