@@ -3,7 +3,7 @@
 // straight from Contrail's trips and stays, and the Claude features are off in the demo
 // ("Pick from the catalog" fills in a card instead).
 import { connectStore, readAppData, store } from "/shared/store.js?v=3";
-import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=4";
+import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=5";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
 import { contrailDemo } from "/contrail/demo-data.js";

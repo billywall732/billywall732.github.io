@@ -2,7 +2,7 @@
 // footer strip) and the demo banner. The header and footer HTML are copied into each app page
 // from home/index.html by tools/make-pages.mjs.
 import { setUpPage } from '/js/ui.js?v=2';
-import { config } from './config.js';
+import { config } from '/shared/config.js?v=2';
 import { store } from '/shared/store.js?v=3';
 import { loadAuth } from './auth-loader.js';
 
