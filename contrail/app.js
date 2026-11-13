@@ -3,14 +3,15 @@
 // flights and stays, CSV and JSON import, and a Settings tab. Card research (Claude) is gone
 // from this app; What's in My Wallet? covers it.
 /* global d3, topojson */
-import { connectStore, store } from '/shared/store.js?v=2';
+import { connectStore, store } from '/shared/store.js?v=3';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=3';
+import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=4';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
+import { setUpGmail } from '/contrail/gmail.js?v=1';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
@@ -349,7 +350,7 @@ function purposeHTML(t) {
   }
   const pp = payParts(n);
   return `<div class="purpose"><div class="ph"><span class="eyebrow">Trip details</span>
-      <div class="row"><button type="button" class="btn" data-act="edit" data-id="${t.id}">${noteEmpty(n) ? 'Add details' : 'Edit details'}</button><button type="button" class="btn" data-act="edit-flights" data-id="${t.id}">Edit flights</button></div></div>
+      <div class="row"><button type="button" class="btn" data-act="edit" data-id="${t.id}">${noteEmpty(n) ? 'Add details' : 'Edit details'}</button><button type="button" class="btn" data-act="edit-flights" data-id="${t.id}">Edit flights</button>${t.source === 'gmail' ? `<button type="button" class="btn" data-act="undo-email" data-id="${t.id}">Undo import</button>` : ''}</div></div>
     ${n.purpose ? `<span class="chip purpose" style="align-self:flex-start">${esc(n.purpose)}</span>` : ''}
     ${n.details ? `<p>${esc(n.details)}</p>` : (noteEmpty(n) ? `<span class="empty">No purpose or payment details yet.</span>` : '')}
     ${pp ? `<div class="paid"><span class="eyebrow">Paid</span><span class="pm pm-${n.pay}">${esc(PAY_LABEL[n.pay])}</span><span>${esc(pp.filter((x) => x !== PAY_LABEL[n.pay]).join(' · '))}</span>${n.payNote ? `<span class="lw">${esc(n.payNote)}</span>` : ''}</div>` : ''}</div>`;
@@ -370,7 +371,7 @@ function renderTrips() {
       t.purpose ? `<span class="chip purpose">${esc(t.purpose)}</span>` : '',
       t.pay?.method ? `<span class="chip paychip pm-${t.pay.method}">${esc(payShort(noteOf(t)))}</span>` : '',
       `<span class="chip">${esc(t.carrier)}</span>`, t.who ? `<span class="chip">${esc(t.who)}</span>` : '',
-      t.source === 'csv' ? `<span class="chip">Imported</span>` : '',
+      t.source === 'csv' ? `<span class="chip">Imported</span>` : '', t.source === 'gmail' ? `<span class="chip email">Added from email</span>` : '',
       ...(t.tags || []).map((x) => `<span class="chip">${esc(x)}</span>`)].join('');
     const seq = t.seq.map((c) => (c === '·' ? ' / ' : `<b>${c}</b>`)).join(' ').replace(/<\/b> <b>/g, '</b> → <b>');
     const on = selTrip === t;
@@ -395,6 +396,12 @@ function renderTrips() {
   }));
   el.querySelectorAll('[data-act="edit"]').forEach((b) => b.addEventListener('click', () => { editing = b.dataset.id; renderTrips(); $id('pp-' + editing)?.focus(); }));
   el.querySelectorAll('[data-act="edit-flights"]').forEach((b) => b.addEventListener('click', () => openTripForm(RAW[b.dataset.id])));
+  // Undo a Gmail import: hidden, not deleted, and marked so later syncs leave it alone
+  el.querySelectorAll('[data-act="undo-email"]').forEach((b) => b.addEventListener('click', async () => {
+    if (!twoStep(b, 'undo' + b.dataset.id, 'Tap again to remove it')) return;
+    const rec = RAW[b.dataset.id]; selTrip = null;
+    await store.put('trips', { ...rec, hidden: true, undone: true, updatedAt: new Date().toISOString() }); toast(`${rec.name} removed; email imports won't add it back`);
+  }));
   el.querySelectorAll('[data-stay-go]').forEach((b) => b.addEventListener('click', () => { showTab('stays'); requestAnimationFrame(() => flashEl($id('stay-' + b.dataset.stayGo))); }));
   el.querySelectorAll('[data-tomap]').forEach((b) => b.addEventListener('click', () => mapbox.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' })));
   el.querySelectorAll('[data-act="cancel"]').forEach((b) => b.addEventListener('click', () => { editing = null; renderTrips(); }));
@@ -892,17 +899,23 @@ function renderStays() {
     const tr = t ? tierOf(t) : null;
     const chips = [`<span class="chip">${esc(s.brand || 'Other')}</span>`, `<span class="chip">${+s.nights || '?'} night${+s.nights === 1 ? '' : 's'}${+s.rooms > 1 ? ` · ${+s.rooms} rooms` : ''}</span>`,
       s.booked ? `<span class="chip">${esc(s.booked)}</span>` : '', s.pay ? `<span class="chip paychip pm-${esc(s.pay)}">${esc(payShort(s, 'stay'))}</span>` : '',
+      s.source === 'gmail' ? `<span class="chip email">Added from email</span>` : '',
       t ? `<button type="button" class="chip linkchip" data-trip-go="${t.id}">✈ ${esc(t.name)} trip</button>` : ''].join('');
     html += `<article class="stay ${tr && tr !== 'past' ? 'up' : ''}" id="stay-${esc(s.id)}">
       <div class="stop"><div><h3>${esc(s.name)}</h3><span class="lw">${esc([s.city, s.country === 'United States' ? '' : s.country].filter(Boolean).join(', '))}</span></div><span class="mono num stdate">${esc(stayDates(s))}</span></div>
       <span class="chips">${chips}</span>
       ${s.note ? `<p class="lw stnote">${esc(s.note)}</p>` : ''}
-      <div class="row"><button type="button" class="linkbtn" data-sedit="${esc(s.id)}">Edit</button><button type="button" class="linkbtn" data-sdel="${esc(s.id)}">Remove</button></div>
+      <div class="row"><button type="button" class="linkbtn" data-sedit="${esc(s.id)}">Edit</button><button type="button" class="linkbtn" data-sdel="${esc(s.id)}">Remove</button>${s.source === 'gmail' ? `<button type="button" class="linkbtn" data-sundo="${esc(s.id)}">Undo import</button>` : ''}</div>
     </article>`;
   });
   const el = $id('stays'); el.innerHTML = html;
   el.querySelectorAll('[data-trip-go]').forEach((b) => b.addEventListener('click', () => { const t = tripById(b.dataset.tripGo); selTrip = t; editing = null; showTab('trips'); renderTrips(); draw(); requestAnimationFrame(() => root.querySelector(`.strip-head[data-id="${t.id}"]`)?.scrollIntoView({ block: 'start' })); }));
   el.querySelectorAll('[data-sedit]').forEach((b) => b.addEventListener('click', () => openStayForm(STAYS.find((x) => x.id === b.dataset.sedit))));
+  el.querySelectorAll('[data-sundo]').forEach((b) => b.addEventListener('click', async () => {
+    if (!twoStep(b, 'sundo' + b.dataset.sundo, 'Tap again to remove it')) return;
+    const rec = (await store.list('stays')).find((x) => x.id === b.dataset.sundo); if (!rec) return;
+    await store.put('stays', { ...rec, hidden: true, undone: true, updatedAt: new Date().toISOString() }); toast(`${rec.name} removed; email imports won't add it back`);
+  }));
   el.querySelectorAll('[data-sdel]').forEach((b) => b.addEventListener('click', async () => { if (!twoStep(b, 'sdel' + b.dataset.sdel, 'Tap again to remove')) return; const s = STAYS.find((x) => x.id === b.dataset.sdel); await store.remove('stays', b.dataset.sdel); toast(`${s.name} removed`); }));
   if (!stayEdit) $id('stayFormPanel').innerHTML = '';
   try { renderStayMap(); } catch (err) { console.warn(err); }
@@ -988,6 +1001,7 @@ function tripStaysHTML(t) {
 
 // ---------- settings ----------
 let csvPreview = null;
+let GMAIL = null; // Gmail import (contrail/gmail.js), for members with the Gmail switch on
 function renderSettings() {
   const p = $id('p-settings');
   const who = whoNow() === 'Anyone' ? (owners()[0] || OWNER) : whoNow();
@@ -1016,6 +1030,7 @@ function renderSettings() {
     </div>
   </div>
   <div class="col">
+    ${GMAIL ? GMAIL.panelHTML() : ''}
     <div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Import flights from a CSV</h3>
       <p class="lw" style="margin:0">${CSV_HELP}</p>
@@ -1070,6 +1085,7 @@ root.addEventListener('change', async (e) => {
     t.value = ''; // the same file can be picked again after fixing it
   }
 });
+root.addEventListener('click', (e) => { const g = e.target.closest('[data-gmail]'); if (g && GMAIL) GMAIL.onClick(g); });
 root.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-export],[data-clear],[data-sample],[data-csv-go],[data-csv-cancel],[data-theme-next],[data-delete-saved]'); if (!b) return;
   if (b.dataset.themeNext !== undefined) document.querySelector('.theme-toggle')?.click();
@@ -1173,6 +1189,10 @@ let t0 = prefs.get('tab') || 'overview'; try { const h = location.hash.slice(1);
 TAB = t0;
 renderAll();
 showTab(t0);
-// Any change (a form, an import, sample data) reloads from the store and redraws
-store.subscribe(async () => { const keep = selTrip?.id; await load(); selTrip = keep ? TRIPS.find((t) => t.id === keep) || null : null; renderAll(); });
+// Any change (a form, an import, sample data) reloads from the store and redraws. The Gmail
+// import's own bookkeeping (which emails were checked, the sync log) doesn't change the log.
+store.subscribe(async (what) => { if (what === 'processed_emails' || what === 'gmail') return; const keep = selTrip?.id; await load(); selTrip = keep ? TRIPS.find((t) => t.id === keep) || null : null; renderAll(); });
 setInterval(renderAptDetail, 60000);
+// Members with Gmail import: the panel in Settings, and a sync now if this tab still has Google's access
+GMAIL = await setUpGmail({ store, airport, placeName, home: () => HOME, geocode, toast, rerender: () => { if (TAB === 'settings') renderSettings(); } });
+if (GMAIL) { if (TAB === 'settings') renderSettings(); GMAIL.sync(); }

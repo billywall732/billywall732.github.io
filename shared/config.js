@@ -3,9 +3,10 @@
 // repo. Sign-in and saved data use the shared Supabase project (see /shared/auth.js).
 // Empty values mean "not set up yet".
 export const config = {
-  // Cloudflare Worker that talks to Claude (Phase 3)
-  workerUrl: '',
-  // Google OAuth client ID for Gmail import (Phase 3)
+  // The AI Worker (worker-ai/): reads booking emails for Contrail's Gmail import
+  workerUrl: 'https://otw-ai.offthewall-dev.workers.dev',
+  // Google OAuth client ID (a Web application client, public by design) for Gmail import.
+  // Empty = Gmail import shows "not set up yet" even for members with the Gmail switch on.
   googleClientId: '',
   // The stats Worker (worker-stats/) that the hidden /stats/ page reads; empty = not set up yet
   statsUrl: 'https://otw-stats.offthewall-dev.workers.dev',

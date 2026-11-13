@@ -54,7 +54,7 @@ css/site.css           main styles (dark / light / blueprint themes via CSS vari
 shared/                app code shared by Contrail + Wallet (auth, store, trips, config, data/)
 tools/make-pages.mjs   writes projects/<slug>/, copies the header/footer into app pages, runs make-feed.mjs
 tools/make-feed.mjs    writes feed.xml (Atom, one entry per project); GENERATED, don't hand-edit
-worker-headers/, worker-stats/   Cloudflare Workers (deployed separately with wrangler)
+worker-headers/, worker-stats/, worker-ai/   Cloudflare Workers (deployed separately with wrangler)
 prototype/, photos/, reference/  local only (not committed)
 ```
 
@@ -70,6 +70,8 @@ prototype/, photos/, reference/  local only (not committed)
 
 ## Saved data (Contrail, Wallet)
 - `shared/store.js` is the only place that talks to the `app_records` / `app_docs` tables; members' rows are tagged with `app`. `store.deleteAll()` backs each app's "Delete my saved data" button (members only, two confirm dialogs, like Budget Ledger's).
+- Access: `/admin/` (admin only) approves requests and sets each member's apps, active, AI and Gmail switches and daily AI limit, through the `admin_*` database functions in offthewall-db.
+- Contrail's Gmail import (`contrail/gmail.js`, `contrail/email-import.js`) runs in the member's browser; emails it can't parse from schema.org markup go to `worker-ai/` (Claude Haiku, strict JSON). It keeps only extracted fields plus `processed_emails` (message ID + outcome), never email text. `node worker-ai/test.mjs` checks the Worker's gates.
 - Wallet saves on delays (number fields wait 500 ms, then `persist()` waits 300 ms). Anything that deletes or replaces the wallet must cancel those first, or a late save writes it back.
 - To test member-only features without touching the real database, intercept requests to the Supabase URL in Playwright and answer from an in-memory fake, with a fake session in localStorage (`sb-yxdmuznxcqcauyehhfmp-auth-token`).
 
