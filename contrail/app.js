@@ -3,10 +3,10 @@
 // flights and stays, CSV and JSON import, and a Settings tab. Card research (Claude) is gone
 // from this app; What's in My Wallet? covers it.
 /* global d3, topojson */
-import { connectStore, store } from '/shared/store.js';
+import { connectStore, store } from '/shared/store.js?v=2';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=2';
+import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=3';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';

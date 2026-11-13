@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /stats/
+Disallow: /admin/
 
 Sitemap: https://offthewall.dev/sitemap.xml

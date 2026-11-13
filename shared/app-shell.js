@@ -3,7 +3,7 @@
 // from home/index.html by tools/make-pages.mjs.
 import { setUpPage } from '/js/ui.js?v=2';
 import { config } from './config.js';
-import { store } from './store.js';
+import { store } from '/shared/store.js?v=2';
 import { loadAuth } from './auth-loader.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -12,6 +12,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 //   signed out     demo; "Request access" signs you in first, approved members sign in here too
 //   not approved   demo; "Request access" records the request (Billy approves it)
 //   requested      demo; says the request is waiting
+//   declined       demo; says the request wasn't approved (and how to ask again)
+//   paused         demo; approved before, but access is paused for now (their data is kept)
 //   member         your own data, and a way to sign out
 // access comes from connectStore() in store.js.
 export function demoBanner(slot, appName, access = { state: 'signed-out' }) {
@@ -31,6 +33,12 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }) {
   } else if (access.state === 'requested') {
     html = `<div class="demo-banner" role="note">
       <p><b>You've asked for access to ${esc(appName)}.</b> Once it's approved, your own data saves here. Until then this is the demo, signed in as ${who}.</p>${signOut}</div>`;
+  } else if (access.state === 'declined') {
+    html = `<div class="demo-banner" role="note">
+      <p><b>Your request for ${esc(appName)} wasn't approved,</b> so this is the demo with sample data, signed in as ${who}. Think that's a mistake? <a href="${mail}">Email Billy</a>.</p>${signOut}</div>`;
+  } else if (access.state === 'paused') {
+    html = `<div class="demo-banner" role="note">
+      <p><b>Your access to ${esc(appName)} is paused for now.</b> Your saved data is kept; until it's back on, this is the demo, signed in as ${who}. <a href="${mail}">Email Billy</a> with any questions.</p>${signOut}</div>`;
   } else if (access.state === 'error') {
     html = `<div class="demo-banner" role="note">
       <p><b>Couldn't check your access just now,</b> so this is the demo with sample data. Reload the page to try again.</p></div>`;

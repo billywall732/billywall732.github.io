@@ -1,10 +1,10 @@
 // Contrail's analytics page: nine sections of charts built from the same trips and stays as the
 // app. SVG and D3, colors from the app's CSS variables so every chart follows the color mode.
 /* global d3, topojson */
-import { connectStore, store } from '/shared/store.js';
+import { connectStore, store } from '/shared/store.js?v=2';
 import { airlineName, airport, deriveTrip, loadAirports, nightsOf, RENTAL } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, setUpApp } from '/shared/app-shell.js?v=2';
+import { demoBanner, setUpApp } from '/shared/app-shell.js?v=3';
 import { contrailDemo } from '/contrail/demo-data.js';
 
 setUpApp();
