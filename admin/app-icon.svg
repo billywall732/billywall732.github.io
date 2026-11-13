@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The admin page's home-screen icon: a shield with a keyhole (who gets access), in the Off the
+       Wall app-icon style (one object on a dark glow in the page's color, two swooshes).
+       icon-180/192/512.png are screenshots of this file at those sizes. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="75%"><stop offset="0" stop-color="#1f6b3c"/><stop offset="1" stop-color="#04120a"/></radialGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfeedd"/></linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fe0a6"/><stop offset="1" stop-color="#2fb565"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-opacity=".85">
+    <path d="M358 79 A205 205 0 0 1 449 186"/><path d="M154 434 A205 205 0 0 1 63 326"/>
+  </g>
+  <!-- shield: shadow, green rim, white face -->
+  <path d="M256 112 L372 154 V250 C372 326 322 378 256 404 C190 378 140 326 140 250 V154 Z" fill="#000" fill-opacity=".35" transform="translate(10 14)"/>
+  <path d="M256 112 L372 154 V250 C372 326 322 378 256 404 C190 378 140 326 140 250 V154 Z" fill="url(#rim)"/>
+  <path d="M256 138 L350 172 V250 C350 312 310 356 256 380 C202 356 162 312 162 250 V172 Z" fill="url(#face)"/>
+  <!-- keyhole -->
+  <circle cx="256" cy="236" r="34" fill="#0f3d22"/>
+  <path d="M240 254 L272 254 L282 322 C282 328 278 332 272 332 L240 332 C234 332 230 328 230 322 Z" fill="#0f3d22"/>
+</svg>

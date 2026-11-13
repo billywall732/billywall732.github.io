@@ -9,6 +9,10 @@
        Not linked from anywhere, not indexed, not counted. The database checks admin rights on every
        call (the admin_* functions in the private offthewall-db repo); this page only shows them. -->
   <link rel="icon" href="/icon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/admin/icon-180.png">
+  <!-- Its own manifest: a home-screen shortcut opens /admin/, not the cover -->
+  <link rel="manifest" href="/admin/manifest.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Admin">
   <meta name="theme-color" content="#121110">
   <script>
     document.documentElement.dataset.theme = 'dark';
