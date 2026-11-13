@@ -7,7 +7,7 @@ export const config = {
   workerUrl: 'https://otw-ai.offthewall-dev.workers.dev',
   // Google OAuth client ID (a Web application client, public by design) for Gmail import.
   // Empty = Gmail import shows "not set up yet" even for members with the Gmail switch on.
-  googleClientId: '',
+  googleClientId: '1024899082340-jf8khevb83oi5ca3c5oqn7auvfvilbpr.apps.googleusercontent.com',
   // The stats Worker (worker-stats/) that the hidden /stats/ page reads; empty = not set up yet
   statsUrl: 'https://otw-stats.offthewall-dev.workers.dev',
   // Where "Request access" goes until the real request flow exists

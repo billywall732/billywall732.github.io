@@ -6,12 +6,12 @@
 import { connectStore, store } from '/shared/store.js?v=3';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=4';
+import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=5';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
-import { setUpGmail } from '/contrail/gmail.js?v=1';
+import { setUpGmail } from '/contrail/gmail.js?v=2';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');

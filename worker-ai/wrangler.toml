@@ -16,7 +16,7 @@ enabled = true
 # Per-person daily counters (keys like usage:email:<user id>:<date>; they expire after 2 days)
 [[kv_namespaces]]
 binding = "USAGE"
-id = "REPLACE_WITH_KV_ID"
+id = "912b1acf3d544df2ad5b472d07f2dcd2"
 
 [vars]
 SUPABASE_URL = "https://yxdmuznxcqcauyehhfmp.supabase.co"

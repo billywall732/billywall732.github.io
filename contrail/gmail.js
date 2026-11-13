@@ -10,7 +10,7 @@
 //   - The result is merged into trips and stays. Email text is never saved; only what was found.
 // After connecting, a sync runs each time Contrail opens while this tab still has Google's
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
-import { config } from '/shared/config.js';
+import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
 import { gmailQuery, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js';
 
