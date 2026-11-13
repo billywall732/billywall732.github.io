@@ -42,6 +42,9 @@
 .ad-table tr.is-paused td { opacity: .7; }
 .ad-badge { display: inline-block; margin: 4px 6px 0 0; font: 600 11px/1 var(--sans); padding: 4px 7px; border-radius: 999px; background: color-mix(in srgb, var(--brand) 18%, transparent); color: var(--ink); }
 .ad-badge.is-off { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+.ad-apps { display: flex; flex-wrap: wrap; gap: 6px; }
+.ad-accounts td { white-space: nowrap; }
+.ad-accounts td[data-label="Person"], .ad-accounts td[data-label="Has saved in"] { white-space: normal; }
 .ad-limit { width: 5.5em; font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
 
 /* Switches: a real checkbox (keyboard and screen readers work as usual), drawn as a switch */
