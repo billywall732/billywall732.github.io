@@ -42,6 +42,8 @@ const BASE = {
 const ALLOW = {
   // The stats page reads the stats Worker
   '/stats/': { 'connect-src': ['https://otw-stats.offthewall-dev.workers.dev'] },
+  // The admin page: sign-in and the admin_* database functions in Supabase
+  '/admin/': { 'connect-src': ['https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'] },
   // Contrail: D3 + TopoJSON from cdnjs, map outlines from jsDelivr, OpenStreetMap place search,
   // members' saved data in Supabase
   '/contrail/': {

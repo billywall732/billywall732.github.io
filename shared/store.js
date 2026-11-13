@@ -113,7 +113,7 @@ export const store = {
 };
 
 // Where the visitor stands, for the banner:
-//   signed-out | not-approved | requested | member | error
+//   signed-out | not-approved | requested | declined | paused | member | error
 export const access = { app: null, state: 'signed-out', user: null };
 
 // Decide the backend for this page: the member's own data if they're signed in and approved
@@ -130,8 +130,14 @@ export async function connectStore(app) {
       backend = accountBackend(app, auth.db, user.id);
       access.state = 'member';
     } else {
-      const asked = await must(auth.db.from('access_requests').select('app').eq('app', app).maybeSingle());
-      access.state = asked ? 'requested' : 'not-approved';
+      // Their own request, if any: waiting, declined, or approved but paused (an admin turned
+      // their access off; their data is kept). select('*') so this works before and after the
+      // status column existed.
+      const asked = await must(auth.db.from('access_requests').select('*').eq('app', app).maybeSingle());
+      access.state = !asked ? 'not-approved'
+        : asked.status === 'declined' ? 'declined'
+        : asked.status === 'approved' ? 'paused'
+        : 'requested';
     }
   } catch (err) {
     console.error('Couldn’t check access', err);
