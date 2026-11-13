@@ -101,8 +101,8 @@ for (const [from, to] of Object.entries(RENAMED)) {
 }
 console.log(`Wrote ${Object.keys(RENAMED).length} redirects: ${Object.entries(RENAMED).map(([a, b]) => `/projects/${a}/ → /projects/${b}/`).join(', ')}`);
 
-// The app pages (Contrail, Wallet, Code Breaker, Loop Lab) and Contact keep their own content; their header and footer come from the home page too
-const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html'];
+// The app pages (Contrail, Wallet, Loop Lab), Contact, Privacy and Terms keep their own content; their header and footer come from the home page too
+const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html', 'terms/index.html'];
 for (const f of APP_PAGES) {
   const path = join(root, f);
   const html = readFileSync(path, 'utf8');

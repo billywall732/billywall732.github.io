@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms · Off the Wall</title>
+  <meta name="description" content="The plain-English terms for Off the Wall and its apps: a hobby site, free and as-is.">
+  <meta property="og:title" content="Terms · Off the Wall">
+  <meta property="og:description" content="A hobby site, free and as-is.">
+  <meta property="og:image" content="https://offthewall.dev/img/og-card.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://offthewall.dev/img/og-card.jpg">
+  <link rel="icon" href="/icon.svg?v=2" type="image/svg+xml">
+  <link rel="alternate" type="application/atom+xml" title="Off the Wall: projects" href="/feed.xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#121110">
+  <script>
+    document.documentElement.dataset.theme = 'dark';
+    try { const t = localStorage.getItem('otw-theme'); if (['dark', 'light', 'blueprint'].includes(t)) document.documentElement.dataset.theme = t; } catch {}
+    // Arriving from the cover's Say Hello button: the cover's paint wipe finishes here. Only for that
+    // click (the cover leaves a note), so deep links, reloads, back/forward and reduced motion skip it.
+    try {
+      if (sessionStorage.getItem('otw-wipe')) {
+        sessionStorage.removeItem('otw-wipe');
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'navigate' && !matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('wipe-in');
+      }
+    } catch {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
+  <link rel="stylesheet" href="/css/site.css">
+  <script type="module">import { setUpPage } from '/js/ui.js?v=2'; setUpPage();</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav wrap">
+    <a class="brand" href="/home/" aria-label="Off the Wall, home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">Off the Wall</span>
+    </a>
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-menu" hidden><span class="menu-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr">Menu</span></button>
+    <nav id="site-menu" class="site-menu" aria-label="Main">
+      <a href="/">Cover</a>
+      <a href="/home/#workshop" data-section="work">Workshop</a>
+      <a href="/home/#off-the-clock" data-section="clock">Off the Clock</a>
+      <a href="/contact/">Contact</a>
+      <span class="nav-toggles">
+        <button type="button" class="icon-toggle bg-toggle"><span class="bg-icon" aria-hidden="true"></span><span class="sr">Pause background</span></button>
+        <button type="button" class="icon-toggle board-toggle" hidden><span class="board-icon" aria-hidden="true"></span><span class="sr">Board cursor</span></button>
+        <button type="button" class="icon-toggle theme-toggle"><span class="ti ti-dark" aria-hidden="true"></span><span class="sr">Color mode</span></button>
+      </span>
+    </nav>
+  </header>
+
+  <main id="main" class="privacy wrap">
+    <h1>Terms</h1>
+    <p class="privacy-lede">The ground rules for using this site and its apps, in plain English. Short version: it's a hobby site, everything is free and offered as-is, your saved data is yours, and please be kind to it.</p>
+
+    <h2>What this site is</h2>
+    <p>Off the Wall is my personal site: a portfolio of hobby apps I build for fun. It isn't a business. Nothing is sold here, no payments are taken, and the apps are provided as-is.</p>
+
+    <h2>Use at your own risk</h2>
+    <p>The apps and tools are free, with no guarantee that they'll work, be accurate, or stay available. Don't rely on them for anything important: check flight and hotel details with the airline or hotel, financial figures with your bank or card issuer, and snow and surf conditions with the official forecasts and reports before you go.</p>
+
+    <h2>Accounts and your data</h2>
+    <p>Some apps let you sign in so your own data is saved. What you save is yours, and you can delete it in the app: Contrail and What's in My Wallet? have a delete button in Settings, Budget Ledger in Manage → Your data, and Snow &amp; Surf Report in Notifications. The <a href="/privacy/">privacy page</a> explains what's kept and how to have the rest removed.</p>
+    <p>The demos show made-up sample data (Alex &amp; Jordan are fictional). If I approve you for an app, that access is for you personally, so please don't share your account. I can remove access if an account is misused.</p>
+
+    <h2>Acceptable use</h2>
+    <p>Please don't try to break the site, get around its sign-in, scrape it heavily, or overload it or the services behind it. Don't use the apps for anything unlawful.</p>
+
+    <h2>Third-party services</h2>
+    <p>Sign-in runs through Google and <a href="https://supabase.com/">Supabase</a>, and the site is hosted on GitHub Pages behind Cloudflare. Their own terms apply to their services.</p>
+
+    <h2>Content</h2>
+    <p>The site's text, photos and code are mine. Please don't republish them as your own. The apps' sample data is fictional.</p>
+
+    <h2>Links</h2>
+    <p>The site links to other sites, like surf cams, airlines and hotels. I'm not responsible for what's on them.</p>
+
+    <h2>Changes</h2>
+    <p>These terms may change as the site does. The date below shows when they were last updated.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about these terms? Email me at <!--email_off--><a href="mailto:WallWorks732@gmail.com">WallWorks732@gmail.com</a><!--/email_off-->.</p>
+
+    <p class="privacy-updated">This is a plain-English summary of how the site works, not legal advice. Last updated November 12, 2026. See also the <a href="/privacy/">privacy page</a>.</p>
+  </main>
+  <footer class="wrap">
+    <div class="footer">
+      <p>© <span class="year">2026</span> Billy Wall · Off the Wall</p>
+      <p>Anonymous visit counts, no cookies. · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p>
+    </div>
+  </footer>
+</body>
+</html>
