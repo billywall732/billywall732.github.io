@@ -23,7 +23,7 @@ const MAX_BODY = 20000; // bytes, everything included
 const enc = new TextEncoder();
 
 // ---------- what Claude returns ----------
-// Strict structured output: every field present, null when the email doesn't say.
+// Strict structured output: every field present; aircraft and cabin use empty strings when unstated.
 const STAY_BRANDS = ['IHG', 'Hilton', 'Marriott', 'Hyatt', 'Wyndham', 'Choice', 'Accor', 'Best Western', 'Independent hotel', 'Airbnb', 'Vrbo', 'Vacation rental', 'Other'];
 const BOOKED_VIA = ['Direct', 'Chase Travel', 'Capital One Travel', 'Amex Travel', 'Airbnb', 'Vrbo', 'Booking.com', 'Expedia', 'Hotels.com', 'Costco Travel', 'Other'];
 const orNull = (schema, description) => ({ anyOf: [schema, { type: 'null' }], ...(description ? { description } : {}) });
@@ -37,8 +37,8 @@ const LEG = obj({
   to: text('3-letter IATA code of the arrival airport'),
   dep_local: text('Departure, local time at the departure airport, "YYYY-MM-DDTHH:MM"'),
   arr_local: text('Arrival, local time at the arrival airport, "YYYY-MM-DDTHH:MM"'),
-  aircraft: text('Aircraft type if stated'),
-  cabin: text('Cabin or fare class if stated, e.g. "Economy", "First"'),
+  aircraft: { type: 'string', description: 'Aircraft type if stated; otherwise an empty string' },
+  cabin: { type: 'string', description: 'Cabin or fare class if stated, e.g. "Economy", "First"; otherwise an empty string' },
 });
 const STAY = obj({
   name: text('Property name, e.g. "Hyatt Regency Seattle" or the rental listing title'),
@@ -70,7 +70,7 @@ Return kind:
 Rules:
 - Times are local to each airport, exactly as printed. Never convert time zones.
 - If a date has no year, use the email's date to pick the right year (bookings are for the future).
-- Use null for anything the email doesn't state. Don't guess airport codes or flight numbers.
+- Use null for anything the email doesn't state, except aircraft and cabin: use an empty string when unstated. Don't guess airport codes or flight numbers.
 - If only some flights were cancelled, return "flight" with the flights that remain.`;
 
 // ---------- small helpers ----------
@@ -143,15 +143,29 @@ async function memberRow(env, token, userId) {
 async function takeOne(env, userId, member, now = Date.now()) {
   const firstKey = `first:email:${userId}`;
   let first = Number(await env.USAGE.get(firstKey));
-  if (!first) { first = now; await env.USAGE.put(firstKey, String(now), { expirationTtl: 60 * 60 * 24 * 400 }); }
+  if (!first) { first = now; await putUsage(env.USAGE, firstKey, String(now), { expirationTtl: 60 * 60 * 24 * 400 }); }
   const backfill = now - first < Number(env.BACKFILL_DAYS || 7) * 864e5;
   const own = Math.max(0, Number(member.daily_ai_limit) || 0);
   const limit = backfill ? Math.max(own, Number(env.BACKFILL_LIMIT || 300)) : own;
   const key = `usage:email:${userId}:${pacificDay(now)}`;
   const used = Number(await env.USAGE.get(key)) || 0;
   if (used >= limit) return { ok: false, limit };
-  await env.USAGE.put(key, String(used + 1), { expirationTtl: 60 * 60 * 48 });
+  await putUsage(env.USAGE, key, String(used + 1), { expirationTtl: 60 * 60 * 48 });
   return { ok: true, limit, remaining: limit - used - 1 };
+}
+
+const KV_WRITE_RETRIES = 2;
+async function putUsage(kv, key, value, options) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await kv.put(key, value, options);
+      return;
+    } catch (err) {
+      const message = String(err?.message || err);
+      if (attempt >= KV_WRITE_RETRIES || !(/\b429\b|too many requests/i).test(message)) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+    }
+  }
 }
 
 // ---------- the Claude call ----------
@@ -195,7 +209,11 @@ async function askClaude(env, email) {
       messages: [{ role: 'user', content: `<email>\nFrom: ${email.from}\nSubject: ${email.subject}\nDate: ${email.date}\n\n${email.text}\n</email>` }],
     }),
   });
-  if (!res.ok) return { status: res.status === 429 || res.status === 529 ? 'busy' : 'error', http: res.status };
+  if (!res.ok) {
+    // Claude's own error (type and message, e.g. a schema problem or no credit); never email text
+    const e = await res.json().catch(() => ({}));
+    return { status: res.status === 429 || res.status === 529 ? 'busy' : 'error', http: res.status, why: `${e?.error?.type || ''}: ${String(e?.error?.message || '').slice(0, 300)}` };
+  }
   const msg = await res.json();
   const usage = { in: msg.usage?.input_tokens ?? 0, out: msg.usage?.output_tokens ?? 0 };
   if (msg.stop_reason === 'refusal') return { status: 'ok', result: tidy({ kind: 'none' }), usage };
@@ -228,7 +246,7 @@ async function parseEmail(request, env, cors) {
 
   const hash = (await sha256Hex(email.text)).slice(0, 16);
   const out = await askClaude(env, email);
-  console.log(JSON.stringify({ task: 'contrail.parse-email', email: hash, status: out.status === 'ok' ? out.result.kind : out.status, http: out.http, in: out.usage?.in, out: out.usage?.out }));
+  console.log(JSON.stringify({ task: 'contrail.parse-email', email: hash, status: out.status === 'ok' ? out.result.kind : out.status, http: out.http, why: out.why, in: out.usage?.in, out: out.usage?.out }));
   if (out.status === 'busy') return fail(503, 'busy', 'Claude is busy. Try again in a minute.', cors);
   if (out.status !== 'ok') return fail(502, 'failed', "Couldn't read that email.", cors);
   return reply(200, { result: out.result, remaining: take.remaining }, cors);

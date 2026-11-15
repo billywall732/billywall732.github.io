@@ -1,7 +1,7 @@
 // Checks every gate in the AI Worker without touching anything real: Supabase's keys, the members
 // table, KV and the Claude API are all stand-ins, and the sign-ins are signed with a test key.
 //   node worker-ai/test.mjs
-import worker, { pacificDay, verifySignIn } from './src/index.js';
+import worker, { pacificDay, SCHEMA, verifySignIn } from './src/index.js';
 
 const SUPA = 'https://test.supabase.co';
 const enc = new TextEncoder();
@@ -26,7 +26,15 @@ const members = {
   'user-paused': { active: false, flags: { ai: true, gmail: true }, daily_ai_limit: 20 },
 };
 const kv = new Map();
-const USAGE = { get: async (k) => kv.get(k) ?? null, put: async (k, v) => { kv.set(k, v); } };
+let kvPutFailures = 0, kvPutAttempts = 0;
+const USAGE = {
+  get: async (k) => kv.get(k) ?? null,
+  put: async (k, v) => {
+    kvPutAttempts++;
+    if (kvPutFailures) { kvPutFailures--; throw new Error('KV PUT failed: 429 Too Many Requests'); }
+    kv.set(k, v);
+  },
+};
 let claudeCalls = 0, claudeReply = null, lastClaudeBody = null;
 globalThis.fetch = async (input, init = {}) => {
   const url = String(input instanceof Request ? input.url : input);
@@ -62,6 +70,14 @@ async function call({ origin = 'https://offthewall.dev', auth, body = email, met
 
 let failed = 0;
 const check = (name, ok, extra = '') => { console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}${extra ? '  ' + extra : ''}`); if (!ok) failed++; };
+function countSchemaUnions(schema) {
+  if (Array.isArray(schema)) return schema.reduce((sum, item) => sum + countSchemaUnions(item), 0);
+  if (!schema || typeof schema !== 'object') return 0;
+  const own = Array.isArray(schema.anyOf) || Array.isArray(schema.oneOf) || Array.isArray(schema.type) ? 1 : 0;
+  return own + Object.values(schema).reduce((sum, value) => sum + countSchemaUnions(value), 0);
+}
+const unionCount = countSchemaUnions(SCHEMA);
+check('Claude schema stays within the 16-union limit', unionCount <= 16, `${unionCount} union fields`);
 const good = await token();
 
 let r = await call({ origin: 'https://evil.example', auth: good });
@@ -105,7 +121,10 @@ r = await call({ auth: good, body: '{nope' });
 check('not JSON → 400', r.status === 400);
 
 kv.clear();
+kvPutFailures = 1;
+const putAttemptsBeforeRetry = kvPutAttempts;
 r = await call({ auth: good });
+check('a transient KV 429 is retried', r.status === 200 && kvPutFailures === 0 && kvPutAttempts === putAttemptsBeforeRetry + 3);
 check('member with Gmail on → 200 with a tidy result', r.status === 200 && r.json.result.kind === 'flight' && r.json.result.confirmation === 'ABC123'
   && r.json.result.legs[0].airline === 'UA' && r.json.result.legs[0].flight_no === '1215' && r.json.result.legs[0].from === 'LAX', JSON.stringify(r.json.result.legs[0]));
 check('request uses Haiku, strict JSON schema, no API key leak in reply', lastClaudeBody.model === 'claude-haiku-5-5' && lastClaudeBody.output_config.format.type === 'json_schema' && !JSON.stringify(r.json).includes('test-key'));

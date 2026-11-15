@@ -24,6 +24,11 @@ export function gmailQuery(sinceMs) {
   return `from:(${SENDERS.join(' OR ')}) ${SUBJECTS} after:${Math.floor(sinceMs / 1000)}`;
 }
 
+export function gmailSince({ backfillDone, lastSyncAt, years, hasFailed = false, now = Date.now() }) {
+  if (backfillDone && lastSyncAt && !hasFailed) return Date.parse(lastSyncAt) - 2 * 864e5;
+  return now - (Number(years) || 3) * 365.25 * 864e5;
+}
+
 // ---------- one Gmail message → its parts ----------
 const header = (msg, name) => (msg.payload?.headers || []).find((h) => h.name.toLowerCase() === name.toLowerCase())?.value || '';
 
