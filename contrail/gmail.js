@@ -17,6 +17,7 @@ import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainTex
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const CAP = 500; // emails per sync; a longer backfill carries on next time
+const BACKFILL_VERSION = 1; // One-time rescan for accounts whose old cursor may have skipped emails.
 const TOKEN_KEY = 'contrail-gmail-token';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'never');
@@ -107,7 +108,8 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     try {
       const processed = await store.list('processed_emails');
       const hasFailed = processed.some((p) => p.status === 'failed');
-      const since = gmailSince({ backfillDone: doc.backfillDone, lastSyncAt: doc.lastSyncAt, years: doc.years, hasFailed });
+      const needsBackfill = Number(doc.backfillVersion || 0) < BACKFILL_VERSION;
+      const since = gmailSince({ backfillDone: doc.backfillDone, lastSyncAt: doc.lastSyncAt, years: doc.years, hasFailed, forceBackfill: needsBackfill });
       const done = new Map(processed.filter((p) => p.status !== 'failed').map((p) => [p.id, p.status]));
       // Gmail lists newest first; collect the unchecked ones, then work oldest first so a
       // change or cancellation lands after the booking it changes
@@ -157,7 +159,8 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     const summary = `${counts.added} added, ${counts.updated} updated, ${counts.ignored} skipped${counts.failed ? `, ${counts.failed} couldn't be read` : ''}`;
     lastNote = stopped ? stopped.message : capped ? `Checked ${CAP} emails; Sync now carries on with the rest.` : '';
     await save({
-      lastSyncAt: finished ? started : doc.lastSyncAt, backfillDone: doc.backfillDone || finished, lastResult: summary, lastRunAt: new Date().toISOString(),
+      lastSyncAt: finished ? started : doc.lastSyncAt, backfillDone: doc.backfillDone || finished,
+      backfillVersion: finished ? BACKFILL_VERSION : doc.backfillVersion, lastResult: summary, lastRunAt: new Date().toISOString(),
       log: [...entries.reverse(), ...(doc.log || [])].slice(0, 80),
     });
     running = false; progress = null; rerender();

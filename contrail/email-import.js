@@ -24,8 +24,8 @@ export function gmailQuery(sinceMs) {
   return `from:(${SENDERS.join(' OR ')}) ${SUBJECTS} after:${Math.floor(sinceMs / 1000)}`;
 }
 
-export function gmailSince({ backfillDone, lastSyncAt, years, hasFailed = false, now = Date.now() }) {
-  if (backfillDone && lastSyncAt && !hasFailed) return Date.parse(lastSyncAt) - 2 * 864e5;
+export function gmailSince({ backfillDone, lastSyncAt, years, hasFailed = false, forceBackfill = false, now = Date.now() }) {
+  if (!forceBackfill && backfillDone && lastSyncAt && !hasFailed) return Date.parse(lastSyncAt) - 2 * 864e5;
   return now - (Number(years) || 3) * 365.25 * 864e5;
 }
 
