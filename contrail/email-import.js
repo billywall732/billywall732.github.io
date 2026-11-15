@@ -10,14 +10,19 @@ export const SENDERS = [
   'suncountry.com', 'aircanada.com', 'westjet.com', 'britishairways.com', 'ba.com', 'lufthansa.com', 'airfrance.com', 'klm.com', 'virginatlantic.com',
   'aerlingus.com', 'iberia.com', 'icelandair.com', 'emirates.com', 'qatarairways.com', 'etihad.com', 'turkishairlines.com', 'singaporeair.com',
   'cathaypacific.com', 'ana.co.jp', 'jal.com', 'koreanair.com', 'evaair.com', 'qantas.com', 'airnewzealand.com', 'aeromexico.com', 'copaair.com', 'avianca.com',
+  'flytap.com', 'tapairportugal.com', 'airindia.com', 'latam.com', 'zipair.net', 'flydubai.com', 'airasia.com', 'airtransat.com', 'flyporter.com',
+  'ethiopianairlines.com', 'swiss.com', 'austrian.com', 'finnair.com', 'flysas.com', 'lot.com', 'brusselsairlines.com', 'royalairmaroc.com',
   // Hotels and rentals
   'marriott.com', 'hilton.com', 'hyatt.com', 'ihg.com', 'wyndhamhotels.com', 'choicehotels.com', 'accor.com', 'bestwestern.com', 'radissonhotels.com',
-  'fourseasons.com', 'airbnb.com', 'vrbo.com',
+  'fourseasons.com', 'sonesta.com', 'omnihotels.com', 'loewshotels.com', 'mgmresorts.com', 'caesars.com', 'mandarinoriental.com', 'shangri-la.com',
+  'clubmed.com', 'melia.com', 'druryhotels.com', 'redroof.com', 'greatwolf.com', 'airbnb.com', 'vrbo.com', 'vacasa.com',
   // Booking sites and card travel portals
   'expedia.com', 'booking.com', 'hotels.com', 'priceline.com', 'orbitz.com', 'travelocity.com', 'kayak.com', 'hopper.com', 'costcotravel.com',
-  'chase.com', 'capitalone.com', 'americanexpress.com', 'aexp.com',
+  'agoda.com', 'trip.com', 'hotwire.com', 'trivago.com', 'traveluro.com', 'hostelworld.com',
+  'chase.com', 'capitalone.com', 'americanexpress.com', 'aexp.com', 'citi.com', 'wellsfargo.com', 'bankofamerica.com', 'bofa.com',
+  'usbank.com', 'barclaycardus.com', 'barclaysus.com', 'discover.com', 'bilt.com',
 ];
-const SUBJECTS = 'subject:(confirmation OR confirmed OR itinerary OR receipt OR reservation OR booking OR "trip to" OR "schedule change" OR cancelled OR canceled)';
+const SUBJECTS = 'subject:(confirmation OR confirmed OR itinerary OR receipt OR reservation OR booking OR booked OR "booking confirmation" OR "hotel confirmation" OR "flight confirmation" OR "travel confirmation" OR "your trip" OR "trip to" OR "upcoming stay" OR "hotel details" OR "flight details" OR "schedule change" OR cancellation OR cancelled OR canceled)';
 
 // The Gmail search for everything after `sinceMs`
 export function gmailQuery(sinceMs) {
@@ -147,10 +152,17 @@ const BRAND_WORDS = [['Marriott', /marriott|sheraton|westin|w hotel|ritz|st\.? r
   ['Hilton', /hilton|hampton|doubletree|embassy suites|conrad|waldorf|canopy|tru by|homewood|home2|curio|tapestry|motto/i], ['Hyatt', /hyatt|andaz|thompson|alila|caption/i],
   ['IHG', /holiday inn|intercontinental|crowne plaza|kimpton|indigo|staybridge|candlewood|avid|six senses|regent/i], ['Wyndham', /wyndham|la quinta|days inn|super 8|ramada|microtel/i],
   ['Choice', /comfort inn|comfort suites|quality inn|sleep inn|clarion|cambria|econo lodge/i], ['Accor', /sofitel|novotel|ibis|fairmont|pullman|mercure|raffles|swiss[oô]tel|movenpick/i],
+  ['Sonesta', /sonesta/i], ['Omni', /omni/i], ['Loews', /loews/i], ['MGM Resorts', /mgm|bellagio|aria|cosmopolitan/i],
+  ['Caesars', /caesars|harrah/i], ['Mandarin Oriental', /mandarin oriental/i], ['Shangri-La', /shangri.la/i], ['Club Med', /club med/i],
+  ['Melia', /melia/i], ['Drury', /drury/i], ['Red Roof', /red roof/i], ['Great Wolf', /great wolf/i],
   ['Best Western', /best western/i], ['Airbnb', /airbnb/i], ['Vrbo', /vrbo/i]];
 export const guessBrand = (name, from = '') => BRAND_WORDS.find(([, re]) => re.test(name) || re.test(from))?.[0] || 'Independent hotel';
 const BOOKERS = [['Chase Travel', /chase/], ['Capital One Travel', /capitalone/], ['Amex Travel', /americanexpress|aexp/], ['Expedia', /expedia/], ['Booking.com', /booking\.com/],
-  ['Hotels.com', /hotels\.com/], ['Costco Travel', /costcotravel/], ['Airbnb', /airbnb/], ['Vrbo', /vrbo/]];
+  ['Hotels.com', /hotels\.com/], ['Costco Travel', /costcotravel/], ['Citi Travel', /citi/], ['Wells Fargo Rewards', /wellsfargo/],
+  ['Bank of America Travel', /bankofamerica|bofa/], ['U.S. Bank Travel', /usbank/], ['Barclays Travel', /barclays|barclaycard/],
+  ['Discover Travel', /discover/], ['Bilt Travel', /bilt/], ['Agoda', /agoda/], ['Trip.com', /trip\.com/], ['Hotwire', /hotwire/],
+  ['Trivago', /trivago/], ['Traveluro', /traveluro/], ['Hostelworld', /hostelworld/], ['Vacasa', /vacasa/],
+  ['Airbnb', /airbnb/], ['Vrbo', /vrbo/]];
 export const guessBooker = (domain) => BOOKERS.find(([, re]) => re.test(domain))?.[0] || 'Direct';
 
 const up = (s) => String(s || '').toUpperCase();

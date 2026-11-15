@@ -12,12 +12,12 @@
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=3';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=4';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const CAP = 500; // emails per sync; a longer backfill carries on next time
-const BACKFILL_VERSION = 1; // One-time rescan for accounts whose old cursor may have skipped emails.
+const BACKFILL_VERSION = 2; // One-time rescan for accounts to pick up newly supported senders and subjects.
 const TOKEN_KEY = 'contrail-gmail-token';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'never');
