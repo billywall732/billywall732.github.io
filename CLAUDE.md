@@ -34,7 +34,7 @@ Workbench: Wall Street Ledger (slug `wall-street-ledger`, local folder `portfoli
 | `/`, `/home/`, `/contact/`, `/privacy/`, `/projects/<slug>/` | this repo |
 | `/contrail/`, `/wallet/`, `/code-breaker/`, `/loop-lab/` | this repo (each app in its own folder) |
 | `/snow-surf-report/` | repo `snow-surf-report` |
-| `/my-budget-ledger/` | repo `my-budget-ledger` (local folder `budget-ledge`) |
+| `/my-budget-ledger/` | repo `my-budget-ledger` (local folder `my-budget-ledger`) |
 | `/fantasy-football/` | built and pushed by the league repo (`fantasy-feetpics`) |
 | Wall Street Ledger, Krillion runner/worker | local folders `portfolio-ledger`, `krillion-code-breaker` (no remotes yet) |
 
@@ -85,3 +85,13 @@ From the repo folder: `py -m http.server 8080` (on this PC `python` is the Windo
 - Contrail Gmail import (restricted Google scope: Testing mode + privacy page update).
 - Update `/privacy/` whenever a feature adds data handling (Gmail import, Wallet Claude chat, Wall Street Ledger on Drive, wedding RSVPs).
 - Wall Wedding RSVPs: embedded Tally form + Cloudflare Worker confirmation email via Tally webhook (needs CSP `frame-src` for Tally).
+
+## Workbench plans (as of 2026-11-12)
+
+Use these when editing project data in `js/projects.js`. Don't invent plans that aren't listed.
+
+- **Wall Wedding** (slug `wall-wedding`, was `happily-ever-wall`): wedding website with an embedded Tally RSVP form, plus a Cloudflare Worker that emails confirmations via Tally's webhook. Needs CSP `frame-src` for Tally and a privacy page update.
+- **Wall Street Ledger** (slug `wall-street-ledger`, was `portfolio-ledger`; local folder is still `portfolio-ledger`): will save to Supabase, not Google Drive. Site copy already says Supabase, but the code still uses Drive. Update the privacy page when it launches.
+- **Loop Lab**: no finalized plans (the site says "Still deciding what comes next").
+- **Keys Boating Report** (slug `keys-boating-report`, name may change): Florida Keys wind/tides/seas boating rating plus activity picks (lobstering, diving, sandbar, offshore fishing), aware of lobster mini season and regular season. Built like Snow & Surf (GitHub Action + NOAA data). No code yet.
+
