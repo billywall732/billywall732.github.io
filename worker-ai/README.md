@@ -35,7 +35,7 @@ The final backstop on cost is the monthly spend limit in the Claude Console.
 node worker-ai/test.mjs
 ```
 
-This needs no network. It runs every gate above against stand-ins: a test signing key, a fake members table, KV and the Claude API.
+This needs no network. It runs every gate above against stand-ins: a test signing key, a fake members table, KV and the Claude API. It also checks the structured-output schema's union limit and retries a transient KV write rate limit.
 
 ## Set it up (once)
 

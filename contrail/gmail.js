@@ -12,7 +12,7 @@
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=2';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
@@ -105,8 +105,10 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     const entries = [];
     let capped = false, stopped = null;
     try {
-      const since = doc.backfillDone && doc.lastSyncAt ? Date.parse(doc.lastSyncAt) - 2 * 864e5 : Date.now() - (Number(doc.years) || 3) * 365.25 * 864e5;
-      const done = new Map((await store.list('processed_emails')).filter((p) => p.status !== 'failed').map((p) => [p.id, p.status]));
+      const processed = await store.list('processed_emails');
+      const hasFailed = processed.some((p) => p.status === 'failed');
+      const since = gmailSince({ backfillDone: doc.backfillDone, lastSyncAt: doc.lastSyncAt, years: doc.years, hasFailed });
+      const done = new Map(processed.filter((p) => p.status !== 'failed').map((p) => [p.id, p.status]));
       // Gmail lists newest first; collect the unchecked ones, then work oldest first so a
       // change or cancellation lands after the booking it changes
       const todo = [];
@@ -151,7 +153,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     } catch (err) {
       if (err instanceof Stop) stopped = err; else { console.error(err); stopped = new Stop("Sync stopped: couldn't reach Gmail or the email reader. Try again in a bit."); }
     }
-    const finished = !stopped && !capped;
+    const finished = !stopped && !capped && counts.failed === 0;
     const summary = `${counts.added} added, ${counts.updated} updated, ${counts.ignored} skipped${counts.failed ? `, ${counts.failed} couldn't be read` : ''}`;
     lastNote = stopped ? stopped.message : capped ? `Checked ${CAP} emails; Sync now carries on with the rest.` : '';
     await save({
