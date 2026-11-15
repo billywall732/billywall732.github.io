@@ -11,7 +11,7 @@ import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
-import { setUpGmail } from '/contrail/gmail.js?v=3';
+import { setUpGmail } from '/contrail/gmail.js?v=4';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
