@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { gmailQuery, gmailSince, guessBrand, guessBooker } from './email-import.js';
+import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain } from './email-import.js';
 
 const now = Date.parse('2026-11-15T18:00:00Z');
 const lastSyncAt = '2026-11-14T18:00:00Z';
@@ -53,7 +53,7 @@ test('search covers card travel portals that mail from their own domains', () =>
 
 test('subject keywords match the missed airline and portal subjects', () => {
   const query = gmailQuery(0);
-  const words = /subject:\((.*?)\) -category/.exec(query)[1].split(' OR ').map((w) => w.replace(/"/g, '').toLowerCase());
+  const words = /\} subject:\((.*?)\) -in:sent/.exec(query)[1].split(' OR ').map((w) => w.replace(/"/g, '').toLowerCase());
   const matches = (subject) => words.some((w) => subject.toLowerCase().includes(w));
   for (const subject of [
     "You're going to Denver on 12/14 (AS7FR6)!", // Southwest
@@ -63,4 +63,31 @@ test('subject keywords match the missed airline and portal subjects', () => {
     'Your reservation details', // Capital One Travel hotel
   ]) assert.ok(matches(subject), `subject should match: ${subject}`);
   assert.ok(query.includes('-category:promotions'), 'marketing mail from the same senders stays out');
+});
+
+// Nov 17, 2026: the Portugal hotels. Two Porto stays were booked by Serena and reached Billy only as
+// her forwards; Capital One Travel's Lisbon email has markup with written-out dates.
+test('search also finds bookings forwarded to the member, but not their own forwards', () => {
+  const query = gmailQuery(0);
+  assert.match(query, /^\{from:\(.*chasetravel\.com.*\) \(subject:\(fwd OR fw\) \(.*chasetravel\.com.*\)\)\} subject:\(/);
+  assert.ok(query.includes('-in:sent'));
+});
+
+test('a forwarded booking counts as from its original sender', () => {
+  const text = 'Serena Tramm\n\n---------- Forwarded message ---------\nFrom: Chase Travel <donotreply@chasetravel.com>\nDate: Wed, Jul 22, 2026 at 2:40 PM\nSubject: Travel Reservation Center Trip ID # 1020860631';
+  assert.equal(forwardedFrom(text), 'donotreply@chasetravel.com');
+  assert.equal(guessBooker(senderDomain(forwardedFrom(text))), 'Chase Travel');
+  assert.equal(forwardedFrom('Hi, WILLIAM. Here is your travel confirmation. From: the Chase Travel team'), '');
+});
+
+test('hotel markup with written-out dates and a one-line address', () => {
+  assert.equal(markupDay('Friday, September 18, 2026'), '2026-09-18');
+  assert.equal(markupDay('18 Sept. 2026'), '2026-09-18');
+  assert.equal(markupDay('2026-09-21T12:00:00+01:00'), '2026-09-21');
+  assert.equal(markupDay('soon'), null);
+  const lisbon = { '@type': 'LodgingReservation', reservationNumber: 'H-VNRH6V2BTTPW', reservationStatus: 'http://schema.org/ReservationConfirmed',
+    reservationFor: { '@type': 'LodgingBusiness', name: 'TURIM Terreiro do Paço Hotel', address: 'Rua do Comércio, 9, Lisbon, LI, PT' },
+    checkinDate: 'Friday, September 18, 2026', checkoutDate: 'Monday, September 21, 2026' };
+  assert.deepEqual(fromMarkup([lisbon], () => null), { kind: 'stay', confirmation: 'H-VNRH6V2BTTPW', cancel_kind: null, legs: [],
+    stay: { name: 'TURIM Terreiro do Paço Hotel', brand: null, city: 'Lisbon', country: 'Portugal', check_in: '2026-09-18', check_out: '2026-09-21', booked_via: null } });
 });
