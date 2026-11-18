@@ -12,12 +12,12 @@
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=4';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=5';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const CAP = 500; // emails per sync; a longer backfill carries on next time
-const BACKFILL_VERSION = 2; // One-time rescan for accounts to pick up newly supported senders and subjects.
+const BACKFILL_VERSION = 3; // One-time rescan for accounts to pick up newly supported senders and subjects (v3, Nov 17 2026: card travel portals, "trip"/"going to" subjects).
 const TOKEN_KEY = 'contrail-gmail-token';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'never');
@@ -104,6 +104,9 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     const started = new Date().toISOString();
     const counts = { added: 0, updated: 0, ignored: 0, failed: 0 };
     const entries = [];
+    // What the search found and why emails were skipped, so a search that's too narrow shows up
+    // in the panel (and the console) instead of trips going missing without a trace
+    const stats = { found: 0, alreadyChecked: 0, toRead: 0, skipped: {} };
     let capped = false, stopped = null;
     try {
       const processed = await store.list('processed_emails');
@@ -117,11 +120,16 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       let page = '';
       do {
         const r = await gmail(`/messages?maxResults=100&q=${encodeURIComponent(gmailQuery(since))}${page ? `&pageToken=${page}` : ''}`, token);
-        for (const m of r.messages || []) if (!done.has(m.id)) { if (todo.length < CAP) todo.push(m.id); else capped = true; }
+        for (const m of r.messages || []) {
+          stats.found++;
+          if (done.has(m.id)) stats.alreadyChecked++;
+          else if (todo.length < CAP) todo.push(m.id); else capped = true;
+        }
         if (todo.length >= CAP && r.nextPageToken) capped = true;
         page = todo.length < CAP ? r.nextPageToken : '';
       } while (page);
       todo.reverse();
+      stats.toRead = todo.length;
       progress = { done: 0, total: todo.length, phase: todo.length ? 'Reading bookings…' : '' }; rerender();
 
       let trips = await store.list('trips'), stays = await store.list('stays');
@@ -149,6 +157,11 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
         }
         await store.put('processed_emails', { id, status: outcome.status, ref: outcome.ref || '', processedAt: new Date().toISOString() });
         counts[outcome.status]++;
+        if (outcome.status === 'ignored' || outcome.status === 'failed') {
+          // Group reasons without the trip name: "Already in Contrail: Lisbon" → "Already in Contrail"
+          const why = String(outcome.label).replace(/:.*$/, '').replace(/ (.*)$/, '');
+          stats.skipped[why] = (stats.skipped[why] || 0) + 1;
+        }
         if (outcome.status !== 'ignored' || entries.length < 60) entries.push({ at: new Date().toISOString(), status: outcome.status, label: outcome.label, ref: outcome.ref || '' });
         progress.done++; paintProgress();
       }
@@ -157,10 +170,12 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     }
     const finished = !stopped && !capped && counts.failed === 0;
     const summary = `${counts.added} added, ${counts.updated} updated, ${counts.ignored} skipped${counts.failed ? `, ${counts.failed} couldn't be read` : ''}`;
+    const lastStats = { ...stats, ...counts, capped, at: new Date().toISOString() };
+    console.info('[Contrail Gmail] sync', lastStats);
     lastNote = stopped ? stopped.message : capped ? `Checked ${CAP} emails; Sync now carries on with the rest.` : '';
     await save({
       lastSyncAt: finished ? started : doc.lastSyncAt, backfillDone: doc.backfillDone || finished,
-      backfillVersion: finished ? BACKFILL_VERSION : doc.backfillVersion, lastResult: summary, lastRunAt: new Date().toISOString(),
+      backfillVersion: finished ? BACKFILL_VERSION : doc.backfillVersion, lastResult: summary, lastStats, lastRunAt: new Date().toISOString(),
       log: [...entries.reverse(), ...(doc.log || [])].slice(0, 80),
     });
     running = false; progress = null; rerender();
@@ -175,6 +190,16 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
   }
 
   // ---------- Settings panel ----------
+  // "Gmail search found 212 emails: 180 checked before, 32 read: 5 added, 1 updated, 26 skipped"
+  // plus the skip reasons, so a too-narrow search is easy to spot
+  function statsHTML(st) {
+    if (!st) return '';
+    const reasons = Object.entries(st.skipped || {}).sort((a, b) => b[1] - a[1]);
+    return `<details class="gmail-log"><summary>Last sync: search found ${st.found} email${st.found === 1 ? '' : 's'}, ${st.toRead} new</summary>
+      <p class="lw" style="margin:6px 0">${st.alreadyChecked} checked in earlier syncs · ${st.added} added · ${st.updated} updated · ${st.ignored} skipped${st.failed ? ` · ${st.failed} couldn't be read` : ''}${st.capped ? ` · stopped at ${CAP}; Sync now carries on` : ''}</p>
+      ${reasons.length ? `<ul class="tl">${reasons.map(([why, n]) => `<li>${esc(why)}: ${n}</li>`).join('')}</ul>` : ''}</details>`;
+  }
+
   function panelHTML() {
     const head = '<h3 style="font-size:20px;text-transform:uppercase">Import from Gmail</h3>';
     if (!ready) return `<div class="panel gmail">${head}<p class="lw" style="margin:0">Gmail import is switched on for your account but isn't set up on the site yet. Check back soon.</p></div>`;
@@ -192,6 +217,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       ${progress ? `<div class="gmail-progress"><progress id="gmailProgress" max="${Math.max(1, progress.total)}" value="${progress.done}"></progress><span class="lw" id="gmailProgressLabel" aria-live="polite">${esc(progress.total ? `${progress.phase} ${progress.done} of ${progress.total}` : progress.phase)}</span></div>` : ''}
       ${lastNote ? `<p class="lw gmail-note" role="status">${esc(lastNote)}</p>` : ''}
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn primary" data-gmail="sync" ${running ? 'disabled' : ''}>${running ? 'Syncing…' : 'Sync now'}</button><button type="button" class="btn" data-gmail="disconnect" ${running ? 'disabled' : ''}>Disconnect</button></div>
+      ${statsHTML(doc.lastStats)}
       ${log.length ? `<details class="gmail-log"><summary>Sync log</summary><ul class="tl">${log.map((e) => `<li><span class="chip gm-${esc(e.status)}">${esc({ added: 'Added', updated: 'Updated', ignored: 'Skipped', failed: 'Not read' }[e.status] || e.status)}</span> ${esc(e.label)} <span class="lw">${esc(when(e.at))}</span></li>`).join('')}</ul></details>` : ''}
     </div>`;
   }

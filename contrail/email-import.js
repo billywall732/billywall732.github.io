@@ -21,12 +21,19 @@ export const SENDERS = [
   'agoda.com', 'trip.com', 'hotwire.com', 'trivago.com', 'traveluro.com', 'hostelworld.com',
   'chase.com', 'capitalone.com', 'americanexpress.com', 'aexp.com', 'citi.com', 'wellsfargo.com', 'bankofamerica.com', 'bofa.com',
   'usbank.com', 'barclaycardus.com', 'barclaysus.com', 'discover.com', 'bilt.com',
+  // Card travel portals mail from their own domains, which from:chase.com / from:capitalone.com
+  // don't match (Gmail matches whole address parts, not substrings). Found missing Nov 17, 2026:
+  // Portugal and Sapporo (Chase Travel), Key West and hotels (Capital One Travel).
+  'chasetravel.com', 'capitalonebooking.com', 'amextravel.com',
 ];
-const SUBJECTS = 'subject:(confirmation OR confirmed OR itinerary OR receipt OR reservation OR booking OR booked OR "booking confirmation" OR "hotel confirmation" OR "flight confirmation" OR "travel confirmation" OR "your trip" OR "trip to" OR "upcoming stay" OR "hotel details" OR "flight details" OR "schedule change" OR cancellation OR cancelled OR canceled)';
+// Subject words. "trip" covers Delta's "Your EYW > LAX Trip Details" and Chase's "Trip ID #";
+// "going to" covers Southwest's "You're going to Denver on 12/14". Marketing from the same senders
+// (which also says "trip") is kept out by skipping Gmail's Promotions tab: bookings land in Updates.
+const SUBJECTS = 'subject:(confirmation OR confirmed OR itinerary OR receipt OR reservation OR booking OR booked OR "booking confirmation" OR "hotel confirmation" OR "flight confirmation" OR "travel confirmation" OR trip OR "going to" OR "upcoming stay" OR "your stay" OR "stay details" OR "hotel details" OR "flight details" OR "e-ticket" OR eticket OR "schedule change" OR cancellation OR cancelled OR canceled)';
 
 // The Gmail search for everything after `sinceMs`
 export function gmailQuery(sinceMs) {
-  return `from:(${SENDERS.join(' OR ')}) ${SUBJECTS} after:${Math.floor(sinceMs / 1000)}`;
+  return `from:(${SENDERS.join(' OR ')}) ${SUBJECTS} -category:promotions after:${Math.floor(sinceMs / 1000)}`;
 }
 
 export function gmailSince({ backfillDone, lastSyncAt, years, hasFailed = false, forceBackfill = false, now = Date.now() }) {
@@ -157,7 +164,7 @@ const BRAND_WORDS = [['Marriott', /marriott|sheraton|westin|w hotel|ritz|st\.? r
   ['Melia', /melia/i], ['Drury', /drury/i], ['Red Roof', /red roof/i], ['Great Wolf', /great wolf/i],
   ['Best Western', /best western/i], ['Airbnb', /airbnb/i], ['Vrbo', /vrbo/i]];
 export const guessBrand = (name, from = '') => BRAND_WORDS.find(([, re]) => re.test(name) || re.test(from))?.[0] || 'Independent hotel';
-const BOOKERS = [['Chase Travel', /chase/], ['Capital One Travel', /capitalone/], ['Amex Travel', /americanexpress|aexp/], ['Expedia', /expedia/], ['Booking.com', /booking\.com/],
+const BOOKERS = [['Chase Travel', /chase/], ['Capital One Travel', /capitalone/], ['Amex Travel', /americanexpress|aexp|amextravel/], ['Expedia', /expedia/], ['Booking.com', /booking\.com/],
   ['Hotels.com', /hotels\.com/], ['Costco Travel', /costcotravel/], ['Citi Travel', /citi/], ['Wells Fargo Rewards', /wellsfargo/],
   ['Bank of America Travel', /bankofamerica|bofa/], ['U.S. Bank Travel', /usbank/], ['Barclays Travel', /barclays|barclaycard/],
   ['Discover Travel', /discover/], ['Bilt Travel', /bilt/], ['Agoda', /agoda/], ['Trip.com', /trip\.com/], ['Hotwire', /hotwire/],
