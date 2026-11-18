@@ -31,9 +31,15 @@ export const SENDERS = [
 // (which also says "trip") is kept out by skipping Gmail's Promotions tab: bookings land in Updates.
 const SUBJECTS = 'subject:(confirmation OR confirmed OR itinerary OR receipt OR reservation OR booking OR booked OR "booking confirmation" OR "hotel confirmation" OR "flight confirmation" OR "travel confirmation" OR trip OR "going to" OR "upcoming stay" OR "your stay" OR "stay details" OR "hotel details" OR "flight details" OR "e-ticket" OR eticket OR "schedule change" OR cancellation OR cancelled OR canceled)';
 
-// The Gmail search for everything after `sinceMs`
+// The Gmail search for everything after `sinceMs`: mail from a booking sender, or a booking
+// someone forwarded to the member. Serena books some stays on her own card and forwards the
+// confirmation (found Nov 17, 2026: two Porto hotel stays from Chase Travel). A forward's From: is
+// a person, so it's matched by "Fwd"/"Fw" in the subject plus a booking sender's domain in the
+// body (the quoted "From:" line). {a b} is Gmail's OR. -in:sent leaves out the member's own
+// forwards: the originals are already in their inbox.
 export function gmailQuery(sinceMs) {
-  return `from:(${SENDERS.join(' OR ')}) ${SUBJECTS} -category:promotions after:${Math.floor(sinceMs / 1000)}`;
+  const senders = `(${SENDERS.join(' OR ')})`;
+  return `{from:${senders} (subject:(fwd OR fw) ${senders})} ${SUBJECTS} -in:sent -category:promotions after:${Math.floor(sinceMs / 1000)}`;
 }
 
 export function gmailSince({ backfillDone, lastSyncAt, years, hasFailed = false, forceBackfill = false, now = Date.now() }) {
@@ -64,6 +70,12 @@ export function messageParts(msg) {
   return { subject: header(msg, 'Subject'), from: header(msg, 'From'), date: header(msg, 'Date'), html, text };
 }
 
+// Who first sent a forwarded email: the address on the quoted "From:" line under Gmail's
+// "---------- Forwarded message ---------" (or Outlook's "Original Message"), or '' if it isn't one
+export function forwardedFrom(text) {
+  const m = /(?:Forwarded message|Original Message)[^\n]*\n(?:[^\n]*\n){0,3}?[\s*]*From:[^\n]*?([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/i.exec(text || '');
+  return m ? m[1] : '';
+}
 export const senderDomain = (from) => (/@([\w.-]+)/.exec(from || '')?.[1] || '').toLowerCase().split('.').slice(-2).join('.');
 
 // ---------- plain text (for Claude) ----------
@@ -125,6 +137,25 @@ function localTime(s, tz) {
   return s.slice(0, 16);
 }
 const cancelled = (o) => /cancel/i.test(val(o.reservationStatus));
+// A markup date as YYYY-MM-DD: ISO ("2026-09-18T15:00") or written out, as Capital One Travel's
+// hotel emails have it ("Friday, September 18, 2026"). Until Nov 17, 2026 the written-out form made
+// the markup unusable, so those emails went to the AI instead.
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+export function markupDay(x) {
+  const s = String(x || '').trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const mdy = /\b([a-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/i.exec(s); // September 18, 2026
+  const dmy = /\b(\d{1,2})\s+([a-z]{3})[a-z]*\.?,?\s+(\d{4})\b/i.exec(s); // 18 September 2026
+  const [mon, d, y] = mdy ? [mdy[1], mdy[2], mdy[3]] : dmy ? [dmy[2], dmy[1], dmy[3]] : [];
+  const i = MONTHS.indexOf(String(mon).toLowerCase());
+  return i < 0 ? null : `${y}-${String(i + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+// A country as a name: "PT" → "Portugal"; anything else as given
+function countryName(c) {
+  const s = String(c || '').trim();
+  if (!/^[A-Z]{2}$/.test(s)) return s;
+  try { return new Intl.DisplayNames(['en'], { type: 'region' }).of(s) || s; } catch { return s; }
+}
 
 // The same shape the Worker returns, or null when there's no usable markup
 export function fromMarkup(items, airport) {
@@ -146,9 +177,13 @@ export function fromMarkup(items, airport) {
     const o = lodging[0], h = o.reservationFor || {}, a = h.address || {};
     const conf = val(o.reservationNumber) || null;
     if (cancelled(o)) return { kind: 'cancellation', confirmation: conf, cancel_kind: 'stay', legs: [], stay: null };
-    const day = (x) => (/^\d{4}-\d{2}-\d{2}/.test(String(x || '')) ? String(x).slice(0, 10) : null);
-    const stay = { name: val(h) || null, brand: null, city: (typeof a === 'object' ? a.addressLocality : '') || null, country: (typeof a === 'object' ? val(a.addressCountry) : '') || null,
-      check_in: day(o.checkinTime || o.checkinDate), check_out: day(o.checkoutTime || o.checkoutDate), booked_via: null };
+    // The address is a PostalAddress, or one line ("Rua do Comércio, 9, Lisbon, LI, PT": street,
+    // number, city, region, country)
+    const line = typeof a === 'object' ? [] : String(a || '').split(',').map((p) => p.trim()).filter(Boolean);
+    const city = typeof a === 'object' ? a.addressLocality : line.length >= 4 ? line[line.length - 3] : line.length === 3 ? line[1] : '';
+    const country = typeof a === 'object' ? val(a.addressCountry) : line.length >= 3 ? line[line.length - 1] : '';
+    const stay = { name: val(h) || null, brand: null, city: city || null, country: countryName(country) || null,
+      check_in: markupDay(o.checkinTime || o.checkinDate), check_out: markupDay(o.checkoutTime || o.checkoutDate), booked_via: null };
     return stay.name && stay.check_in ? { kind: 'stay', confirmation: conf, cancel_kind: null, legs: [], stay } : null;
   }
   return null;

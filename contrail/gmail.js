@@ -12,12 +12,12 @@
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, mergeBooking } from '/contrail/email-import.js?v=5';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, forwardedFrom, mergeBooking } from '/contrail/email-import.js?v=6';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const CAP = 500; // emails per sync; a longer backfill carries on next time
-const BACKFILL_VERSION = 3; // One-time rescan for accounts to pick up newly supported senders and subjects (v3, Nov 17 2026: card travel portals, "trip"/"going to" subjects).
+const BACKFILL_VERSION = 4; // One-time rescan for accounts to pick up newly supported senders and subjects (v3, Nov 17 2026: card travel portals, "trip"/"going to" subjects; v4: forwarded bookings).
 const TOKEN_KEY = 'contrail-gmail-token';
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'never');
@@ -136,10 +136,12 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       for (const id of todo) {
         const msg = await gmail(`/messages/${id}?format=full`, token);
         const parts = messageParts(msg);
-        const domain = senderDomain(parts.from);
+        const text = plainText(parts.html, parts.text);
+        // A forwarded booking counts as from its original sender (Chase Travel, not the person who
+        // forwarded it), so "booked via" and the log name the right company
+        const domain = senderDomain(forwardedFrom(text) || parts.from);
         let result = fromMarkup(markupItems(parts.html), airport);
         if (!result) {
-          const text = plainText(parts.html, parts.text);
           result = text ? await worker({ subject: parts.subject, from: parts.from, date: parts.date, text }) : { kind: 'none' };
         }
         let outcome;
