@@ -38,3 +38,29 @@ test('legacy completed sync can be forced to rescan the configured lookback', ()
 test('an unfinished backfill uses the configured lookback', () => {
   assert.equal(gmailSince({ backfillDone: false, lastSyncAt: null, years: 1, now }), now - 365.25 * 864e5);
 });
+
+// Nov 17, 2026: real booking emails the search missed. Gmail matches from: on whole address parts,
+// so chase.com doesn't cover chasetravel.com; these subjects had none of the old keywords.
+test('search covers card travel portals that mail from their own domains', () => {
+  const query = gmailQuery(0);
+  for (const domain of ['chasetravel.com', 'capitalonebooking.com', 'amextravel.com']) {
+    assert.ok(query.includes(domain), `query should include ${domain}`);
+  }
+  assert.equal(guessBooker('chasetravel.com'), 'Chase Travel');
+  assert.equal(guessBooker('capitalonebooking.com'), 'Capital One Travel');
+  assert.equal(guessBooker('amextravel.com'), 'Amex Travel');
+});
+
+test('subject keywords match the missed airline and portal subjects', () => {
+  const query = gmailQuery(0);
+  const words = /subject:\((.*?)\) -category/.exec(query)[1].split(' OR ').map((w) => w.replace(/"/g, '').toLowerCase());
+  const matches = (subject) => words.some((w) => subject.toLowerCase().includes(w));
+  for (const subject of [
+    "You're going to Denver on 12/14 (AS7FR6)!", // Southwest
+    'Your EYW > LAX Trip Details', // Delta
+    'Travel Reservation Center Trip ID # 1030895012', // Chase Travel
+    'View your flight details for your Key West trip', // Capital One Travel
+    'Your reservation details', // Capital One Travel hotel
+  ]) assert.ok(matches(subject), `subject should match: ${subject}`);
+  assert.ok(query.includes('-category:promotions'), 'marketing mail from the same senders stays out');
+});
