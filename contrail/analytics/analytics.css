@@ -69,3 +69,10 @@
 .contrail-app .an-grid-t td { text-align: center; background: color-mix(in srgb, var(--accent) calc(var(--a) * 70%), transparent); min-width: 34px; }
 .contrail-app .an-grid-t tbody th { font-weight: 500; white-space: nowrap; }
 .contrail-app .an-empty { padding: 14px; border: 1px dashed var(--line); border-radius: 6px; }
+/* Shown from the HTML until the charts draw, so the first paint is never a bare heading */
+.contrail-app .an-loading { display: flex; flex-direction: column; gap: 14px; padding: 20px 0; color: var(--muted); }
+.contrail-app .an-loading p { margin: 0; font-family: var(--f-mono); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.contrail-app .an-skel { height: 220px; border-radius: 10px; background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 50%, var(--surface) 100%); background-size: 200% 100%; animation: an-shimmer 1.4s linear infinite; }
+.contrail-app .an-skel-short { height: 120px; }
+@keyframes an-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .contrail-app .an-skel { animation: none; } }

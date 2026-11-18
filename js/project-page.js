@@ -38,6 +38,8 @@ if (p) {
       h('div', { class: 'project-meta' }, iconTile(p), h('span', { class: 'kicker' }, p.kicker), statusPill(p)),
       h('h1', {}, p.name),
       h('p', { class: 'detail-lede' }, p.tagline),
+      // A plain "not ready yet" line for projects that aren't live (from projects.js)
+      p.notice ? h('p', { class: 'detail-notice' }, p.notice) : null,
       actions(p, { learnMore: false })),
     livePreview(),
     h('div', { class: 'detail-grid' },

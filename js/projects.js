@@ -222,7 +222,9 @@ export const projects = [
       'Sign in with Google and your holdings will save to your own account in Supabase, like the other apps here, where only you can read them.',
     ],
     status: 'rough',
-    statusNote: 'Imports and live prices work; getting it ready to publish.',
+    statusNote: 'Still on the workbench — a sample-data demo is coming.',
+    // Shown under the title on its project page: nothing here is live yet
+    notice: 'Coming soon — I’m building a sample-data demo first. Imports and live prices aren’t ready yet.',
     updated: '2026-11-12',
     next: [
       'Publish it',
@@ -405,14 +407,15 @@ export const projects = [
       'Patterns save to three slots in your browser; the WAV export renders four loops offline.',
     ],
     status: 'workshop',
-    statusNote: 'Six sounds, three save slots and WAV export all work.',
+    statusNote: 'A drum machine in the works — not playable yet.',
+    notice: 'Not built yet, so there’s nothing to try. This is what I’m planning.',
     updated: '2026-11-12',
     next: [
       'Still deciding what comes next',
     ],
     tags: ['JavaScript', 'Web Audio'],
     toolkit: ['Web Audio API', 'localStorage'],
-    url: '/loop-lab/',
+    url: null, // not built yet: no "Open App" or "Try it right here" (the /loop-lab/ folder stays unlinked)
     code: null,
     image: null,
     art: 'steps',

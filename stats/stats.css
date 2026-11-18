@@ -154,3 +154,9 @@
 .hcol { display: grid; grid-template-rows: 1fr auto; height: 100%; min-width: 0; }
 .hcol i { align-self: end; height: var(--h); min-height: 0; border-radius: 3px 3px 0 0; background: var(--brand); }
 .hcol span { font-size: 10px; color: var(--muted); text-align: left; white-space: nowrap; height: 14px; line-height: 14px; overflow: visible; }
+/* Sign-in gate (stats/gate.js): shown instead of the page until the owner signs in */
+.st-gate { padding-block: 64px; }
+.st-gate-card { max-width: 460px; margin: 0 auto; display: grid; gap: 14px; justify-items: start; }
+.st-gate-card h1 { font-size: clamp(30px, 5vw, 44px); margin: 0; }
+.st-gate-card p { margin: 0; }
+.st-link { background: none; border: 0; padding: 0; color: var(--accent, inherit); text-decoration: underline; cursor: pointer; font: inherit; }

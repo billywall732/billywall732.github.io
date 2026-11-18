@@ -40,8 +40,8 @@ const BASE = {
 // parties the code actually calls from the browser; Open-Meteo, NOAA and ESPN are fetched by
 // GitHub Actions, never by visitors' browsers, so they aren't here.
 const ALLOW = {
-  // The stats page reads the stats Worker
-  '/stats/': { 'connect-src': ['https://otw-stats.offthewall-dev.workers.dev'] },
+  // The stats page: sign-in (only the site owner may view it) and the stats Worker
+  '/stats/': { 'connect-src': ['https://otw-stats.offthewall-dev.workers.dev', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'] },
   // The admin page: sign-in and the admin_* database functions in Supabase
   '/admin/': { 'connect-src': ['https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'] },
   // Contrail: D3 + TopoJSON from cdnjs, map outlines from jsDelivr, OpenStreetMap place search,

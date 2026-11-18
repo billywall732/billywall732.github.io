@@ -21,12 +21,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..700&display=swap">
   <link rel="stylesheet" href="/css/site.css">
-  <link rel="stylesheet" href="/stats/stats.css?v=5">
+  <link rel="stylesheet" href="/stats/stats.css?v=6">
   <!-- A fresh copy of the script each visit (GitHub Pages lets browsers keep files for 10 minutes) -->
-  <script type="module">import(`/stats/stats.js?t=${Date.now()}`);</script>
+  <script type="module">import(`/stats/gate.js?t=${Date.now()}`);</script>
 </head>
 <body>
-  <main class="wrap stats-page">
+  <!-- Private: stats/gate.js shows the page only to the site owner signed in with Google -->
+  <div id="st-gate" class="wrap st-gate" aria-live="polite"><p class="stats-note">Checking sign-in…</p></div>
+  <main class="wrap stats-page" hidden>
     <header class="st-head">
       <div class="st-top">
         <p class="eyebrow">Off the Wall · hidden page</p>

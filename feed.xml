@@ -25,7 +25,7 @@
     <updated>2026-11-12T12:00:00Z</updated>
     <category term="workbench" label="On the Workbench"/>
     <summary>A 16-step loop maker with sounds built from scratch in the browser.</summary>
-    <content type="html">&lt;p&gt;A one-bar step sequencer: six sounds, a 16-step grid, tempo, and play. Every sound is synthesized with Web Audio, so there are no samples, no sign-in and nothing uploaded.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Six sounds, three save slots and WAV export all work.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Still deciding what comes next&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;a href=&quot;https://offthewall.dev/loop-lab/&quot;&gt;Open Loop Lab&lt;/a&gt;&lt;/p&gt;</content>
+    <content type="html">&lt;p&gt;A one-bar step sequencer: six sounds, a 16-step grid, tempo, and play. Every sound is synthesized with Web Audio, so there are no samples, no sign-in and nothing uploaded.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; A drum machine in the works — not playable yet.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Still deciding what comes next&lt;/li&gt;&lt;/ul&gt;</content>
   </entry>
   <entry>
     <title>Wall Street Ledger</title>
@@ -34,7 +34,7 @@
     <updated>2026-11-12T12:00:00Z</updated>
     <category term="workbench" label="On the Workbench"/>
     <summary>All your investment accounts in one place, with live prices.</summary>
-    <content type="html">&lt;p&gt;See your investment accounts from different brokers in one place, with live prices and how your mix compares to your targets.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Imports and live prices work; getting it ready to publish.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Publish it&lt;/li&gt;&lt;li&gt;Import from more brokers&lt;/li&gt;&lt;li&gt;Charts of portfolio value over time&lt;/li&gt;&lt;li&gt;A short weekly summary of what changed&lt;/li&gt;&lt;/ul&gt;</content>
+    <content type="html">&lt;p&gt;See your investment accounts from different brokers in one place, with live prices and how your mix compares to your targets.&lt;/p&gt;&lt;p&gt;&lt;strong&gt;On the Workbench:&lt;/strong&gt; Still on the workbench — a sample-data demo is coming.&lt;/p&gt;&lt;p&gt;What’s next:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Publish it&lt;/li&gt;&lt;li&gt;Import from more brokers&lt;/li&gt;&lt;li&gt;Charts of portfolio value over time&lt;/li&gt;&lt;li&gt;A short weekly summary of what changed&lt;/li&gt;&lt;/ul&gt;</content>
   </entry>
   <entry>
     <title>Wall Wedding</title>
