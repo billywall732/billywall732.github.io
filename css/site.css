@@ -777,6 +777,8 @@ footer.wrap { margin-top: 72px; }
 .detail-head .status { margin-left: 0; }
 
 .detail-lede { margin: 14px 0 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); }
+/* "Coming soon — not ready yet" line under the title, for projects that aren't live */
+.detail-notice { margin: 12px 0 0; padding: 8px 12px; font-size: 15px; line-height: 1.5; border-left: 3px solid var(--accent, currentColor); background: color-mix(in srgb, var(--accent, #888) 10%, transparent); border-radius: 0 6px 6px 0; }
 .detail-head .project-actions { padding-top: 24px; }
 .detail-preview { position: relative; isolation: isolate; margin-top: 36px; }
 

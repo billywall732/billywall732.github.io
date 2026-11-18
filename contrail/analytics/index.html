@@ -30,8 +30,8 @@
   <script data-goatcounter="https://offthewall.goatcounter.com/count" data-goatcounter-settings='{"path":"/contrail/analytics/"}' async src="/shared/count.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-  <link rel="stylesheet" href="/contrail/analytics/analytics.css">
-  <script type="module" src="/contrail/analytics/analytics.js?v=5"></script>
+  <link rel="stylesheet" href="/contrail/analytics/analytics.css?v=2">
+  <script type="module" src="/contrail/analytics/analytics.js?v=6"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to analytics</a>
@@ -81,7 +81,7 @@
       </div>
     </nav>
     <nav class="secnav" aria-label="Sections" id="secnav"></nav>
-    <div id="sections" class="an-sections"></div>
+    <div id="sections" class="an-sections"><div class="an-loading" role="status"><p>Loading your trips…</p><div class="an-skel"></div><div class="an-skel an-skel-short"></div></div></div>
     <p class="foot">Built from the trips and stays in Contrail. Miles are great-circle distances between airports; hours in the air come from booked departure and arrival times.</p>
   </div>
   </main>

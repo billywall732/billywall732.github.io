@@ -17,15 +17,18 @@ const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct
 const NOW = Date.now();
 const EARTH = 24901; // miles around the equator
 
-await loadAirports();
-const [WORLD, US] = await Promise.all([
+// Airports, both maps and the sign-in check load side by side (one after another left the page
+// blank for a second or more); the page shows "Loading your trips…" from index.html until render().
+const [, WORLD, US, ACCESS] = await Promise.all([
+  loadAirports(),
   fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json').then((r) => r.json()),
   fetch('https://cdn.jsdelivr.net/npm/us-atlas@3.0.1/states-10m.json').then((r) => r.json()),
+  connectStore('contrail'),
 ]);
 // Approved members see their own trips. Demo: the same sample data as the app (edits made on
 // the app page aren't kept between pages); ?sample=none starts empty, as after "Clear sample
 // data" in Contrail's settings.
-demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'));
+demoBanner($id('demoBanner'), 'Contrail', ACCESS);
 const noSample = new URLSearchParams(location.search).get('sample') === 'none';
 if (store.mode === 'demo') await store.reset(noSample ? { docs: { profile: { homeAirports: ['LAX'] } } } : contrailDemo(airport));
 
