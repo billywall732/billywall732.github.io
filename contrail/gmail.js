@@ -8,11 +8,14 @@
 //   - Booking markup in the email (schema.org) is used as is. Otherwise the email's plain text is
 //     sent to the AI Worker (worker-ai/), which returns the flight, stay or cancellation.
 //   - The result is merged into trips and stays. Email text is never saved; only what was found.
+//   - "Fill in prices" goes back over emails already imported, once, to fill in what was paid
+//     where a trip or stay has none yet (resumable; uses the same daily email-reading allowance).
+//     Card numbers are never kept.
 // After connecting, a sync runs each time Contrail opens while this tab still has Google's
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, forwardedFrom, mergeBooking } from '/contrail/email-import.js?v=7';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, forwardedFrom, mergeBooking, payFrom } from '/contrail/email-import.js?v=8';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
@@ -39,6 +42,13 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
   let doc = (await store.getDoc('gmail')) || { connected: false, years: 3, log: [] };
   let running = false, progress = null, lastNote = '';
   const save = async (patch) => { doc = { ...doc, ...patch }; await store.setDoc('gmail', doc); };
+  // Who the member is on a booking (Settings → "Names on your bookings"; their Google name until set)
+  async function selfNames() {
+    const set = (await store.getDoc('profile'))?.bookingNames;
+    if (Array.isArray(set) && set.length) return set;
+    const auth = await loadAuth();
+    return [auth.profile(await auth.ready)?.name].filter(Boolean);
+  }
 
   // ---------- Google access token (this tab only) ----------
   const readToken = () => { try { const t = JSON.parse(sessionStorage.getItem(TOKEN_KEY) || 'null'); return t && t.exp > Date.now() + 60000 ? t.token : null; } catch { return null; } };
@@ -133,6 +143,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       progress = { done: 0, total: todo.length, phase: todo.length ? 'Reading bookings…' : '' }; rerender();
 
       let trips = await store.list('trips'), stays = await store.list('stays');
+      const names = await selfNames();
       for (const id of todo) {
         const msg = await gmail(`/messages/${id}?format=full`, token);
         const parts = messageParts(msg);
@@ -147,7 +158,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
         let outcome;
         if (result === null) outcome = { status: 'failed', label: `Couldn't read an email from ${domain || 'unknown sender'}` };
         else {
-          outcome = mergeBooking(result, trips, stays, { msgId: id, domain, airport, placeName, home: home(), now: new Date().toISOString() });
+          outcome = mergeBooking(result, trips, stays, { msgId: id, domain, airport, placeName, home: home(), now: new Date().toISOString(), selfNames: names });
           if (outcome.put) {
             const [col, rec] = outcome.put;
             if (col === 'stays' && rec.lat == null && rec.name) Object.assign(rec, (await geocode([rec.name, rec.city, rec.country].filter(Boolean).join(', '))) || (await geocode([rec.city, rec.country].filter(Boolean).join(', '))) || {});
@@ -182,6 +193,52 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
     });
     running = false; progress = null; rerender();
     if (counts.added || counts.updated) toast(`From Gmail: ${summary}`);
+  }
+
+  // ---------- one-time price backfill ----------
+  // Emails already imported (processed_emails added or updated) whose trip or stay has no pay yet
+  // are read again: the markup first (free), otherwise the AI Worker. Progress is saved as it goes
+  // (doc.priceBackfill.done), so a stop (daily limit, Google access ran out) carries on next time.
+  // Only blank pay is filled.
+  async function fillPrices() {
+    if (running || !ready || !doc.connected) return;
+    let token = readToken();
+    if (!token) { try { token = await askGoogle(false); } catch (err) { lastNote = err.message; rerender(); return; } }
+    running = true; lastNote = '';
+    const state = { done: [], filled: 0, ...(doc.priceBackfill || {}) };
+    const done = new Set(state.done);
+    let stopped = null;
+    try {
+      const names = await selfNames();
+      const todo = (await store.list('processed_emails')).filter((p) => (p.status === 'added' || p.status === 'updated') && /^(trips|stays):/.test(p.ref || '') && !done.has(p.id));
+      progress = { done: 0, total: todo.length, phase: 'Filling in prices…' }; rerender();
+      for (const p of todo) {
+        const [col, recId] = p.ref.split(':');
+        const rec = (await store.list(col)).find((r) => r.id === recId);
+        if (rec && !rec.pay) {
+          const parts = messageParts(await gmail(`/messages/${p.id}?format=full`, token));
+          let result = fromMarkup(markupItems(parts.html), airport);
+          if (!result?.paid) {
+            const text = plainText(parts.html, parts.text);
+            const ai = text ? await worker({ subject: parts.subject, from: parts.from, date: parts.date, text }) : null;
+            if (ai === null && text) { progress.done++; paintProgress(); continue; } // couldn't read it: try again next time
+            if (ai?.paid) result = ai;
+          }
+          const pay = payFrom(result?.paid, result?.travelers || [], names);
+          if (pay) { await store.put(col, { ...rec, pay, updatedAt: new Date().toISOString() }); state.filled++; }
+        }
+        done.add(p.id);
+        progress.done++; paintProgress();
+        if (progress.done % 10 === 0) await save({ priceBackfill: { ...state, done: [...done] } });
+      }
+    } catch (err) {
+      stopped = err instanceof Stop ? err : new Stop("Stopped: couldn't reach Gmail or the email reader. Try again in a bit.");
+      if (!(err instanceof Stop)) console.error(err);
+    }
+    const finished = !stopped;
+    await save({ priceBackfill: { ...state, done: [...done], finished, at: new Date().toISOString() } });
+    lastNote = stopped ? `${stopped.message} Prices filled so far: ${state.filled}. Tap Fill in prices to carry on.` : `Prices filled in for ${state.filled} trips and stays.`;
+    running = false; progress = null; rerender();
   }
 
   function paintProgress() {
@@ -219,6 +276,8 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       ${progress ? `<div class="gmail-progress"><progress id="gmailProgress" max="${Math.max(1, progress.total)}" value="${progress.done}"></progress><span class="lw" id="gmailProgressLabel" aria-live="polite">${esc(progress.total ? `${progress.phase} ${progress.done} of ${progress.total}` : progress.phase)}</span></div>` : ''}
       ${lastNote ? `<p class="lw gmail-note" role="status">${esc(lastNote)}</p>` : ''}
       <div class="row" style="justify-content:flex-start"><button type="button" class="btn primary" data-gmail="sync" ${running ? 'disabled' : ''}>${running ? 'Syncing…' : 'Sync now'}</button><button type="button" class="btn" data-gmail="disconnect" ${running ? 'disabled' : ''}>Disconnect</button></div>
+      ${doc.priceBackfill?.finished ? '' : `<p class="lw" style="margin:0">Trips and stays imported before prices were read have none. Fill in prices reads those emails once more and fills in what was paid where it's blank. It uses your daily email-reading allowance and picks up where it left off.</p>
+      <div class="row" style="justify-content:flex-start"><button type="button" class="btn" data-gmail="prices" ${running ? 'disabled' : ''}>Fill in prices</button></div>`}
       ${statsHTML(doc.lastStats)}
       ${log.length ? `<details class="gmail-log"><summary>Sync log</summary><ul class="tl">${log.map((e) => `<li><span class="chip gm-${esc(e.status)}">${esc({ added: 'Added', updated: 'Updated', ignored: 'Skipped', failed: 'Not read' }[e.status] || e.status)}</span> ${esc(e.label)} <span class="lw">${esc(when(e.at))}</span></li>`).join('')}</ul></details>` : ''}
     </div>`;
@@ -237,6 +296,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
       } catch (err) { lastNote = err.message; b.disabled = false; rerender(); }
     }
     if (act === 'sync') await sync({ interactive: true });
+    if (act === 'prices') await fillPrices();
     if (act === 'disconnect') {
       // Revoking any live token from the grant removes Contrail's Gmail access at Google. With no
       // live token in this tab there's nothing to revoke with, so say where to remove it.

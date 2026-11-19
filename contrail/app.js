@@ -11,7 +11,7 @@ import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
-import { setUpGmail } from '/contrail/gmail.js?v=9';
+import { setUpGmail } from '/contrail/gmail.js?v=10';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
@@ -1013,7 +1013,9 @@ function renderSettings() {
       <h3 style="font-size:20px;text-transform:uppercase">You</h3>
       <div class="frow">
         <label class="fl">Name on the log<input name="displayName" maxlength="40" value="${esc(PROFILE.displayName || '')}" placeholder="e.g. Alex & Jordan"></label>
+        <label class="fl">Names on your bookings<input name="bookingNames" maxlength="200" value="${esc((PROFILE.bookingNames || []).join(', '))}" placeholder="e.g. Alex Rivera, Alexander Rivera"></label>
       </div>
+      <p class="lw" style="margin:0">Names on your bookings: how airlines and hotels print your name, separated by commas. Gmail import uses them to tell your bookings from ones you made for others, and to note who else was on a booking.</p>
       <div class="paygrid">${aptField('Home airport', 'home1', homes[0])}${aptField('Second home airport (optional)', 'home2', homes[1] || '')}</div>
       <div class="row"><span class="msg lw" style="margin-right:auto">${where()}</span><button type="submit" class="btn primary">Save</button></div>
     </form>
@@ -1067,7 +1069,8 @@ root.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target, h1 = codeOf(f.home1.value), h2 = codeOf(f.home2.value);
   if (!h1) { f.querySelector('.msg').textContent = 'Pick a home airport from the list.'; return; }
-  await saveProfile({ displayName: f.displayName.value.trim(), homeAirports: [h1, ...(h2 && h2 !== h1 ? [h2] : [])] });
+  const bookingNames = [...new Set(f.bookingNames.value.split(',').map((n) => n.trim().slice(0, 60)).filter(Boolean))].slice(0, 6);
+  await saveProfile({ displayName: f.displayName.value.trim(), bookingNames, homeAirports: [h1, ...(h2 && h2 !== h1 ? [h2] : [])] });
   toast('Settings saved');
 });
 root.addEventListener('change', async (e) => {
