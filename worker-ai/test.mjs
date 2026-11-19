@@ -147,6 +147,21 @@ check('a refusal comes back as kind "none"', r.status === 200 && r.json.result.k
 claudeReply = { stop_reason: 'end_turn', usage: {}, content: [{ type: 'text', text: JSON.stringify({ kind: 'flight', confirmation: 'X', cancel_kind: null, stay: null, legs: [{ airline: 'UA', flight_no: '1', from: 'LOS ANGELES', to: 'SEA', dep_local: 'tomorrow', arr_local: null, aircraft: null, cabin: null }] }) }] };
 r = await call({ auth: good });
 check('malformed legs are dropped (kind becomes "none")', r.status === 200 && r.json.result.kind === 'none');
+// Prices (Nov 19, 2026): the whole booking's total, points and program; never card digits
+const reply = (result) => ({ stop_reason: 'end_turn', usage: {}, content: [{ type: 'text', text: JSON.stringify(result) }] });
+const flight = { kind: 'flight', confirmation: 'AS7FR6', cancel_kind: null, stay: null,
+  legs: [{ airline: 'AS', flight_no: '1234', from: 'LAX', to: 'SEA', dep_local: '2027-03-01T08:00', arr_local: '2027-03-01T10:45', aircraft: '', cabin: '' }] };
+check('schema asks for paid and travelers', !!SCHEMA.properties.paid && !!SCHEMA.properties.travelers && SCHEMA.required.includes('paid') && SCHEMA.required.includes('travelers'));
+claudeReply = reply({ ...flight, paid: { total: 11.2, currency: 'usd', points: 25000, program: 'Alaska Mileage Plan' }, travelers: ['WILLIAM WALL'] });
+r = await call({ auth: good });
+check('cash plus points comes through', r.status === 200 && r.json.result.paid?.total === 11.2 && r.json.result.paid.currency === 'USD' && r.json.result.paid.points === 25000 && r.json.result.paid.program === 'Alaska Mileage Plan', JSON.stringify(r.json.result.paid));
+claudeReply = reply({ ...flight, paid: { total: 0, currency: '', points: 0, program: 'Visa ending 4242' }, travelers: ['William Wall', 'Card 4242 4242 4242 4242', 'Serena Tramm'] });
+r = await call({ auth: good });
+check('nothing paid → paid is null; card digits never get through', r.json.result.paid === null && !JSON.stringify(r.json.result).includes('4242'), JSON.stringify(r.json.result));
+check('travelers kept, names only', JSON.stringify(r.json.result.travelers) === JSON.stringify(['William Wall', 'Serena Tramm']));
+claudeReply = reply({ kind: 'none', confirmation: null, cancel_kind: null, legs: [], stay: null, paid: { total: 50, currency: 'USD', points: 0, program: '' }, travelers: [] });
+r = await call({ auth: good });
+check('no booking → no paid', r.json.result.kind === 'none' && r.json.result.paid === null);
 claudeReply = null;
 
 r = await call({ auth: good, path: '/v1/anything-else' });

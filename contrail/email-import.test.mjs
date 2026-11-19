@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain, mergeBooking } from './email-import.js';
+import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain, mergeBooking, payFrom, isSelf } from './email-import.js';
 
 const now = Date.parse('2026-11-15T18:00:00Z');
 const lastSyncAt = '2026-11-14T18:00:00Z';
@@ -89,7 +89,7 @@ test('hotel markup with written-out dates and a one-line address', () => {
     reservationFor: { '@type': 'LodgingBusiness', name: 'TURIM Terreiro do Paço Hotel', address: 'Rua do Comércio, 9, Lisbon, LI, PT' },
     checkinDate: 'Friday, September 18, 2026', checkoutDate: 'Monday, September 21, 2026' };
   assert.deepEqual(fromMarkup([lisbon], () => null), { kind: 'stay', confirmation: 'H-VNRH6V2BTTPW', cancel_kind: null, legs: [],
-    stay: { name: 'TURIM Terreiro do Paço Hotel', brand: null, city: 'Lisbon', country: 'Portugal', check_in: '2026-09-18', check_out: '2026-09-21', booked_via: null } });
+    stay: { name: 'TURIM Terreiro do Paço Hotel', brand: null, city: 'Lisbon', country: 'Portugal', check_in: '2026-09-18', check_out: '2026-09-21', booked_via: null }, paid: null, travelers: [] });
 });
 
 // ---------- merging flights into a trip (Nov 19, 2026) ----------
@@ -151,4 +151,55 @@ test('a check-in email for one flight updates only that flight, not its connecti
 test('a rerouted return (same start and end) replaces that direction only', () => {
   const out = mergeBooking(email([['1500', 'EYW', 'DFW', '2026-11-10T12:00', '2026-11-10T14:00'], ['1600', 'DFW', 'LAX', '2026-11-10T16:00', '2026-11-10T17:30']]), [keyWest()], [], ctx);
   assert.deepEqual(route(out.put[1]), ['899 LAX-ATL 2026-11-05T22:55', '1281 ATL-EYW 2026-11-06T08:55', '1500 EYW-DFW 2026-11-10T12:00', '1600 DFW-LAX 2026-11-10T16:00']);
+});
+
+// ---------- prices (Nov 19, 2026) ----------
+const me = ['Billy Wall', 'William Wall'];
+const sx = { ...ctx, selfNames: me };
+
+test('your own name matches however the airline prints it', () => {
+  for (const n of ['WILLIAM WALL', 'WALL/WILLIAM MR', 'Mr. William Wall', 'billy wall']) assert.ok(isSelf(n, me), n);
+  for (const n of ['Serena Tramm', 'William Wallace', 'Will Wall']) assert.ok(!isSelf(n, me), n);
+});
+
+test('fixture: a cash-plus-points flight becomes a points + cash payment', () => {
+  const pay = payFrom({ total: 11.2, currency: 'USD', points: 25000, program: 'Alaska Mileage Plan' }, ['WILLIAM WALL'], me);
+  assert.deepEqual(pay, { method: 'mixed', amount: 11.2, points: 25000, program: 'Alaska Mileage Plan' });
+  assert.deepEqual(payFrom({ total: 0, points: 60000, program: 'World of Hyatt' }, [], me), { method: 'points', points: 60000, program: 'World of Hyatt' });
+  assert.equal(payFrom(null, ['Serena Tramm'], me), null);
+});
+
+test('fixture: a two-traveler fare receipt keeps the whole total and says who it was with', () => {
+  const r = { ...email([['1234', 'LAX', 'ATL', '2027-04-01T08:00', '2027-04-01T15:00']], 'TWO222'), paid: { total: 812.4, currency: 'USD', points: null, program: null }, travelers: ['WALL/WILLIAM MR', 'TRAMM/SERENA MS'] };
+  const out = mergeBooking(r, [], [], sx);
+  assert.deepEqual(out.put[1].pay, { method: 'card', amount: 812.4, with: 'Serena Tramm' });
+});
+
+test('fixture: hotel markup with a price, in euros', () => {
+  const html = `<script type="application/ld+json">${JSON.stringify({ '@context': 'http://schema.org', '@type': 'LodgingReservation', reservationNumber: 'H-1', reservationStatus: 'http://schema.org/ReservationConfirmed',
+    underName: { '@type': 'Person', name: 'William Wall' }, totalPrice: '1,234.50', priceCurrency: 'EUR',
+    reservationFor: { '@type': 'LodgingBusiness', name: 'Hotel Porto', address: { '@type': 'PostalAddress', addressLocality: 'Porto', addressCountry: 'PT' } }, checkinDate: '2026-09-21', checkoutDate: '2026-09-24' })}</script>`;
+  const items = [JSON.parse(/<script[^>]*>(.*)<\/script>/s.exec(html)[1])];
+  const r = fromMarkup(items, () => null);
+  assert.deepEqual(r.paid, { total: 1234.5, currency: 'EUR', points: null, program: null });
+  assert.deepEqual(r.travelers, ['William Wall']);
+  const out = mergeBooking(r, [], [], { ...sx, domain: 'hotelporto.pt' });
+  assert.deepEqual(out.put[1].pay, { method: 'card', amount: 1234.5, note: 'Total in EUR' });
+});
+
+test('markup for two passengers adds up each traveler fare once', () => {
+  const res = (name, n, price) => ({ '@type': 'FlightReservation', reservationNumber: 'AB1', underName: { name }, totalPrice: price, priceCurrency: 'USD',
+    reservationFor: { flightNumber: n, airline: { iataCode: 'DL' }, departureAirport: { iataCode: 'LAX' }, arrivalAirport: { iataCode: 'ATL' }, departureTime: `2027-04-0${n}T08:00:00-07:00`, arrivalTime: `2027-04-0${n}T15:00:00-04:00` } });
+  const r = fromMarkup([res('William Wall', 1, 300), res('William Wall', 2, 300), res('Serena Tramm', 1, 300), res('Serena Tramm', 2, 300)], (c) => ({ tz: TZ[c] }));
+  assert.equal(r.paid.total, 600);
+  assert.deepEqual(r.travelers, ['William Wall', 'Serena Tramm']);
+});
+
+test('a price fills pay only when it is empty', () => {
+  const t = { ...keyWest(), pay: { method: 'card', card: 'Venture X', amount: 276 } };
+  const r = { ...email([['899', 'LAX', 'ATL', '2026-11-05T22:55', '2026-11-06T06:10']]), paid: { total: 999, currency: 'USD', points: null, program: null }, travelers: [] };
+  assert.deepEqual(mergeBooking(r, [t], [], sx).put?.[1].pay ?? t.pay, t.pay);
+  const blank = mergeBooking(r, [{ ...keyWest(), pay: null }], [], sx);
+  assert.equal(blank.status, 'updated');
+  assert.deepEqual(blank.put[1].pay, { method: 'card', amount: 999 });
 });

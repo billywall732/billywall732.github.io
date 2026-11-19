@@ -157,8 +157,36 @@ function countryName(c) {
   try { return new Intl.DisplayNames(['en'], { type: 'region' }).of(s) || s; } catch { return s; }
 }
 
-// The same shape the Worker returns, or null when there's no usable markup
+// A price: a number, "1,234.50", "$276.40" or a PriceSpecification { price }
+function priceOf(x) {
+  const v = x && typeof x === 'object' ? x.price ?? x.value : x;
+  const n = typeof v === 'number' ? v : Number(String(v ?? '').replace(/[^\d.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+}
+const personName = (p) => (p && typeof p === 'object' ? p.name || [p.givenName, p.familyName].filter(Boolean).join(' ') : String(p || '')).trim();
+// What the booking cost, from markup: each person's reservation can repeat their fare on every
+// flight, so take each traveler's highest price once and add them up (the whole booking's total)
+function markupPaid(rs) {
+  const byWho = new Map();
+  for (const o of rs) {
+    const n = priceOf(o.totalPrice), who = personName(o.underName);
+    if (n != null) byWho.set(who, Math.max(byWho.get(who) || 0, n));
+  }
+  if (!byWho.size) return null;
+  const cur = rs.map((o) => String(val(o.priceCurrency) || o.totalPrice?.priceCurrency || '').toUpperCase()).find((c) => /^[A-Z]{3}$/.test(c)) || null;
+  return { total: Math.round([...byWho.values()].reduce((a, b) => a + b, 0) * 100) / 100, currency: cur, points: null, program: null };
+}
+const markupNames = (rs) => [...new Set(rs.map((o) => personName(o.underName)).filter(Boolean))];
+
+// The same shape the Worker returns (with paid and travelers), or null when there's no usable markup
 export function fromMarkup(items, airport) {
+  const r = markupBooking(items, airport);
+  if (!r) return null;
+  const rs = items.filter((o) => typesOf(o).some((t) => t === 'FlightReservation' || t === 'LodgingReservation'));
+  const booking = r.kind === 'flight' || r.kind === 'stay';
+  return { ...r, paid: booking ? markupPaid(rs) : null, travelers: booking ? markupNames(rs) : [] };
+}
+function markupBooking(items, airport) {
   const flights = items.filter((o) => typesOf(o).includes('FlightReservation'));
   const lodging = items.filter((o) => typesOf(o).includes('LodgingReservation'));
   if (flights.length) {
@@ -257,9 +285,35 @@ function legsToKeep(old, legs, conf) {
 const reviewNote = (breaks) => (breaks.length ? ` · check it: flights don't connect (${breaks.join(', ')})` : '');
 const legKey = (l) => [l.airline, l.flightNo, l.from, l.to, l.depLocal, l.arrLocal, l.aircraft, l.cabin, l.confirmation].join('|');
 
+// ---------- prices and who traveled ----------
+// A name in comparable words: "WALL/WILLIAM MR" and "Mr. William Wall" are both "william wall"
+const TITLES = new Set(['mr', 'mrs', 'ms', 'miss', 'mx', 'dr']);
+function nameWords(n) {
+  let s = String(n || '').toLowerCase();
+  if (s.includes('/')) { const [last, first] = s.split('/'); s = `${first} ${last}`; } // airlines' "LAST/FIRST"
+  return s.replace(/[^a-z\s'-]/g, ' ').split(/\s+/).filter((w) => w && !TITLES.has(w)).join(' ');
+}
+// Is this traveler the member? selfNames is the profile's "Names on your bookings"
+export const isSelf = (name, selfNames = []) => { const n = nameWords(name); return !!n && selfNames.some((x) => nameWords(x) === n); };
+const tidyName = (n) => nameWords(n).replace(/(^|[\s'-])([a-z])/g, (m, a, c) => a + c.toUpperCase()); // "SERENA TRAMM" → "Serena Tramm"
+
+// The Worker's or markup's paid → the app's pay shape { method, amount, points, program, with, note }.
+// Money and points → mixed, points only → points, money only → card. No card name: the email
+// doesn't say which card, and card numbers are never kept. null when nothing was paid.
+export function payFrom(paid, travelers = [], selfNames = []) {
+  const amount = Number(paid?.total) > 0 ? Number(paid.total) : null, points = Number(paid?.points) > 0 ? Number(paid.points) : null;
+  if (!amount && !points) return null;
+  const others = [...new Set(travelers.filter((t) => !isSelf(t, selfNames)).map(tidyName).filter(Boolean))];
+  return Object.fromEntries(Object.entries({
+    method: amount && points ? 'mixed' : points ? 'points' : 'card', amount, points, program: points ? paid.program || null : null,
+    with: others.length ? others.join(', ') : null, note: amount && paid.currency && paid.currency !== 'USD' ? `Total in ${paid.currency}` : null,
+  }).filter(([, v]) => v != null));
+}
+
 // What to do with one parsed email. Returns { status, label, put?: [collection, record] }.
 //   trips, stays   every record (hidden ones too), as stored
-//   ctx            { msgId, domain, airport, placeName, home, now }
+//   ctx            { msgId, domain, airport, placeName, home, now, selfNames }
+// A price fills `pay` only while it's empty: anything entered by hand stays.
 // Matching: the confirmation code first, then the same flight on the same day (or, for stays,
 // the same name and check-in). Anything the member undid ("Undo import") stays undone.
 export function mergeBooking(result, trips, stays, ctx) {
@@ -267,6 +321,8 @@ export function mergeBooking(result, trips, stays, ctx) {
   const conf = up(result?.confirmation).replace(/[^A-Z0-9]/g, '') || null;
   const confOf = (r) => [r.confirmation, ...(r.legs || []).map((l) => l.confirmation)].map((c) => up(c).replace(/[^A-Z0-9]/g, '')).filter(Boolean);
   const ids = (r) => [...new Set([...(r.emailMessageIds || []), ctx.msgId])];
+  const pay = payFrom(result?.paid, result?.travelers || [], ctx.selfNames || []);
+  const fillPay = (r) => (!r.pay && pay ? { pay } : {});
 
   if (!result || result.kind === 'none') return { status: 'ignored', label: `Not a booking (${ctx.domain || 'unknown sender'})` };
 
@@ -296,12 +352,12 @@ export function mergeBooking(result, trips, stays, ctx) {
       // flights on the trip (the other direction, added by hand, another booking) stay
       const merged = [...legsToKeep(hit.legs || [], legs, conf), ...legs].sort(byTime);
       const same = merged.length === (hit.legs || []).length && merged.map(legKey).join() === [...hit.legs].sort(byTime).map(legKey).join();
-      if (same && !hit.hidden) return { status: 'ignored', label: `Already in Contrail: ${hit.name}` };
+      if (same && !hit.hidden && !fillPay(hit).pay) return { status: 'ignored', label: `Already in Contrail: ${hit.name}` };
       // Saved either way; a trip whose flights don't connect is flagged for a look
       const breaks = legBreaks(merged);
       const { needsReview, ...rest } = hit;
       return { status: 'updated', label: `Updated: ${hit.name}${reviewNote(breaks)}`, ref: `trips:${hit.id}`,
-        put: ['trips', { ...rest, legs: merged, ...(breaks.length ? { needsReview: true } : {}), hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
+        put: ['trips', { ...rest, legs: merged, ...fillPay(hit), ...(breaks.length ? { needsReview: true } : {}), hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
     }
     // A new trip, named for where it goes (the farthest stop that isn't home)
     const stops = legs.map((l) => l.to).filter((c) => c !== ctx.home);
@@ -309,7 +365,7 @@ export function mergeBooking(result, trips, stays, ctx) {
     const name = String(ctx.placeName(dest) || dest).split(',')[0];
     const sorted = [...legs].sort(byTime), breaks = legBreaks(sorted);
     return { status: 'added', label: `Added: ${name} (${legs.length} flight${legs.length === 1 ? '' : 's'})${reviewNote(breaks)}`,
-      put: ['trips', { name, legs: sorted, ...(breaks.length ? { needsReview: true } : {}), source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, tags: [], pay: null, createdAt: now, updatedAt: now }] };
+      put: ['trips', { name, legs: sorted, ...(breaks.length ? { needsReview: true } : {}), source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, tags: [], pay: pay || null, createdAt: now, updatedAt: now }] };
   }
 
   if (result.kind === 'stay' && result.stay) {
@@ -320,11 +376,11 @@ export function mergeBooking(result, trips, stays, ctx) {
     if (hit) {
       if (hit.undone) return { status: 'ignored', label: `You undid ${hit.name}; left as is` };
       const next = { ...hit, ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v)) };
-      const changed = ['name', 'city', 'country', 'checkIn', 'checkOut'].some((k) => next[k] !== hit[k]) || hit.hidden;
+      const changed = ['name', 'city', 'country', 'checkIn', 'checkOut'].some((k) => next[k] !== hit[k]) || hit.hidden || !!fillPay(hit).pay;
       if (!changed) return { status: 'ignored', label: `Already in Contrail: ${hit.name}` };
-      return { status: 'updated', label: `Updated: ${next.name}`, ref: `stays:${hit.id}`, put: ['stays', { ...next, hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
+      return { status: 'updated', label: `Updated: ${next.name}`, ref: `stays:${hit.id}`, put: ['stays', { ...next, ...fillPay(hit), hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
     }
-    return { status: 'added', label: `Added: ${s.name}`, put: ['stays', { ...fields, source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, pay: null, createdAt: now, updatedAt: now }] };
+    return { status: 'added', label: `Added: ${s.name}`, put: ['stays', { ...fields, source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, pay: pay || null, createdAt: now, updatedAt: now }] };
   }
   return { status: 'ignored', label: 'Nothing to log' };
 }
