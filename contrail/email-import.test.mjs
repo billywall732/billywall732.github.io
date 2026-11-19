@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain, mergeBooking, payFrom, isSelf } from './email-import.js';
+import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain, mergeBooking, payFrom, isSelf, placeStay } from './email-import.js';
 
 const now = Date.parse('2026-11-15T18:00:00Z');
 const lastSyncAt = '2026-11-14T18:00:00Z';
@@ -236,4 +236,41 @@ test('no duplicate note for a hidden stay, another city, or back-to-back nights'
   quiet([room('s-1', '2024-11-26', '2024-11-30', { hidden: true })]);
   quiet([room('s-1', '2024-11-26', '2024-11-30', { city: 'Monterey' })]);
   quiet([room('s-1', '2024-11-20', '2024-11-26')]); // checks out the day this one checks in
+});
+
+// ---------- stay pins (Nov 19, 2026) ----------
+const AP = { DEN: { lat: 39.8617, lon: -104.6731 }, LAX: { lat: 33.9425, lon: -118.4081 } };
+const denverTrip = { id: 't1', legs: [leg('1', 'LAX', 'DEN', '2026-01-22T08:00', '2026-01-22T11:30'), leg('2', 'DEN', 'LAX', '2026-01-26T17:00', '2026-01-26T18:45')] };
+const cabin = { name: 'High-End Mountain Cabin', city: 'Winter Park', region: '', country: 'United States', checkIn: '2026-01-22', checkOut: '2026-01-25' };
+const fakeGeo = (answers) => { const calls = []; const fn = async (q, box) => { calls.push({ q, box }); return answers(q, box); }; fn.calls = calls; return fn; };
+const FLORIDA = { lat: 28.59777, lon: -81.35103 }, COLORADO = { lat: 39.91804, lon: -105.78556 };
+
+test('the address is tried first, then name + city + region + country', async () => {
+  const geo = fakeGeo(() => null);
+  await placeStay({ ...cabin, region: 'CO', address: '123 Vasquez Rd' }, [], { geocode: geo, airport: (c) => AP[c] });
+  assert.deepEqual(geo.calls.map((c) => c.q), ['123 Vasquez Rd, Winter Park, CO, United States', 'High-End Mountain Cabin, Winter Park, CO, United States', 'Winter Park, CO, United States']);
+});
+
+test('a pin near the trip destination is kept', async () => {
+  const geo = fakeGeo(() => COLORADO);
+  assert.deepEqual(await placeStay(cabin, [denverTrip], { geocode: geo, airport: (c) => AP[c] }), COLORADO);
+  assert.equal(geo.calls.length, 1);
+});
+
+test('a pin 300+ km from the trip destination is retried inside a box around that airport', async () => {
+  const geo = fakeGeo((q, box) => (box ? COLORADO : FLORIDA));
+  const out = await placeStay(cabin, [denverTrip], { geocode: geo, airport: (c) => AP[c] });
+  assert.deepEqual(out, COLORADO);
+  const boxed = geo.calls.find((c) => c.box);
+  assert.ok(boxed.box[0] < -104.6731 && boxed.box[2] > -104.6731 && boxed.box[1] > 39.8617 && boxed.box[3] < 39.8617, JSON.stringify(boxed.box));
+});
+
+test('still too far after the retry: left unpinned and flagged', async () => {
+  const geo = fakeGeo(() => FLORIDA);
+  assert.deepEqual(await placeStay(cabin, [denverTrip], { geocode: geo, airport: (c) => AP[c] }), { needsPin: 'DEN' });
+});
+
+test('no overlapping trip: the first pin found is used', async () => {
+  const geo = fakeGeo(() => FLORIDA);
+  assert.deepEqual(await placeStay({ ...cabin, checkIn: '2026-06-01', checkOut: '2026-06-03' }, [denverTrip], { geocode: geo, airport: (c) => AP[c] }), FLORIDA);
 });

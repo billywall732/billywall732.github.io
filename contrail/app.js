@@ -11,7 +11,7 @@ import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
-import { setUpGmail } from '/contrail/gmail.js?v=11';
+import { setUpGmail } from '/contrail/gmail.js?v=12';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
@@ -925,16 +925,19 @@ function renderStays() {
 // request a second and caching, so lookups queue up and each answer is kept on the stay.
 const geoCache = new Map();
 let geoLast = 0;
-async function geocode(q) {
+// box: optional [west, north, east, south] to search only inside (Gmail import's retry near the trip's airport)
+async function geocode(q, box) {
   q = q.trim(); if (!q) return null;
-  if (geoCache.has(q)) return geoCache.get(q);
+  const key = box ? `${q}|${box.join(',')}` : q;
+  if (geoCache.has(key)) return geoCache.get(key);
   const wait = Math.max(0, geoLast + 1100 - Date.now()); geoLast = Date.now() + wait;
   if (wait) await new Promise((r) => setTimeout(r, wait));
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
+    const bounded = box ? `&viewbox=${box.map((n) => n.toFixed(4)).join(',')}&bounded=1` : '';
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1${bounded}&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
     const [hit] = res.ok ? await res.json() : [];
     const out = hit ? { lat: +(+hit.lat).toFixed(5), lon: +(+hit.lon).toFixed(5) } : null;
-    geoCache.set(q, out); return out;
+    geoCache.set(key, out); return out;
   } catch { return null; }
 }
 function openStayForm(s) {

@@ -48,6 +48,9 @@ const STAY = obj({
   check_in: text('Check-in date "YYYY-MM-DD"'),
   check_out: text('Check-out date "YYYY-MM-DD"'),
   booked_via: orNull({ type: 'string', enum: BOOKED_VIA }, 'Who the booking was made through; "Direct" for the hotel itself'),
+  // Plain strings ("" = not stated): the schema is at the API's limit of 16 nullable fields
+  region: { type: 'string', description: 'State, province or region, e.g. "CO", "Ontario"; empty string if not stated' },
+  address: { type: 'string', description: 'Street address of the property as printed, without the city; empty string if not stated' },
 });
 // What was paid, for the whole booking. Plain types (0 or "" = not stated), not nullable ones: the
 // schema is at the API's limit of 16 nullable (anyOf) fields.
@@ -202,6 +205,13 @@ export function tidyPaid(p) {
 }
 const tidyNames = (a) => [...new Set((Array.isArray(a) ? a : []).map((n) => noCard(clip(n, 60))).filter(Boolean))].slice(0, 9);
 
+// A car rental the model filed as a stay ("Alamo Fullsize Pickup AWD/4X4"). Brand names count only at
+// the start of the name, and nothing counts next to a hotel word, so "Budget Inn" and "National Hotel" stay stays.
+const CAR_WORDS = /\b(rental car|car rental|rent-a-car|pickup|suv|sedan|minivan|4x4|awd)\b/i;
+const CAR_BRANDS = /^(alamo|hertz|avis|enterprise|national|budget|sixt|thrifty|dollar)\b/i;
+const HOTEL_WORDS = /\b(hotel|inn|suites?|motel|resort|lodge|hostel|apartments?|villa|cabin|house|condo)\b/i;
+export const looksLikeCarRental = (name) => !!name && !HOTEL_WORDS.test(name) && (CAR_WORDS.test(name) || CAR_BRANDS.test(name.trim()));
+
 // Belt and braces on top of the schema: only well-formed values get through
 export function tidy(r) {
   const kind = ['flight', 'stay', 'cancellation', 'none'].includes(r?.kind) ? r.kind : 'none';
@@ -219,8 +229,8 @@ export function tidy(r) {
     const s = r.stay;
     out.stay = { name: clip(s.name, 100), brand: STAY_BRANDS.includes(s.brand) ? s.brand : null, city: clip(s.city, 60), country: clip(s.country, 60),
       check_in: DAY.test(s.check_in || '') ? s.check_in : null, check_out: DAY.test(s.check_out || '') ? s.check_out : null,
-      booked_via: BOOKED_VIA.includes(s.booked_via) ? s.booked_via : null };
-    if (!out.stay.name || !out.stay.check_in) { out.kind = 'none'; out.stay = null; }
+      booked_via: BOOKED_VIA.includes(s.booked_via) ? s.booked_via : null, region: clip(s.region, 40) || '', address: clip(s.address, 120) || '' };
+    if (!out.stay.name || !out.stay.check_in || looksLikeCarRental(out.stay.name)) { out.kind = 'none'; out.stay = null; }
   } else if (kind === 'stay') out.kind = 'none';
   // Prices and names only with a booking
   const booking = out.kind === 'flight' || out.kind === 'stay';

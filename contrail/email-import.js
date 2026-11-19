@@ -370,7 +370,7 @@ export function mergeBooking(result, trips, stays, ctx) {
 
   if (result.kind === 'stay' && result.stay) {
     const s = result.stay;
-    const fields = { name: s.name, brand: s.brand || guessBrand(s.name, ctx.domain), city: s.city || '', country: s.country || '', checkIn: s.check_in, checkOut: s.check_out || '',
+    const fields = { name: s.name, brand: s.brand || guessBrand(s.name, ctx.domain), city: s.city || '', region: s.region || '', address: s.address || '', country: s.country || '', checkIn: s.check_in, checkOut: s.check_out || '',
       bookedVia: s.booked_via || guessBooker(ctx.domain), confirmation: conf || '' };
     const hit = (conf && stays.find((x) => confOf(x).includes(conf))) || stays.find((x) => x.name && up(x.name) === up(s.name) && x.checkIn === s.check_in);
     if (hit) {
@@ -392,6 +392,38 @@ export function mergeBooking(result, trips, stays, ctx) {
   }
   return { status: 'ignored', label: 'Nothing to log' };
 }
+// ---------- placing a stay on the map ----------
+// Kilometres between two { lat, lon }
+export function km(a, b) {
+  const r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+// The airport a trip was headed to when the stay began: the last arrival on or before check-in
+function destinationFor(stay, trips) {
+  const span = (t) => { const d = (t.legs || []).map(legDay).filter(Boolean).sort(); return [d[0], d[d.length - 1]]; };
+  const trip = trips.find((t) => { if (t.hidden) return false; const [a, b] = span(t); return a && a <= (stay.checkOut || stay.checkIn) && stay.checkIn <= b; });
+  if (!trip) return null;
+  const legs = [...trip.legs].sort(byTime), before = legs.filter((l) => String(l.arrLocal || l.depLocal || '').slice(0, 10) <= stay.checkIn);
+  return (before[before.length - 1] || legs[0])?.to || null;
+}
+// Pin a stay: the address first, then name + city + region + country, then the town. If the stay
+// overlaps a trip and the pin is 300+ km from where that trip flew to, try again inside a box around
+// that airport; still too far: { needsPin: airport code } (left unpinned and flagged).
+// geocode(query, box?) gives { lat, lon } or null; box = [west, north, east, south].
+export async function placeStay(stay, trips, { geocode, airport }) {
+  const where = [stay.city, stay.region, stay.country];
+  const queries = [stay.address && [stay.address, ...where], stay.name && [stay.name, ...where], stay.city && where]
+    .filter(Boolean).map((parts) => parts.filter(Boolean).join(', '));
+  const first = async (box) => { for (const q of queries) { const hit = await geocode(q, box); if (hit) return hit; } return null; };
+  const hit = await first();
+  const code = destinationFor(stay, trips), ap = code && airport(code);
+  if (!ap || (hit && km(hit, ap) <= 300)) return hit;
+  const box = [ap.lon - 2, ap.lat + 1.5, ap.lon + 2, ap.lat - 1.5];
+  const near = await first(box);
+  return near && km(near, ap) <= 300 ? near : { needsPin: code };
+}
+
 function dist(ctx, a, b) {
   const A = ctx.airport(a), B = ctx.airport(b);
   if (!A || !B) return 0;
