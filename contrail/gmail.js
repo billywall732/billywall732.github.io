@@ -15,7 +15,7 @@
 // access (browsers block Google's pop-up unless you tap), and "Sync now" runs one any time.
 import { config } from '/shared/config.js?v=2';
 import { loadAuth } from '/shared/auth-loader.js';
-import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, forwardedFrom, mergeBooking, payFrom } from '/contrail/email-import.js?v=9';
+import { gmailQuery, gmailSince, markupItems, fromMarkup, messageParts, plainText, senderDomain, forwardedFrom, mergeBooking, payFrom, placeStay } from '/contrail/email-import.js?v=10';
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
@@ -161,7 +161,11 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
           outcome = mergeBooking(result, trips, stays, { msgId: id, domain, airport, placeName, home: home(), now: new Date().toISOString(), selfNames: names });
           if (outcome.put) {
             const [col, rec] = outcome.put;
-            if (col === 'stays' && rec.lat == null && rec.name) Object.assign(rec, (await geocode([rec.name, rec.city, rec.country].filter(Boolean).join(', '))) || (await geocode([rec.city, rec.country].filter(Boolean).join(', '))) || {});
+            if (col === 'stays' && rec.lat == null && rec.name) {
+              const pin = await placeStay(rec, trips, { geocode, airport });
+              if (pin?.needsPin) { rec.needsReview = true; outcome.label += ` · couldn't place it on the map near ${pin.needsPin}; check the city`; }
+              else if (pin) Object.assign(rec, pin);
+            }
             const saved = await store.put(col, rec);
             outcome.ref = `${col}:${saved.id}`;
             if (col === 'trips') trips = [...trips.filter((t) => t.id !== saved.id), saved];

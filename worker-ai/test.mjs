@@ -162,6 +162,24 @@ check('travelers kept, names only', JSON.stringify(r.json.result.travelers) === 
 claudeReply = reply({ kind: 'none', confirmation: null, cancel_kind: null, legs: [], stay: null, paid: { total: 50, currency: 'USD', points: 0, program: '' }, travelers: [] });
 r = await call({ auth: good });
 check('no booking → no paid', r.json.result.kind === 'none' && r.json.result.paid === null);
+// Stays: region and address (Nov 19, 2026); a car rental is not a stay
+const stayReply = (stay) => reply({ kind: 'stay', confirmation: 'C1', cancel_kind: null, legs: [], paid: { total: 0, currency: '', points: 0, program: '' }, travelers: [],
+  stay: { brand: null, city: 'Winter Park', country: 'United States', check_in: '2026-01-22', check_out: '2026-01-25', booked_via: null, region: 'CO', address: '', ...stay } });
+check('stay schema asks for region and address', ['region', 'address'].every((k) => SCHEMA.properties.stay.anyOf[0].properties[k]?.type === 'string'));
+claudeReply = stayReply({ name: 'High-End Mountain Cabin', address: '123 Vasquez Rd' });
+r = await call({ auth: good });
+check('region and address come through', r.json.result.stay?.region === 'CO' && r.json.result.stay.address === '123 Vasquez Rd', JSON.stringify(r.json.result.stay));
+claudeReply = stayReply({ name: '', region: '', address: '' });
+for (const name of ['Alamo Fullsize Pickup AWD/4X4 (Denver International Airport rental)', 'Hertz', 'Enterprise Rent-A-Car', 'Rental car at DEN', 'Sixt SUV']) {
+  claudeReply = stayReply({ name });
+  r = await call({ auth: good });
+  check(`car rental is not a stay: ${name}`, r.json.result.kind === 'none' && r.json.result.stay === null, JSON.stringify(r.json.result));
+}
+for (const name of ['Budget Inn Sacramento', 'National Hotel Miami Beach', 'Hilton Garden Inn Avis Way']) {
+  claudeReply = stayReply({ name });
+  r = await call({ auth: good });
+  check(`a hotel is still a stay: ${name}`, r.json.result.kind === 'stay', JSON.stringify(r.json.result));
+}
 claudeReply = null;
 
 r = await call({ auth: good, path: '/v1/anything-else' });
