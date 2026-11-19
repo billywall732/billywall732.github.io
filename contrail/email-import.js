@@ -380,7 +380,15 @@ export function mergeBooking(result, trips, stays, ctx) {
       if (!changed) return { status: 'ignored', label: `Already in Contrail: ${hit.name}` };
       return { status: 'updated', label: `Updated: ${next.name}`, ref: `stays:${hit.id}`, put: ['stays', { ...next, ...fillPay(hit), hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
     }
-    return { status: 'added', label: `Added: ${s.name}`, put: ['stays', { ...fields, source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, pay: pay || null, createdAt: now, updatedAt: now }] };
+    // Booked for other people (guests named, the member not among them): kept, but hidden
+    const guests = result.travelers || [], self = ctx.selfNames || [];
+    const forOthers = guests.length > 0 && self.length > 0 && !guests.some((g) => isSelf(g, self));
+    // Same city, overlapping nights, still showing: often a second room or a rebooking. Logged, not merged.
+    const twin = forOthers ? null : stays.find((x) => !x.hidden && x.city && up(x.city) === up(fields.city) && x.checkIn && fields.checkIn
+      && x.checkIn < (fields.checkOut || fields.checkIn) && fields.checkIn < (x.checkOut || x.checkIn));
+    const note = forOthers ? ` (hidden: booked for ${guests.join(', ')})` : twin ? ` · Possible duplicate of ${twin.name} (${twin.checkIn} to ${twin.checkOut})` : '';
+    return { status: 'added', label: `Added: ${s.name}${note}`,
+      put: ['stays', { ...fields, source: 'gmail', emailMessageIds: [ctx.msgId], hidden: forOthers, ...(forOthers ? { forOthers: true } : {}), pay: pay || null, createdAt: now, updatedAt: now }] };
   }
   return { status: 'ignored', label: 'Nothing to log' };
 }
