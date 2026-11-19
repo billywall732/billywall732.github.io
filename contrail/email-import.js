@@ -208,7 +208,46 @@ const BOOKERS = [['Chase Travel', /chase/], ['Capital One Travel', /capitalone/]
 export const guessBooker = (domain) => BOOKERS.find(([, re]) => re.test(domain))?.[0] || 'Direct';
 
 const up = (s) => String(s || '').toUpperCase();
-const sameLeg = (a, b) => a.airline && a.airline === b.airline && a.flightNo && a.flightNo === b.flightNo && String(a.depLocal).slice(0, 10) === String(b.depLocal).slice(0, 10);
+// A leg's day: its departure, or its arrival when only that is known (Sapporo's legs, Nov 2026)
+const legDay = (l) => String(l.depLocal || l.arrLocal || '').slice(0, 10);
+const dayMs = (d) => Date.parse(`${d}T00:00:00Z`);
+const sameLeg = (a, b) => a.airline && a.airline === b.airline && a.flightNo && a.flightNo === b.flightNo && legDay(a) && legDay(a) === legDay(b);
+const byTime = (a, b) => (legDay(a) + String(a.depLocal || a.arrLocal)).localeCompare(legDay(b) + String(b.depLocal || b.arrLocal));
+
+// Legs a day or less apart are one direction; within a direction each flight should leave from
+// where the last one landed. Returns the breaks as "ATL→DFW" (empty when everything connects).
+export function legBreaks(legs) {
+  const out = [];
+  for (let i = 1; i < legs.length; i++) {
+    const a = legs[i - 1], b = legs[i];
+    const sameDirection = legDay(a) && legDay(b) && dayMs(legDay(b)) - dayMs(legDay(a)) <= 864e5;
+    if (sameDirection && a.to !== b.from) out.push(`${a.to}→${b.from}`);
+  }
+  return out;
+}
+
+// Which of a trip's legs a new email replaces. The email covers the whole booking when it starts
+// and ends on the booking's first and last days, or goes out and comes back (a schedule change
+// listing both directions): then every leg on that confirmation goes. Otherwise (a one-way "trip
+// details" or check-in email) only that confirmation's legs within a day of the email's dates go.
+// The same flight on the same day always goes, whatever its confirmation.
+function legsToKeep(old, legs, conf) {
+  const confOfLeg = (l) => up(l.confirmation).replace(/[^A-Z0-9]/g, '');
+  const booking = conf ? old.filter((l) => confOfLeg(l) === conf) : [];
+  const days = (ls) => ls.map(legDay).filter(Boolean).sort();
+  const nd = days(legs), bd = days(booking);
+  const roundTrip = legs.length > 1 && legs[0].from === legs[legs.length - 1].to;
+  const whole = !bd.length || roundTrip || (nd[0] === bd[0] && nd[nd.length - 1] === bd[bd.length - 1]);
+  const lo = dayMs(nd[0]) - 864e5, hi = dayMs(nd[nd.length - 1]) + 864e5;
+  return old.filter((a) => {
+    if (legs.some((b) => sameLeg(a, b))) return false;
+    if (!conf || confOfLeg(a) !== conf) return true;
+    if (whole) return false;
+    const d = legDay(a);
+    return !d || dayMs(d) < lo || dayMs(d) > hi;
+  });
+}
+const reviewNote = (breaks) => (breaks.length ? ` · check it: flights don't connect (${breaks.join(', ')})` : '');
 const legKey = (l) => [l.airline, l.flightNo, l.from, l.to, l.depLocal, l.arrLocal, l.aircraft, l.cabin, l.confirmation].join('|');
 
 // What to do with one parsed email. Returns { status, label, put?: [collection, record] }.
@@ -246,20 +285,24 @@ export function mergeBooking(result, trips, stays, ctx) {
     const hit = (conf && trips.find((t) => confOf(t).includes(conf))) || trips.find((t) => (t.legs || []).some((a) => legs.some((b) => sameLeg(a, b))));
     if (hit) {
       if (hit.undone) return { status: 'ignored', label: `You undid ${hit.name}; left as is` };
-      // This booking's flights as they now stand replace the ones it had before; any other
-      // flights on the trip (added by hand, another booking) stay
-      const keep = (hit.legs || []).filter((a) => !(conf && up(a.confirmation).replace(/[^A-Z0-9]/g, '') === conf) && !legs.some((b) => sameLeg(a, b)));
-      const merged = [...keep, ...legs].sort((a, b) => String(a.depLocal).localeCompare(String(b.depLocal)));
-      const same = merged.length === (hit.legs || []).length && merged.map(legKey).join() === [...hit.legs].sort((a, b) => String(a.depLocal).localeCompare(String(b.depLocal))).map(legKey).join();
+      // The flights this email covers replace the ones it had before (see legsToKeep); any other
+      // flights on the trip (the other direction, added by hand, another booking) stay
+      const merged = [...legsToKeep(hit.legs || [], legs, conf), ...legs].sort(byTime);
+      const same = merged.length === (hit.legs || []).length && merged.map(legKey).join() === [...hit.legs].sort(byTime).map(legKey).join();
       if (same && !hit.hidden) return { status: 'ignored', label: `Already in Contrail: ${hit.name}` };
-      return { status: 'updated', label: `Updated: ${hit.name}`, ref: `trips:${hit.id}`, put: ['trips', { ...hit, legs: merged, hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
+      // Saved either way; a trip whose flights don't connect is flagged for a look
+      const breaks = legBreaks(merged);
+      const { needsReview, ...rest } = hit;
+      return { status: 'updated', label: `Updated: ${hit.name}${reviewNote(breaks)}`, ref: `trips:${hit.id}`,
+        put: ['trips', { ...rest, legs: merged, ...(breaks.length ? { needsReview: true } : {}), hidden: false, cancelled: false, emailMessageIds: ids(hit), updatedAt: now }] };
     }
     // A new trip, named for where it goes (the farthest stop that isn't home)
     const stops = legs.map((l) => l.to).filter((c) => c !== ctx.home);
     const dest = stops.length ? stops.reduce((a, b) => (dist(ctx, legs[0].from, b) > dist(ctx, legs[0].from, a) ? b : a)) : legs[0].to;
     const name = String(ctx.placeName(dest) || dest).split(',')[0];
-    return { status: 'added', label: `Added: ${name} (${legs.length} flight${legs.length === 1 ? '' : 's'})`,
-      put: ['trips', { name, legs, source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, tags: [], pay: null, createdAt: now, updatedAt: now }] };
+    const sorted = [...legs].sort(byTime), breaks = legBreaks(sorted);
+    return { status: 'added', label: `Added: ${name} (${legs.length} flight${legs.length === 1 ? '' : 's'})${reviewNote(breaks)}`,
+      put: ['trips', { name, legs: sorted, ...(breaks.length ? { needsReview: true } : {}), source: 'gmail', emailMessageIds: [ctx.msgId], hidden: false, tags: [], pay: null, createdAt: now, updatedAt: now }] };
   }
 
   if (result.kind === 'stay' && result.stay) {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain } from './email-import.js';
+import { gmailQuery, gmailSince, guessBrand, guessBooker, fromMarkup, markupDay, forwardedFrom, senderDomain, mergeBooking } from './email-import.js';
 
 const now = Date.parse('2026-11-15T18:00:00Z');
 const lastSyncAt = '2026-11-14T18:00:00Z';
@@ -90,4 +90,54 @@ test('hotel markup with written-out dates and a one-line address', () => {
     checkinDate: 'Friday, September 18, 2026', checkoutDate: 'Monday, September 21, 2026' };
   assert.deepEqual(fromMarkup([lisbon], () => null), { kind: 'stay', confirmation: 'H-VNRH6V2BTTPW', cancel_kind: null, legs: [],
     stay: { name: 'TURIM Terreiro do Paço Hotel', brand: null, city: 'Lisbon', country: 'Portugal', check_in: '2026-09-18', check_out: '2026-09-21', booked_via: null } });
+});
+
+// ---------- merging flights into a trip (Nov 19, 2026) ----------
+// A one-way "trip details" or check-in email used to wipe every leg on the same confirmation, so
+// the Sapporo and Key West trips lost a direction.
+const TZ = { LAX: 'America/Los_Angeles', ATL: 'America/New_York', EYW: 'America/New_York', DFW: 'America/Chicago', HND: 'Asia/Tokyo', CTS: 'Asia/Tokyo' };
+const ctx = { msgId: 'm2', domain: 'delta.com', airport: (c) => (TZ[c] ? { tz: TZ[c], lat: 0, lon: 0 } : null), placeName: (c) => c, home: 'LAX', now: '2026-11-19T00:00:00.000Z' };
+const leg = (flightNo, from, to, depLocal, arrLocal, conf = 'ABC123') => Object.fromEntries(Object.entries({ airline: 'DL', flightNo, from, to, depLocal, arrLocal, depTz: TZ[from], arrTz: TZ[to], confirmation: conf }).filter(([, v]) => v));
+const email = (legs, confirmation = 'ABC123') => ({ kind: 'flight', confirmation, cancel_kind: null, stay: null,
+  legs: legs.map(([n, from, to, dep, arr]) => ({ airline: 'DL', flight_no: n, from, to, dep_local: dep, arr_local: arr, aircraft: '', cabin: '' })) });
+const keyWest = () => ({ id: 't1', name: 'Key West', emailMessageIds: ['m1'], legs: [
+  leg('899', 'LAX', 'ATL', '2026-11-05T22:55', '2026-11-06T06:10'), leg('1281', 'ATL', 'EYW', '2026-11-06T08:55', '2026-11-06T10:47'),
+  leg('1282', 'EYW', 'ATL', '2026-11-10T11:30', '2026-11-10T13:20'), leg('900', 'ATL', 'LAX', '2026-11-10T15:00', '2026-11-10T17:05')] });
+const route = (t) => t.legs.map((l) => `${l.flightNo} ${l.from}-${l.to} ${l.depLocal ?? ''}`);
+
+test('a return-only email keeps the outbound flights of the same booking', () => {
+  const out = mergeBooking(email([['1282', 'EYW', 'ATL', '2026-11-10T11:45', '2026-11-10T13:35'], ['900', 'ATL', 'LAX', '2026-11-10T15:00', '2026-11-10T17:05']]), [keyWest()], [], ctx);
+  assert.equal(out.status, 'updated');
+  const t = out.put[1];
+  assert.deepEqual(route(t), ['899 LAX-ATL 2026-11-05T22:55', '1281 ATL-EYW 2026-11-06T08:55', '1282 EYW-ATL 2026-11-10T11:45', '900 ATL-LAX 2026-11-10T15:00']);
+  assert.ok(!t.needsReview);
+});
+
+test('legs with only an arrival time are kept when a one-way email arrives (Sapporo)', () => {
+  const sapporo = { id: 't2', name: 'Sapporo', legs: [leg('105', 'LAX', 'HND', '2027-02-05T00:10', null, 'JDWC1P'), leg('53', 'HND', 'CTS', null, '2027-02-06T09:30', 'JDWC1P'),
+    leg('82', 'CTS', 'HND', '2027-02-15T20:30', null, 'JDWC1P'), leg('106', 'HND', 'LAX', null, '2027-02-15T17:50', 'JDWC1P')] };
+  const out = mergeBooking(email([['82', 'CTS', 'HND', '2027-02-15T20:30', '2027-02-15T22:05'], ['106', 'HND', 'LAX', '2027-02-15T23:55', '2027-02-15T17:50']], 'JDWC1P'), [sapporo], [], ctx);
+  assert.deepEqual(out.put[1].legs.map((l) => l.flightNo), ['105', '53', '82', '106']);
+  assert.equal(out.put[1].legs[2].arrLocal, '2027-02-15T22:05');
+});
+
+test('a schedule change listing both directions still replaces every leg', () => {
+  const out = mergeBooking(email([['899', 'LAX', 'ATL', '2026-11-06T22:55', '2026-11-07T06:10'], ['1281', 'ATL', 'EYW', '2026-11-07T08:55', '2026-11-07T10:47'],
+    ['1282', 'EYW', 'ATL', '2026-11-11T11:30', '2026-11-11T13:20'], ['900', 'ATL', 'LAX', '2026-11-11T15:00', '2026-11-11T17:05']]), [keyWest()], [], ctx);
+  assert.deepEqual(route(out.put[1]), ['899 LAX-ATL 2026-11-06T22:55', '1281 ATL-EYW 2026-11-07T08:55', '1282 EYW-ATL 2026-11-11T11:30', '900 ATL-LAX 2026-11-11T15:00']);
+});
+
+test('the full booking again (same first and last day) replaces every leg', () => {
+  const out = mergeBooking(email([['899', 'LAX', 'ATL', '2026-11-05T23:05', '2026-11-06T06:20'], ['1281', 'ATL', 'EYW', '2026-11-06T08:55', '2026-11-06T10:47'],
+    ['1282', 'EYW', 'ATL', '2026-11-10T11:30', '2026-11-10T13:20']]), [keyWest()], [], ctx);
+  assert.deepEqual(out.put[1].legs.map((l) => l.flightNo), ['899', '1281', '1282']);
+});
+
+test('flights that do not connect are saved but flagged for review', () => {
+  const out = mergeBooking(email([['10', 'LAX', 'ATL', '2026-12-01T08:00', '2026-12-01T15:00'], ['11', 'DFW', 'EYW', '2026-12-01T17:00', '2026-12-01T20:00']], 'NEW999'), [], [], ctx);
+  assert.equal(out.status, 'added');
+  assert.equal(out.put[1].needsReview, true);
+  assert.match(out.label, /don.t connect/);
+  const ok = mergeBooking(email([['899', 'LAX', 'ATL', '2026-11-05T22:55', '2026-11-06T06:10']]), [keyWest()], [], ctx);
+  assert.ok(!(ok.put?.[1].needsReview), 'a connected trip is not flagged');
 });
