@@ -226,10 +226,13 @@ export function legBreaks(legs) {
   return out;
 }
 
-// Which of a trip's legs a new email replaces. The email covers the whole booking when it starts
-// and ends on the booking's first and last days, or goes out and comes back (a schedule change
-// listing both directions): then every leg on that confirmation goes. Otherwise (a one-way "trip
-// details" or check-in email) only that confirmation's legs within a day of the email's dates go.
+// Which of a trip's legs a new email replaces, for legs on the email's confirmation:
+//   - the whole booking (the email starts and ends on the booking's first and last days, or goes
+//     out and comes back, as a schedule change listing both directions does): every leg
+//   - a whole direction (the booking's legs within a day of the email's dates start and end where
+//     the email does: a "trip details" email for the return, or a rerouted return): that direction
+//   - part of a direction (a check-in email for one flight): only the flights it names, so the
+//     connection it doesn't mention stays
 // The same flight on the same day always goes, whatever its confirmation.
 function legsToKeep(old, legs, conf) {
   const confOfLeg = (l) => up(l.confirmation).replace(/[^A-Z0-9]/g, '');
@@ -239,12 +242,16 @@ function legsToKeep(old, legs, conf) {
   const roundTrip = legs.length > 1 && legs[0].from === legs[legs.length - 1].to;
   const whole = !bd.length || roundTrip || (nd[0] === bd[0] && nd[nd.length - 1] === bd[bd.length - 1]);
   const lo = dayMs(nd[0]) - 864e5, hi = dayMs(nd[nd.length - 1]) + 864e5;
+  const inWindow = (a) => { const d = legDay(a); return d && dayMs(d) >= lo && dayMs(d) <= hi; };
+  const nearby = booking.filter(inWindow).sort(byTime), sorted = [...legs].sort(byTime);
+  const direction = nearby.length > 0 && nearby[0].from === sorted[0].from && nearby[nearby.length - 1].to === sorted[sorted.length - 1].to;
+  const named = (a) => legs.some((b) => b.airline === a.airline && b.flightNo && b.flightNo === a.flightNo);
   return old.filter((a) => {
     if (legs.some((b) => sameLeg(a, b))) return false;
     if (!conf || confOfLeg(a) !== conf) return true;
     if (whole) return false;
-    const d = legDay(a);
-    return !d || dayMs(d) < lo || dayMs(d) > hi;
+    if (!inWindow(a)) return true;
+    return !(direction || named(a));
   });
 }
 const reviewNote = (breaks) => (breaks.length ? ` · check it: flights don't connect (${breaks.join(', ')})` : '');

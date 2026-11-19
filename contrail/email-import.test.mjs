@@ -141,3 +141,14 @@ test('flights that do not connect are saved but flagged for review', () => {
   const ok = mergeBooking(email([['899', 'LAX', 'ATL', '2026-11-05T22:55', '2026-11-06T06:10']]), [keyWest()], [], ctx);
   assert.ok(!(ok.put?.[1].needsReview), 'a connected trip is not flagged');
 });
+
+test('a check-in email for one flight updates only that flight, not its connection', () => {
+  const out = mergeBooking(email([['899', 'LAX', 'ATL', '2026-11-05T23:10', '2026-11-06T06:25']]), [keyWest()], [], ctx);
+  assert.deepEqual(route(out.put[1]), ['899 LAX-ATL 2026-11-05T23:10', '1281 ATL-EYW 2026-11-06T08:55', '1282 EYW-ATL 2026-11-10T11:30', '900 ATL-LAX 2026-11-10T15:00']);
+  assert.ok(!out.put[1].needsReview);
+});
+
+test('a rerouted return (same start and end) replaces that direction only', () => {
+  const out = mergeBooking(email([['1500', 'EYW', 'DFW', '2026-11-10T12:00', '2026-11-10T14:00'], ['1600', 'DFW', 'LAX', '2026-11-10T16:00', '2026-11-10T17:30']]), [keyWest()], [], ctx);
+  assert.deepEqual(route(out.put[1]), ['899 LAX-ATL 2026-11-05T22:55', '1281 ATL-EYW 2026-11-06T08:55', '1500 EYW-DFW 2026-11-10T12:00', '1600 DFW-LAX 2026-11-10T16:00']);
+});
