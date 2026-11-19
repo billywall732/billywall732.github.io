@@ -14,3 +14,6 @@ package-lock.json
 
 # Wrangler build cache
 .wrangler/
+
+# Local copies of database rows saved before a data fix (real personal data: never commit)
+backups/
