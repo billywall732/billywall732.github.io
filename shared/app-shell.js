@@ -1,7 +1,7 @@
 // What every app page shares: the site's header and footer behavior (color mode, board cursor,
-// footer strip) and the demo banner. The header and footer HTML are copied into each app page
-// from home/index.html by tools/make-pages.mjs.
-import { setUpPage } from '/js/ui.js?v=2';
+// footer strip) and the demo banner. The header and footer HTML are copied into the app pages
+// that have them from home/index.html by tools/make-pages.mjs (Contrail has neither).
+import { nextTheme, setUpPage, themeLabel } from '/js/ui.js?v=3';
 import { config } from '/shared/config.js?v=2';
 import { store } from '/shared/store.js?v=3';
 import { loadAuth } from './auth-loader.js';
@@ -16,8 +16,20 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 //   paused         demo; approved before, but access is paused for now (their data is kept)
 //   member         your own data, and a way to sign out
 // access comes from connectStore() in store.js.
-export function demoBanner(slot, appName, access = { state: 'signed-out' }) {
+//
+// Opt-in compact mode (Contrail): opts = { compact: true, profileSlot, items }. A signed-in member
+// then gets no banner, just their round photo in profileSlot, which opens a small menu (email,
+// "Saved to your account", color mode, Off the Wall home, the app's own items, Sign out).
+// items: [{ label, href }] or [{ label, onClick }]. Every other state still gets the full banner,
+// since it asks the person to do something.
+export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts = {}) {
   if (!slot) return;
+  if (opts.compact && opts.profileSlot && store.mode !== 'demo') {
+    slot.hidden = true;
+    slot.innerHTML = '';
+    profileMenu(opts.profileSlot, access, opts.items ?? []);
+    return;
+  }
   const to = `${config.contactEmail.user}@${config.contactEmail.host}`;
   const mail = `mailto:${to}?subject=${encodeURIComponent(`Access to ${appName}`)}&amp;body=${encodeURIComponent(`Hi Billy,\n\nI just asked for access to ${appName}.\n\nThanks!`)}`;
   const who = access.user?.email ? esc(access.user.email) : '';
@@ -73,6 +85,55 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }) {
       b.textContent = 'Try again';
     }
   };
+}
+
+// The signed-in member's photo (or first initial) and its menu. A plain disclosure: the button
+// opens a list of links and buttons; a choice, a tap outside or Escape closes it.
+let menuCount = 0;
+function profileMenu(host, access, items) {
+  const p = window.otwAuth?.profile?.(access.user) ?? { name: access.user?.email || 'You', email: access.user?.email || '', picture: '' };
+  const initial = (String(p.name || p.email || '?').trim()[0] || '?').toUpperCase();
+  const id = `profile-menu-${++menuCount}`;
+  const rows = [
+    `<a class="pm-row" href="/home/">Off the Wall home</a>`,
+    ...items.map((it, i) => (it.href ? `<a class="pm-row" href="${esc(it.href)}">${esc(it.label)}</a>` : `<button type="button" class="pm-row" data-item="${i}">${esc(it.label)}</button>`)),
+  ];
+  host.innerHTML = `<div class="profile">
+    <button type="button" class="profile-btn" aria-expanded="false" aria-controls="${id}" title="${esc(p.email || p.name)}">
+      <span class="profile-initial" aria-hidden="true">${esc(initial)}</span><span class="sr">Account menu for ${esc(p.email || p.name)}</span>
+    </button>
+    <div class="profile-menu" id="${id}" hidden>
+      <p class="pm-who"><b>${esc(p.email || p.name)}</b><span>Saved to your account</span></p>
+      <button type="button" class="pm-row" data-theme-cycle>Color mode: <span class="pm-theme">${esc(themeLabel())}</span></button>
+      ${rows.join('')}
+      <button type="button" class="pm-row pm-out" data-auth="out">Sign out</button>
+    </div></div>`;
+  const btn = host.querySelector('.profile-btn'), menu = host.querySelector('.profile-menu');
+  // The photo, once it loads (Google's photo addresses refuse some referrers, so send none); the
+  // initial stays if it can't
+  if (p.picture) {
+    const img = Object.assign(new Image(), { alt: '', referrerPolicy: 'no-referrer', decoding: 'async' });
+    img.className = 'profile-photo';
+    img.addEventListener('load', () => btn.prepend(img), { once: true });
+    img.src = p.picture;
+  }
+  const open = () => !menu.hidden;
+  const set = (on, focus = false) => { menu.hidden = !on; btn.setAttribute('aria-expanded', String(on)); if (!on && focus) btn.focus(); };
+  btn.addEventListener('click', () => set(!open()));
+  document.addEventListener('click', (e) => { if (open() && !host.contains(e.target)) set(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open()) set(false, true); });
+  menu.addEventListener('click', async (e) => {
+    const b = e.target.closest('.pm-row');
+    if (!b) return;
+    if (b.dataset.themeCycle !== undefined) { menu.querySelector('.pm-theme').textContent = nextTheme(); return; }
+    if (b.dataset.auth === 'out') {
+      b.disabled = true;
+      try { await (await loadAuth()).signOut(); location.reload(); } catch (err) { console.error(err); b.disabled = false; b.textContent = 'Try again'; }
+      return;
+    }
+    if (b.dataset.item !== undefined) { set(false); items[+b.dataset.item].onClick?.(); return; }
+    set(false); // a link: it navigates
+  });
 }
 
 export function setUpApp() {

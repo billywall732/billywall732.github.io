@@ -349,3 +349,36 @@ body.noscroll{overflow:hidden}
 .contrail-app .gmail-log li{overflow-wrap:anywhere}
 .contrail-app .chip.gm-added{color:var(--accent);border-color:currentColor}
 .contrail-app .chip.gm-updated{color:var(--warn);border-color:currentColor}
+
+/* ---- Full window (no site header or footer) and the phone layout ---- */
+/* Contrail fills the window: no site bar above it, so no rule lines either. The safe-area padding
+   keeps the title clear of a notch when it's opened from the home screen (standalone). */
+.contrail-app{border-block:0;min-height:100vh;min-height:100dvh;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.contrail-app .foot a{color:inherit}
+/* The member's photo sits at the right of the title row (shared/apps.css draws it) */
+.contrail-app header .profile-slot{align-self:center;margin-left:auto}
+.contrail-app header .profile-slot:empty{display:none}
+@media (max-width:640px){
+  .contrail-app{padding-top:calc(12px + env(safe-area-inset-top,0px))}
+  .contrail-app .wrap{gap:14px}
+  /* Title and photo on one row; the eyebrow and each tab's lead line go */
+  .contrail-app header{flex-wrap:wrap;align-items:center;gap:8px 12px}
+  .contrail-app header .head-l{flex:1 1 0;gap:2px}
+  .contrail-app header .head-l .eyebrow, .contrail-app .tab-lead{display:none}
+  .contrail-app h1{font-size:30px}
+  .contrail-app .owner{font-size:14px}
+  .contrail-app header .actions{flex-basis:100%}
+  /* Cover and Copy are in the profile menu, so members don't need the pills here; that leaves the
+     tab bar the whole width, enough for Overview to Airports. The fade only covers the last bit. */
+  .contrail-app.has-profile .tabtools{display:none}
+  .contrail-app .tabscroll{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 20px),transparent);padding-right:20px}
+  .contrail-app .pagetabs :is([role=tab],.tablink){padding-inline:6px}
+  /* Stays filters: one row of compact selects (their labels stay for screen readers) */
+  .contrail-app .stayfilt{flex-wrap:wrap;gap:8px;margin:0}
+  .contrail-app .stayfilt label.ctl{flex:1 1 0;min-width:0}
+  .contrail-app .stayfilt .ctl-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .contrail-app .stayfilt select{width:100%;min-width:0;padding:6px 8px;font-size:12.5px}
+  .contrail-app .stayfilt #stayClear{flex:none;padding:6px 10px;font-size:12.5px}
+  .contrail-app .stayfilt #stayCount:empty{display:none}
+  .contrail-app .stayfilt #stayCount{flex-basis:100%}
+}

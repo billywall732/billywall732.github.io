@@ -4,7 +4,7 @@
 import { connectStore, store } from '/shared/store.js?v=3';
 import { airlineName, airport, deriveTrip, loadAirports, nightsOf, RENTAL } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, setUpApp } from '/shared/app-shell.js?v=5';
+import { demoBanner, setUpApp } from '/shared/app-shell.js?v=6';
 import { contrailDemo } from '/contrail/demo-data.js';
 
 setUpApp();
@@ -28,7 +28,8 @@ const [, WORLD, US, ACCESS] = await Promise.all([
 // Approved members see their own trips. Demo: the same sample data as the app (edits made on
 // the app page aren't kept between pages); ?sample=none starts empty, as after "Clear sample
 // data" in Contrail's settings.
-demoBanner($id('demoBanner'), 'Contrail', ACCESS);
+demoBanner($id('demoBanner'), 'Contrail', ACCESS, { compact: true, profileSlot: $id('profileSlot'), items: [{ label: 'Cover page', href: '/contrail/cover/' }] });
+document.querySelector('.contrail-app').classList.toggle('has-profile', !!$id('profileSlot').firstElementChild);
 const noSample = new URLSearchParams(location.search).get('sample') === 'none';
 if (store.mode === 'demo') await store.reset(noSample ? { docs: { profile: { homeAirports: ['LAX'] } } } : contrailDemo(airport));
 

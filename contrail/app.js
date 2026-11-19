@@ -6,7 +6,8 @@
 import { connectStore, store } from '/shared/store.js?v=3';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=5';
+import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=6';
+import { nextTheme, themeLabel } from '/js/ui.js?v=3';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
@@ -261,7 +262,8 @@ function setExpanded(on) {
 expBtn.addEventListener('click', () => setExpanded(!mapbox.classList.contains('expanded')));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && mapbox.classList.contains('expanded')) setExpanded(false); });
 let rt; window.addEventListener('resize', () => { if (!mapbox.classList.contains('expanded')) return; clearTimeout(rt); rt = setTimeout(draw, 150); });
-$id('soonSel').addEventListener('change', (e) => { SOON = +e.target.value; prefs.set('soon', SOON); renderLegend(); renderNext(); renderTrips(); draw(); });
+// "Flag as soon within" (Settings): the select is redrawn with that tab, so listen on the page
+root.addEventListener('change', (e) => { if (e.target.id !== 'soonSel') return; SOON = +e.target.value; prefs.set('soon', SOON); renderLegend(); renderNext(); renderTrips(); draw(); toast(`Trips within ${SOON} days are flagged as soon`); });
 
 // ---------- trips ----------
 function legHTML(l) {
@@ -708,18 +710,8 @@ async function saveProfile(patch) { await store.setDoc('profile', { ...PROFILE, 
 async function addCard(c) { await saveProfile({ cards: [...WALLET, { ...c, id: 'c' + Date.now().toString(36), addedAt: new Date().toISOString() }] }); }
 async function removeCard(id) { const c = WALLET.find((x) => x.id === id); if (!c) return; await saveProfile({ cards: WALLET.filter((x) => x.id !== id) }); toast(`${c.name} removed`); }
 
+// The name is changed in Settings ("Name on the log")
 function renderOwner() { $id('ownerName').textContent = OWNER; }
-root.addEventListener('click', (e) => {
-  if (!e.target.closest('#editOwner')) return;
-  const p = root.querySelector('.owner');
-  p.innerHTML = `<form id="ownerForm" class="ownerform"><label for="ownerInput" class="lw">Whose travels are these?</label><input id="ownerInput" maxlength="40" value="${esc(OWNER)}"><button class="btn primary" type="submit">Save</button></form>`;
-  const f = $id('ownerForm'), i = $id('ownerInput'); i.focus(); i.select();
-  f.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    p.innerHTML = `The travels of <b id="ownerName"></b> <button type="button" class="linkbtn" id="editOwner">Edit name</button>`;
-    await saveProfile({ displayName: i.value.trim().slice(0, 40) || OWNER });
-  });
-});
 
 // ---------- page tabs ----------
 const TABS = ['overview', 'trips', 'stays', 'airports', 'cards', 'settings'];
@@ -759,11 +751,13 @@ function twoStep(btn, key, label) {
   if (armed.has(key)) { armed.delete(key); return true; }
   armed.add(key); const old = btn.textContent; btn.textContent = label; setTimeout(() => { armed.delete(key); if (btn.isConnected) btn.textContent = old; }, 3500); return false;
 }
-$id('copyUp').addEventListener('click', () => {
+// The Copy pill (wider screens) and "Copy upcoming trips" in the profile menu
+function copyUpcoming() {
   const txt = upcomingText();
   const fallback = () => { const p = $id('aptDetail'); showTab('airports'); p.innerHTML = `<span class="eyebrow">Select and copy</span><textarea class="copybox" id="copybox" readonly>${esc(txt)}</textarea>`; const ta = $id('copybox'); ta.focus(); ta.select(); };
   try { navigator.clipboard.writeText(txt).then(() => toast('Upcoming trips copied'), fallback); } catch { fallback(); }
-});
+}
+$id('copyUp').addEventListener('click', copyUpcoming);
 
 // ---------- stays ----------
 const STAY_BRANDS = ['IHG', 'Hilton', 'Marriott', 'Hyatt', 'Wyndham', 'Choice', 'Accor', 'Best Western', 'Independent hotel', 'Airbnb', 'Vrbo', 'Vacation rental', 'Other'];
@@ -1014,9 +1008,17 @@ function renderSettings() {
       <div class="frow">
         <label class="fl">Name on the log<input name="displayName" maxlength="40" value="${esc(PROFILE.displayName || '')}" placeholder="e.g. Alex & Jordan"></label>
       </div>
+      <p class="lw" style="margin:0">Shown under the title: “The travels of ${esc(OWNER)}”.</p>
       <div class="paygrid">${aptField('Home airport', 'home1', homes[0])}${aptField('Second home airport (optional)', 'home2', homes[1] || '')}</div>
       <div class="row"><span class="msg lw" style="margin-right:auto">${where()}</span><button type="submit" class="btn primary">Save</button></div>
     </form>
+    <div class="panel">
+      <h3 style="font-size:20px;text-transform:uppercase">Trip timing</h3>
+      <label class="ctl" for="soonSel">Flag as soon within
+        <select class="btn" id="soonSel">${[7, 14, 30, 60, 90].map((d) => `<option value="${d}"${d === SOON ? ' selected' : ''}>${d} days</option>`).join('')}</select>
+      </label>
+      <p class="lw" style="margin:0">Trips this close are marked Soon on the map, the trip list and the next departure.</p>
+    </div>
     <div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Cards I hold</h3>
       ${owners().length > 1 ? whoChooser({ anyone: false }) : ''}
@@ -1025,8 +1027,8 @@ function renderSettings() {
     </div>
     <div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Color mode</h3>
-      <p class="lw" style="margin:0">Contrail follows the site's color mode switch at the top of the page.</p>
-      <div class="row" style="justify-content:flex-start"><button type="button" class="btn" data-theme-next>Switch color mode</button></div>
+      <p class="lw" style="margin:0">Dark, light or blueprint. It's remembered on this device and shared with the rest of Off the Wall.${store.mode === 'demo' ? '' : ' Also in the menu under your photo.'}</p>
+      <div class="row" style="justify-content:flex-start"><button type="button" class="btn" data-theme-next>Color mode: <span class="theme-now">${esc(themeLabel())}</span></button></div>
     </div>
   </div>
   <div class="col">
@@ -1088,7 +1090,7 @@ root.addEventListener('change', async (e) => {
 root.addEventListener('click', (e) => { const g = e.target.closest('[data-gmail]'); if (g && GMAIL) GMAIL.onClick(g); });
 root.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-export],[data-clear],[data-sample],[data-csv-go],[data-csv-cancel],[data-theme-next],[data-delete-saved]'); if (!b) return;
-  if (b.dataset.themeNext !== undefined) document.querySelector('.theme-toggle')?.click();
+  if (b.dataset.themeNext !== undefined) b.querySelector('.theme-now').textContent = nextTheme();
   // Members only. Two checks, like Budget Ledger's, because this can't be undone.
   if (b.dataset.deleteSaved !== undefined && store.mode === 'account') {
     if (!confirm("Delete your saved Contrail data from your account? This can't be undone. Download a backup first if you might want it back.")) return;
@@ -1141,7 +1143,6 @@ function renderAll() {
 }
 (function wire() {
   const st = prefs.get('mapstyle'); if (st && styleSel.querySelector(`option[value="${st}"]`)) { styleSel.value = st; mapbox.dataset.mapstyle = st; }
-  $id('soonSel').value = String(SOON);
   const v = prefs.get('view'); if (v && v !== 'all') { view = v; root.querySelectorAll('.maptools .tab').forEach((x) => x.setAttribute('aria-selected', x.dataset.v === v)); }
   try { const sy = JSON.parse(prefs.get('years') || '[]'); if (Array.isArray(sy)) sy.forEach((y) => YEARS.add(y)); } catch { /* ignore */ }
   $id('yearChips').addEventListener('click', (e) => {
@@ -1182,7 +1183,14 @@ function renderAll() {
 })();
 
 // Approved members get their own trips; everyone else gets Alex & Jordan's sample travels
-demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'));
+// Members get a round photo with a menu instead of the "Signed in as" banner
+demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'), {
+  compact: true,
+  profileSlot: $id('profileSlot'),
+  items: [{ label: 'Cover page', href: '/contrail/cover/' }, { label: 'Copy upcoming trips', onClick: copyUpcoming }],
+});
+// With the menu, phones can drop the Cover and Copy pills (contrail/app.css)
+root.classList.toggle('has-profile', !!$id('profileSlot').firstElementChild);
 if (store.mode === 'demo') await store.reset(contrailDemo(airport));
 await load();
 let t0 = prefs.get('tab') || 'overview'; try { const h = location.hash.slice(1); if (TABS.includes(h)) t0 = h; } catch { /* ignore */ }

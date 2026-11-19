@@ -44,7 +44,7 @@ const page = (p) => `<!doctype html>
   <link rel="stylesheet" href="/css/site.css">
   <!-- Anonymous visit counts (GoatCounter: no cookies, no personal data) -->
   <script data-goatcounter="https://offthewall.goatcounter.com/count" async src="/shared/count.js"></script>
-  <script type="module" src="/js/project-page.js?v=3"></script>
+  <script type="module" src="/js/project-page.js?v=4"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -101,8 +101,9 @@ for (const [from, to] of Object.entries(RENAMED)) {
 }
 console.log(`Wrote ${Object.keys(RENAMED).length} redirects: ${Object.entries(RENAMED).map(([a, b]) => `/projects/${a}/ → /projects/${b}/`).join(', ')}`);
 
-// The app pages (Contrail, Wallet, Loop Lab), Contact, Privacy and Terms keep their own content; their header and footer come from the home page too
-const APP_PAGES = ['contrail/index.html', 'contrail/analytics/index.html', 'wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html', 'terms/index.html'];
+// The app pages (Wallet, Loop Lab), Contact, Privacy and Terms keep their own content; their header and footer come from the home page too.
+// Contrail's pages (contrail/, contrail/analytics/) are left out on purpose: they fill the window with no site header or footer.
+const APP_PAGES = ['wallet/index.html', 'loop-lab/index.html', 'contact/index.html', 'privacy/index.html', 'terms/index.html'];
 for (const f of APP_PAGES) {
   const path = join(root, f);
   const html = readFileSync(path, 'utf8');

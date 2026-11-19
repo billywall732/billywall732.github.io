@@ -148,24 +148,38 @@ const THEMES = [
   { name: 'blueprint', label: 'Blueprint', color: '#123f7a' },
 ];
 
+const themeNow = () => THEMES.find((x) => x.name === document.documentElement.dataset.theme) ?? THEMES[0];
+const themeAfter = (t) => THEMES[(THEMES.indexOf(t) + 1) % THEMES.length];
+
+// Apply a mode, and show it on the header button when the page has one
+function showTheme(name) {
+  const t = THEMES.find((x) => x.name === name) ?? THEMES[0];
+  document.documentElement.dataset.theme = t.name;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = t.color;
+  const btn = $('.theme-toggle');
+  if (btn) {
+    $('.ti', btn).className = `ti ti-${t.name}`;
+    $('.sr', btn).textContent = `Color mode: ${t.label}. Switch to ${themeAfter(t).label}`;
+    btn.title = `Color mode: ${t.label}`;
+  }
+}
+
+// For pages without the site header (Contrail): the current mode's label, and a way to move to
+// the next one, the same as the header button
+export const themeLabel = () => themeNow().label;
+export function nextTheme() {
+  const next = themeAfter(themeNow()).name;
+  showTheme(next);
+  store.set('otw-theme', next);
+  return themeLabel();
+}
+
 function themeButton() {
   const btn = $('.theme-toggle');
   if (!btn) return;
-  const show = (name) => {
-    const t = THEMES.find((x) => x.name === name) ?? THEMES[0];
-    document.documentElement.dataset.theme = t.name;
-    document.querySelector('meta[name="theme-color"]').content = t.color;
-    $('.ti', btn).className = `ti ti-${t.name}`;
-    $('.sr', btn).textContent = `Color mode: ${t.label}. Switch to ${THEMES[(THEMES.indexOf(t) + 1) % THEMES.length].label}`;
-    btn.title = `Color mode: ${t.label}`;
-  };
-  btn.addEventListener('click', () => {
-    const i = THEMES.findIndex((x) => x.name === document.documentElement.dataset.theme);
-    const next = THEMES[(i + 1) % THEMES.length].name;
-    show(next);
-    store.set('otw-theme', next);
-  });
-  show(document.documentElement.dataset.theme);
+  btn.addEventListener('click', nextTheme);
+  showTheme(document.documentElement.dataset.theme);
 }
 
 // ---------- Board cursor ----------
@@ -507,7 +521,10 @@ export function setUpPage() {
   siteMenu();
   backgroundDots();
   if (!document.querySelector('#section-title')) markNav(); // the home page marks its own section
-  $('.year').textContent = new Date().getFullYear();
+  // Pages without the site footer (Contrail) have no year to fill in. Only the footer's: Contrail
+  // also uses .year, for the year headings in its trip list.
+  const year = $('.footer .year');
+  if (year) year.textContent = new Date().getFullYear();
 
   // Fade things in as they scroll into view
   if ('IntersectionObserver' in window && !reducedMotion.matches) {
