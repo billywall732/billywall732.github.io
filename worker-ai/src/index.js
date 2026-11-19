@@ -48,6 +48,17 @@ const STAY = obj({
   check_in: text('Check-in date "YYYY-MM-DD"'),
   check_out: text('Check-out date "YYYY-MM-DD"'),
   booked_via: orNull({ type: 'string', enum: BOOKED_VIA }, 'Who the booking was made through; "Direct" for the hotel itself'),
+  // Plain strings ("" = not stated): the schema is at the API's limit of 16 nullable fields
+  region: { type: 'string', description: 'State, province or region, e.g. "CO", "Ontario"; empty string if not stated' },
+  address: { type: 'string', description: 'Street address of the property as printed, without the city; empty string if not stated' },
+});
+// What was paid, for the whole booking. Plain types (0 or "" = not stated), not nullable ones: the
+// schema is at the API's limit of 16 nullable (anyOf) fields.
+const PAID = obj({
+  total: { type: 'number', description: 'Total charged in money for the whole booking (every traveler, taxes and fees included), not per person; 0 if not stated or nothing was charged' },
+  currency: { type: 'string', description: '3-letter currency code of total, e.g. "USD"; empty string if not stated' },
+  points: { type: 'integer', description: 'Points or miles redeemed for the whole booking; 0 if none' },
+  program: { type: 'string', description: 'Program the points or miles came from, e.g. "Alaska Mileage Plan", "Chase Ultimate Rewards"; empty string if none' },
 });
 export const SCHEMA = obj({
   kind: { type: 'string', enum: ['flight', 'stay', 'cancellation', 'none'] },
@@ -55,6 +66,8 @@ export const SCHEMA = obj({
   cancel_kind: orNull({ type: 'string', enum: ['flight', 'stay'] }, 'Only when kind is "cancellation"'),
   legs: { type: 'array', items: LEG, description: 'Every flight in the booking as it now stands; empty unless kind is "flight"' },
   stay: orNull(STAY, 'Only when kind is "stay"'),
+  paid: PAID,
+  travelers: { type: 'array', items: { type: 'string' }, description: 'Full name of every passenger or guest on the booking, as printed; empty if not stated' },
 });
 
 const SYSTEM = `You read one email from a person's own inbox and pull out a travel booking for their flight and hotel log.
@@ -71,7 +84,9 @@ Rules:
 - Times are local to each airport, exactly as printed. Never convert time zones.
 - If a date has no year, use the email's date to pick the right year (bookings are for the future).
 - Use null for anything the email doesn't state, except aircraft and cabin: use an empty string when unstated. Don't guess airport codes or flight numbers.
-- If only some flights were cancelled, return "flight" with the flights that remain.`;
+- If only some flights were cancelled, return "flight" with the flights that remain.
+- paid: what the whole booking cost, all travelers together (a fare receipt for two people: the total for both). Money and points can both apply (cash plus points). Never include card numbers or any digits of a card.
+- travelers: every passenger or guest named on the booking.`;
 
 // ---------- small helpers ----------
 const reply = (status, body, cors = {}) => new Response(JSON.stringify(body), { status, headers: { ...JSON_HEADERS, ...cors } });
@@ -174,6 +189,29 @@ const clip = (v, n = 80) => (typeof v === 'string' && v.trim() ? v.trim().slice(
 const pick = (v, re) => { const s = clip(v, 40); return s && re.test(s.toUpperCase()) ? s.toUpperCase() : null; };
 const pickTime = (v) => { const s = clip(v, 25); return s && LOCAL.test(s.slice(0, 16)) ? s.slice(0, 16) : null; };
 
+// Never card numbers: any text with a run of 4+ digits is dropped
+const noCard = (s) => (s && !/\d[\d\s-]{2,}\d/.test(s) ? s : null);
+export function tidyPaid(p) {
+  const total = Number(p?.total), points = Number(p?.points);
+  const out = {
+    total: Number.isFinite(total) && total > 0 && total < 1e6 ? Math.round(total * 100) / 100 : null,
+    currency: /^[A-Z]{3}$/.test(String(p?.currency || '').toUpperCase()) ? String(p.currency).toUpperCase() : null,
+    points: Number.isInteger(points) && points > 0 && points < 1e8 ? points : null,
+    program: noCard(clip(p?.program, 60)),
+  };
+  if (out.total == null) out.currency = null;
+  if (out.points == null) out.program = null;
+  return out.total == null && out.points == null ? null : out;
+}
+const tidyNames = (a) => [...new Set((Array.isArray(a) ? a : []).map((n) => noCard(clip(n, 60))).filter(Boolean))].slice(0, 9);
+
+// A car rental the model filed as a stay ("Alamo Fullsize Pickup AWD/4X4"). Brand names count only at
+// the start of the name, and nothing counts next to a hotel word, so "Budget Inn" and "National Hotel" stay stays.
+const CAR_WORDS = /\b(rental car|car rental|rent-a-car|pickup|suv|sedan|minivan|4x4|awd)\b/i;
+const CAR_BRANDS = /^(alamo|hertz|avis|enterprise|national|budget|sixt|thrifty|dollar)\b/i;
+const HOTEL_WORDS = /\b(hotel|inn|suites?|motel|resort|lodge|hostel|apartments?|villa|cabin|house|condo)\b/i;
+export const looksLikeCarRental = (name) => !!name && !HOTEL_WORDS.test(name) && (CAR_WORDS.test(name) || CAR_BRANDS.test(name.trim()));
+
 // Belt and braces on top of the schema: only well-formed values get through
 export function tidy(r) {
   const kind = ['flight', 'stay', 'cancellation', 'none'].includes(r?.kind) ? r.kind : 'none';
@@ -191,9 +229,13 @@ export function tidy(r) {
     const s = r.stay;
     out.stay = { name: clip(s.name, 100), brand: STAY_BRANDS.includes(s.brand) ? s.brand : null, city: clip(s.city, 60), country: clip(s.country, 60),
       check_in: DAY.test(s.check_in || '') ? s.check_in : null, check_out: DAY.test(s.check_out || '') ? s.check_out : null,
-      booked_via: BOOKED_VIA.includes(s.booked_via) ? s.booked_via : null };
-    if (!out.stay.name || !out.stay.check_in) { out.kind = 'none'; out.stay = null; }
+      booked_via: BOOKED_VIA.includes(s.booked_via) ? s.booked_via : null, region: clip(s.region, 40) || '', address: clip(s.address, 120) || '' };
+    if (!out.stay.name || !out.stay.check_in || looksLikeCarRental(out.stay.name)) { out.kind = 'none'; out.stay = null; }
   } else if (kind === 'stay') out.kind = 'none';
+  // Prices and names only with a booking
+  const booking = out.kind === 'flight' || out.kind === 'stay';
+  out.paid = booking ? tidyPaid(r?.paid) : null;
+  out.travelers = booking ? tidyNames(r?.travelers) : [];
   return out;
 }
 

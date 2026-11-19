@@ -12,7 +12,7 @@ import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
-import { setUpGmail } from '/contrail/gmail.js?v=7';
+import { setUpGmail } from '/contrail/gmail.js?v=12';
 
 setUpApp();
 const root = document.querySelector('.contrail-app');
@@ -919,16 +919,19 @@ function renderStays() {
 // request a second and caching, so lookups queue up and each answer is kept on the stay.
 const geoCache = new Map();
 let geoLast = 0;
-async function geocode(q) {
+// box: optional [west, north, east, south] to search only inside (Gmail import's retry near the trip's airport)
+async function geocode(q, box) {
   q = q.trim(); if (!q) return null;
-  if (geoCache.has(q)) return geoCache.get(q);
+  const key = box ? `${q}|${box.join(',')}` : q;
+  if (geoCache.has(key)) return geoCache.get(key);
   const wait = Math.max(0, geoLast + 1100 - Date.now()); geoLast = Date.now() + wait;
   if (wait) await new Promise((r) => setTimeout(r, wait));
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
+    const bounded = box ? `&viewbox=${box.map((n) => n.toFixed(4)).join(',')}&bounded=1` : '';
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1${bounded}&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'en' } });
     const [hit] = res.ok ? await res.json() : [];
     const out = hit ? { lat: +(+hit.lat).toFixed(5), lon: +(+hit.lon).toFixed(5) } : null;
-    geoCache.set(q, out); return out;
+    geoCache.set(key, out); return out;
   } catch { return null; }
 }
 function openStayForm(s) {
@@ -1007,8 +1010,10 @@ function renderSettings() {
       <h3 style="font-size:20px;text-transform:uppercase">You</h3>
       <div class="frow">
         <label class="fl">Name on the log<input name="displayName" maxlength="40" value="${esc(PROFILE.displayName || '')}" placeholder="e.g. Alex & Jordan"></label>
+        <label class="fl">Names on your bookings<input name="bookingNames" maxlength="200" value="${esc((PROFILE.bookingNames || []).join(', '))}" placeholder="e.g. Alex Rivera, Alexander Rivera"></label>
       </div>
       <p class="lw" style="margin:0">Shown under the title: “The travels of ${esc(OWNER)}”.</p>
+      <p class="lw" style="margin:0">Names on your bookings: how airlines and hotels print your name, separated by commas. Gmail import uses them to tell your bookings from ones you made for others, and to note who else was on a booking.</p>
       <div class="paygrid">${aptField('Home airport', 'home1', homes[0])}${aptField('Second home airport (optional)', 'home2', homes[1] || '')}</div>
       <div class="row"><span class="msg lw" style="margin-right:auto">${where()}</span><button type="submit" class="btn primary">Save</button></div>
     </form>
@@ -1069,7 +1074,8 @@ root.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target, h1 = codeOf(f.home1.value), h2 = codeOf(f.home2.value);
   if (!h1) { f.querySelector('.msg').textContent = 'Pick a home airport from the list.'; return; }
-  await saveProfile({ displayName: f.displayName.value.trim(), homeAirports: [h1, ...(h2 && h2 !== h1 ? [h2] : [])] });
+  const bookingNames = [...new Set(f.bookingNames.value.split(',').map((n) => n.trim().slice(0, 60)).filter(Boolean))].slice(0, 6);
+  await saveProfile({ displayName: f.displayName.value.trim(), bookingNames, homeAirports: [h1, ...(h2 && h2 !== h1 ? [h2] : [])] });
   toast('Settings saved');
 });
 root.addEventListener('change', async (e) => {

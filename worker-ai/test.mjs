@@ -147,6 +147,39 @@ check('a refusal comes back as kind "none"', r.status === 200 && r.json.result.k
 claudeReply = { stop_reason: 'end_turn', usage: {}, content: [{ type: 'text', text: JSON.stringify({ kind: 'flight', confirmation: 'X', cancel_kind: null, stay: null, legs: [{ airline: 'UA', flight_no: '1', from: 'LOS ANGELES', to: 'SEA', dep_local: 'tomorrow', arr_local: null, aircraft: null, cabin: null }] }) }] };
 r = await call({ auth: good });
 check('malformed legs are dropped (kind becomes "none")', r.status === 200 && r.json.result.kind === 'none');
+// Prices (Nov 19, 2026): the whole booking's total, points and program; never card digits
+const reply = (result) => ({ stop_reason: 'end_turn', usage: {}, content: [{ type: 'text', text: JSON.stringify(result) }] });
+const flight = { kind: 'flight', confirmation: 'AS7FR6', cancel_kind: null, stay: null,
+  legs: [{ airline: 'AS', flight_no: '1234', from: 'LAX', to: 'SEA', dep_local: '2027-03-01T08:00', arr_local: '2027-03-01T10:45', aircraft: '', cabin: '' }] };
+check('schema asks for paid and travelers', !!SCHEMA.properties.paid && !!SCHEMA.properties.travelers && SCHEMA.required.includes('paid') && SCHEMA.required.includes('travelers'));
+claudeReply = reply({ ...flight, paid: { total: 11.2, currency: 'usd', points: 25000, program: 'Alaska Mileage Plan' }, travelers: ['WILLIAM WALL'] });
+r = await call({ auth: good });
+check('cash plus points comes through', r.status === 200 && r.json.result.paid?.total === 11.2 && r.json.result.paid.currency === 'USD' && r.json.result.paid.points === 25000 && r.json.result.paid.program === 'Alaska Mileage Plan', JSON.stringify(r.json.result.paid));
+claudeReply = reply({ ...flight, paid: { total: 0, currency: '', points: 0, program: 'Visa ending 4242' }, travelers: ['William Wall', 'Card 4242 4242 4242 4242', 'Serena Tramm'] });
+r = await call({ auth: good });
+check('nothing paid → paid is null; card digits never get through', r.json.result.paid === null && !JSON.stringify(r.json.result).includes('4242'), JSON.stringify(r.json.result));
+check('travelers kept, names only', JSON.stringify(r.json.result.travelers) === JSON.stringify(['William Wall', 'Serena Tramm']));
+claudeReply = reply({ kind: 'none', confirmation: null, cancel_kind: null, legs: [], stay: null, paid: { total: 50, currency: 'USD', points: 0, program: '' }, travelers: [] });
+r = await call({ auth: good });
+check('no booking → no paid', r.json.result.kind === 'none' && r.json.result.paid === null);
+// Stays: region and address (Nov 19, 2026); a car rental is not a stay
+const stayReply = (stay) => reply({ kind: 'stay', confirmation: 'C1', cancel_kind: null, legs: [], paid: { total: 0, currency: '', points: 0, program: '' }, travelers: [],
+  stay: { brand: null, city: 'Winter Park', country: 'United States', check_in: '2026-01-22', check_out: '2026-01-25', booked_via: null, region: 'CO', address: '', ...stay } });
+check('stay schema asks for region and address', ['region', 'address'].every((k) => SCHEMA.properties.stay.anyOf[0].properties[k]?.type === 'string'));
+claudeReply = stayReply({ name: 'High-End Mountain Cabin', address: '123 Vasquez Rd' });
+r = await call({ auth: good });
+check('region and address come through', r.json.result.stay?.region === 'CO' && r.json.result.stay.address === '123 Vasquez Rd', JSON.stringify(r.json.result.stay));
+claudeReply = stayReply({ name: '', region: '', address: '' });
+for (const name of ['Alamo Fullsize Pickup AWD/4X4 (Denver International Airport rental)', 'Hertz', 'Enterprise Rent-A-Car', 'Rental car at DEN', 'Sixt SUV']) {
+  claudeReply = stayReply({ name });
+  r = await call({ auth: good });
+  check(`car rental is not a stay: ${name}`, r.json.result.kind === 'none' && r.json.result.stay === null, JSON.stringify(r.json.result));
+}
+for (const name of ['Budget Inn Sacramento', 'National Hotel Miami Beach', 'Hilton Garden Inn Avis Way']) {
+  claudeReply = stayReply({ name });
+  r = await call({ auth: good });
+  check(`a hotel is still a stay: ${name}`, r.json.result.kind === 'stay', JSON.stringify(r.json.result));
+}
 claudeReply = null;
 
 r = await call({ auth: good, path: '/v1/anything-else' });
