@@ -161,7 +161,7 @@ export async function setUpGmail({ store, airport, placeName, home, geocode, toa
         counts[outcome.status]++;
         if (outcome.status === 'ignored' || outcome.status === 'failed') {
           // Group reasons without the trip name: "Already in Contrail: Lisbon" → "Already in Contrail"
-          const why = String(outcome.label).replace(/:.*$/, '').replace(/ (.*)$/, '');
+          const why = String(outcome.label).replace(/:.*$/, '').replace(/ \(.*\)$/, '');
           stats.skipped[why] = (stats.skipped[why] || 0) + 1;
         }
         if (outcome.status !== 'ignored' || entries.length < 60) entries.push({ at: new Date().toISOString(), status: outcome.status, label: outcome.label, ref: outcome.ref || '' });
