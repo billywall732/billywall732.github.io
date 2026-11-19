@@ -203,3 +203,37 @@ test('a price fills pay only when it is empty', () => {
   assert.equal(blank.status, 'updated');
   assert.deepEqual(blank.put[1].pay, { method: 'card', amount: 999 });
 });
+
+// ---------- stays: booked for others, possible duplicates (Nov 19, 2026) ----------
+const stayEmail = (over = {}, travelers = []) => ({ kind: 'stay', confirmation: over.conf || 'S-1', cancel_kind: null, legs: [], paid: null, travelers,
+  stay: { name: 'Carmel River Inn', brand: null, city: 'Carmel', country: 'United States', check_in: '2024-11-26', check_out: '2024-11-30', booked_via: null, ...over } });
+const room = (id, checkIn, checkOut, extra = {}) => ({ id, name: 'Carmel River Inn', city: 'Carmel', country: 'United States', checkIn, checkOut, confirmation: id.toUpperCase(), hidden: false, ...extra });
+
+test('a stay booked only for other people is imported hidden and marked forOthers', () => {
+  const out = mergeBooking(stayEmail({}, ['Serena Tramm', 'Mia Tramm']), [], [], sx);
+  assert.equal(out.status, 'added');
+  assert.equal(out.put[1].hidden, true);
+  assert.equal(out.put[1].forOthers, true);
+  assert.match(out.label, /for Serena Tramm, Mia Tramm/);
+});
+
+test('a stay with the member among the guests is imported normally', () => {
+  for (const guests of [['WALL/WILLIAM MR', 'Serena Tramm'], []]) {
+    const out = mergeBooking(stayEmail({}, guests), [], [], sx);
+    assert.equal(out.put[1].hidden, false, JSON.stringify(guests));
+    assert.equal(out.put[1].forOthers, undefined);
+  }
+});
+
+test('a second room in the same city on overlapping nights is logged as a possible duplicate', () => {
+  const out = mergeBooking(stayEmail({ conf: 'S-2', check_in: '2024-11-27' }), [], [room('s-1', '2024-11-26', '2024-11-30')], sx);
+  assert.equal(out.status, 'added');
+  assert.match(out.label, /Possible duplicate of Carmel River Inn \(2024-11-26/);
+});
+
+test('no duplicate note for a hidden stay, another city, or back-to-back nights', () => {
+  const quiet = (stays, over) => assert.doesNotMatch(mergeBooking(stayEmail({ conf: 'S-2', ...over }), [], stays, sx).label, /Possible duplicate/);
+  quiet([room('s-1', '2024-11-26', '2024-11-30', { hidden: true })]);
+  quiet([room('s-1', '2024-11-26', '2024-11-30', { city: 'Monterey' })]);
+  quiet([room('s-1', '2024-11-20', '2024-11-26')]); // checks out the day this one checks in
+});
