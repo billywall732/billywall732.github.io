@@ -3,7 +3,7 @@
   "short_name": "Contrail",
   "start_url": "/contrail/",
   "scope": "/contrail/",
-  "display": "browser",
+  "display": "standalone",
   "background_color": "#0b0820",
   "theme_color": "#0b0820",
   "icons": [
