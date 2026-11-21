@@ -3,7 +3,8 @@
 // repo. Sign-in and saved data use the shared Supabase project (see /shared/auth.js).
 // Empty values mean "not set up yet".
 export const config = {
-  // The AI Worker (worker-ai/): reads booking emails for Contrail's Gmail import
+  // The AI Worker (worker-ai/): reads booking emails for Contrail's Gmail import and answers
+  // Wallet questions (shared/ai.js)
   workerUrl: 'https://otw-ai.offthewall-dev.workers.dev',
   // Google OAuth client ID (a Web application client, public by design) for Gmail import.
   // Empty = Gmail import shows "not set up yet" even for members with the Gmail switch on.

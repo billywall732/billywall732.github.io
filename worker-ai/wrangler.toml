@@ -1,5 +1,6 @@
-# The AI Worker for the apps (see README.md in this folder). One endpoint so far:
+# The AI Worker for the apps (see README.md in this folder). Two endpoints:
 #   POST /v1/contrail/parse-email   one booking email's text → a flight, stay or cancellation
+#   POST /v1/wallet/ask             a question about the member's wallet → { summary, suggestions }
 #
 # The Claude API key is a secret, set once and never written here:
 #   npx wrangler secret put ANTHROPIC_API_KEY
@@ -8,12 +9,13 @@ main = "src/index.js"
 compatibility_date = "2025-10-01"
 workers_dev = true
 
-# Logs keep only the task, a hash of the email, the status and token counts (see src/index.js);
-# never an email's text or what Claude sent back.
+# Logs keep only the task, a hash of the email or question, the status and token counts (see
+# src/index.js); never an email's text, a question or what Claude sent back.
 [observability]
 enabled = true
 
-# Per-person daily counters (keys like usage:email:<user id>:<date>; they expire after 2 days)
+# Per-person daily counters, one per task (usage:email:<user id>:<date>, usage:wallet:<user id>:<date>;
+# they expire after 2 days)
 [[kv_namespaces]]
 binding = "USAGE"
 id = "912b1acf3d544df2ad5b472d07f2dcd2"
@@ -27,7 +29,8 @@ ALLOWED_ORIGINS = "https://offthewall.dev,http://localhost:8080"
 # Kill switch: "false" makes every AI request answer 503 straight away (no Claude calls)
 AI_ENABLED = "true"
 MODEL = "claude-haiku-5-5"
-# Email parsing per person per day (Pacific time): BACKFILL_LIMIT for the first BACKFILL_DAYS
-# after their first sync, then the "AI a day" number on the admin page
+# Each task's count per person per day (Pacific time) is checked against the "AI a day" number on
+# the admin page. Email parsing also allows BACKFILL_LIMIT for the first BACKFILL_DAYS after
+# someone's first sync.
 BACKFILL_LIMIT = "300"
 BACKFILL_DAYS = "7"

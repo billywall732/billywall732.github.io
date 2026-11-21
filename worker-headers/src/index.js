@@ -54,9 +54,10 @@ const ALLOW = {
       'https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://gmail.googleapis.com', 'https://otw-ai.offthewall-dev.workers.dev'],
     'frame-src': ['https://accounts.google.com'],
   },
+  // What's in My Wallet?: members' saved data in Supabase, and the AI Worker for asking Claude
   '/wallet/': {
     'script-src': ['https://cdnjs.cloudflare.com'],
-    'connect-src': ['https://cdn.jsdelivr.net', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co'],
+    'connect-src': ['https://cdn.jsdelivr.net', 'https://yxdmuznxcqcauyehhfmp.supabase.co', 'wss://yxdmuznxcqcauyehhfmp.supabase.co', 'https://otw-ai.offthewall-dev.workers.dev'],
   },
   // Krillion Code Breaker: its Worker (scores, the live play-by-play and screenshots)
   '/code-breaker/': {

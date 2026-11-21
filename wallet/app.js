@@ -6,12 +6,14 @@ import { connectStore, readAppData, store } from "/shared/store.js?v=3";
 import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=7";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
+import { askWallet } from "/shared/ai.js?v=1";
 import { contrailDemo } from "/contrail/demo-data.js";
 import { walletDemo } from "/wallet/demo-data.js";
 
 setUpApp();
-// Claude features (research, chat, downgrade advice) wait for shared/ai.js: getSample() returns
-// null until then, so their controls aren't shown at all. Turn this on when it returns a sampler.
+// Claude features (research, chat, downgrade advice) go through the AI Worker (shared/ai.js).
+// Their controls stay hidden until the Worker's /v1/wallet/ask is deployed and the new Research
+// tab is in; getSample() already works for members.
 const AI_READY = false;
 let CATALOG = [];
 document.addEventListener("change", e => { if (e.target.id === "f_catalog" && e.target.value) fillFromCatalog(e.target.value); });
@@ -232,17 +234,20 @@ function vTravel() {
 }
 
 // ---------- Claude ----------
-let samplePromise = null;
-function getSample() { return Promise.resolve(null); } // Phase 3: shared/ai.js, for approved users
-function sampleErr(e) {
-  const c = e && e.code;
-  if (c === "not_granted") return "Claude access was declined for this page. Reload the page to be asked again.";
-  if (c === "rate_limited") return "Too many questions at once. Wait a minute and try again.";
-  if (c === "invalid_json") return "Claude's answer didn't come back in the expected format. Try again or rephrase.";
-  if (c === "cancelled") return "Stopped.";
-  if (c === "session_expired") return "Your session expired. Reload the page.";
-  return "Claude couldn't answer just now. Try again in a moment.";
+// Members get a function that asks Claude about this wallet; the demo gets null. The Worker
+// decides the rest (their AI switch, Wallet approval, daily limit) and says why if it won't.
+// ask(question, { thread, signal }) → { summary, suggestions[] }; thread = [{ q, a }], oldest first
+let aiRemaining = null;
+function getSample() {
+  if (store.mode !== "account") return Promise.resolve(null);
+  return Promise.resolve(async (question, { thread = [], signal } = {}) => {
+    const r = await askWallet({ question, wallet: walletForAi(), thread, signal });
+    aiRemaining = r.remaining;
+    return r.result;
+  });
 }
+// The Worker's messages are written to be shown as they are
+const sampleErr = e => (e && e.message) || "Claude couldn't answer just now. Try again in a moment.";
 
 // ---------- derived ----------
 const cpp = c => (S.settings.pointValues[c.program] ?? PROGRAMS[c.program] ?? 1);
@@ -803,12 +808,6 @@ function vChat() {
       <div class="row"><span class="note" id="chatAvail" style="margin-right:auto">${matchMedia("(pointer: fine)").matches ? "Enter to send · Shift+Enter for a new line" : ""}</span>${chat.busy ? `<button type="button" class="btn" data-act="chat-stop">Stop</button>` : ""}<button type="submit" class="btn primary" ${chat.busy ? "disabled" : ""}>Send</button></div></form>
     <p class="note" style="margin:0">General information, not financial advice. Claude can't browse live offers, so check current terms with the issuer.</p></div>`;
 }
-function chatContext() {
-  return `You are a friendly, sharp US credit card advisor inside the user's personal card tracker, having an ongoing conversation. Today is ${iso(TODAY)}.
-Their wallet, people, 5/24 counts, point valuations (cents) and watchlist as JSON:\n${JSON.stringify(walletSummary())}
-If the JSON includes "travel", it summarizes their real flights, airports, hotel stays and how they booked and paid; use it when relevant.
-Guidelines: answer the latest message directly and conversationally; refer back to earlier turns when helpful; use their actual cards, fees and multipliers; mention issuer rules (Chase 5/24, Amex once-per-lifetime, Capital One limits, Citi 48-month) when they matter; keep it short (under about 200 words) with bullets only when they help; end with a brief follow-up question only when it would genuinely help. Your knowledge of offers may be dated, so say so briefly when quoting fees or bonuses. General information, not financial advice; never ask for card numbers, income or credit scores.`;
-}
 async function sendChat(text) {
   const q = String(text || "").trim(); if (!q || chat.busy) return;
   const sample = await getSample();
@@ -816,14 +815,13 @@ async function sendChat(text) {
   S.chat ||= []; chat.err = ""; chat.draft = "";
   S.chat.push({ role: "user", content: q }); S.chat.push({ role: "assistant", content: "" });
   chat.busy = true; chat.ctl = new AbortController(); render();
-  const hist = S.chat.slice(0, -1).slice(-20);
-  // Fresh wallet context goes on the first turn sent, so it reflects any edits since the chat began.
-  const turns = hist.map((m, i) => ({ role: m.role, content: i === 0 ? `${chatContext()}\n\n${m.role === "user" ? "User" : "Earlier reply"}: ${m.content}` : m.content }));
-  if (turns[0].role !== "user") turns.unshift({ role: "user", content: chatContext() + "\n\n(Conversation so far follows.)" });
+  // Earlier turns as question and answer pairs (the Worker uses the last 4)
+  const thread = [];
+  for (let i = 0; i + 1 < S.chat.length - 2; i += 2) if (S.chat[i].role === "user") thread.push({ q: S.chat[i].content, a: S.chat[i + 1].content });
   const cur = S.chat[S.chat.length - 1];
   try {
-    const r = await sample(turns, { modelTier: "default", signal: chat.ctl.signal, onText: ({ text }) => { cur.content = text; paintChat(); } });
-    cur.content = (r && r.text) || cur.content || "";
+    const r = await sample(q, { thread, signal: chat.ctl.signal });
+    cur.content = [r.summary, ...r.suggestions.map(x => `- **${x.issuer ? x.issuer + " " : ""}${x.name}** (${money(x.annualFee)} fee): ${x.why}`)].join("\n");
   } catch (e) {
     if (!cur.content) S.chat.pop();
     chat.err = sampleErr(e);
@@ -832,9 +830,18 @@ async function sendChat(text) {
   chat.busy = false; chat.ctl = null; persist();
   if (tab === "research") { render(); setTimeout(() => { const q = $("#chatQ"); if (q) q.focus(); const box = $("#chatMsgs"); if (box) box.scrollTop = box.scrollHeight; }, 0); }
 }
-function walletSummary() {
-  return { people: viewPeople().map(p => ({ name: p.name, fiveTwentyFour: fiveTwentyFour(p.id).count })), cards: VC().map(c => ({ name: `${c.issuer} ${c.name}`, holder: profName(c.owner), role: c.role, status: c.status, type: c.kind, opened: c.openDate, annualFee: num(c.annualFee), program: c.program, multipliers: Object.fromEntries(CATS.map(([k, l]) => [l, multOf(c, k)])), bonusReceived: c.sub && c.sub.received ? c.sub.receivedDate : null })),
-    watchlist: S.research.map(r => r.name), pointValuesCents: S.settings.pointValues, travel: travelBrief() };
+// What Claude sees: names, fees, dates and multipliers. Never card numbers (not even the last 4),
+// credit limits or notes. Multipliers list only categories above the card's base rate.
+function walletSummary({ closed = true, travel = true } = {}) {
+  const cards = VC().filter(c => closed || !isGone(c)).map(c => ({ name: fullName(c), holder: profName(c.owner), role: c.role, status: c.status, type: c.kind, opened: c.openDate, annualFee: num(c.annualFee), program: c.program,
+    base: num(c.base) || 1, multipliers: Object.fromEntries(CATS.filter(([k]) => multOf(c, k) > (num(c.base) || 1)).map(([k]) => [k, multOf(c, k)])), bonusReceived: c.sub && c.sub.received ? c.sub.receivedDate || true : false }));
+  return { people: viewPeople().map(p => ({ name: p.name, fiveTwentyFour: fiveTwentyFour(p.id).count })), cards,
+    watchlist: S.research.map(r => fullName(r)), pointValuesCents: S.settings.pointValues, ...(travel ? { travel: travelBrief() } : {}) };
+}
+// Trimmed to fit the Worker's limit: without travel first, then without closed cards
+function walletForAi() {
+  for (const o of [{}, { travel: false }, { travel: false, closed: false }]) { const w = walletSummary(o); if (JSON.stringify(w).length < 8800) return w; }
+  const w = walletSummary({ travel: false, closed: false }); w.cards = w.cards.slice(0, 25); return w;
 }
 function vResearch() {
   const r = research;
@@ -920,15 +927,12 @@ async function researchWatch(x) {
   const sample = await getSample();
   if (!sample) return;
   wBusy[x.id] = true; wErr[x.id] = ""; render();
-  const prompt = `Research the US credit card "${x.issuer} ${x.name}" for someone deciding whether to apply. Their wallet and point valuations as JSON:\n${JSON.stringify(walletSummary())}\nToday is ${iso(TODAY)}.${x.notes ? " Their notes: " + x.notes : ""} If the JSON includes "travel", it summarizes their real flights, airports, hotel stays and how they booked and paid: weigh airline, airport lounge, hotel brand and booking-portal fit against it, and treat upcoming trips as near-term spend.
-Give the card's standard terms as you best know them and judge how it fits THIS wallet and travel pattern: which categories it would beat their current best card in, whether the fee pays for itself for them, and issuer approval rules that apply to them (Chase 5/24, Amex lifetime bonus, Capital One limits, Citi 48-month, etc). verdict is "Apply now", "Wait" or "Skip". Multiplier keys only from: ${CATS.map(c => c[0]).join(", ")} (omit base-rate categories). Program one of: ${Object.keys(PROGRAMS).join("; ")}. Credit value is dollars per year. Also say whether the card can later be product-changed to a $0 annual fee card from the same issuer, and to which. Keep text short. Your knowledge may be dated, so note in caveat what to verify.
-Reply with only JSON: {"name":"","issuer":"","annualFee":0,"typicalBonus":"","standardBonusPoints":0,"program":"","base":1,"multipliers":{"dining":3},"credits":[{"name":"","value":0,"period":"monthly|quarterly|semiannual|annual"}],"perks":[{"label":"","kind":""}],"downgradeTo":"","reapplyMonths":0,"zeroFeeDowngrade":{"available":true,"options":["card names with a $0 annual fee this card can be product-changed to, same issuer"],"note":"one short sentence, e.g. points kept or lost"},"verdict":"Apply now|Wait|Skip","fit":"2-3 sentences","pros":["..."],"cons":["..."],"rules":"one sentence","caveat":""}`;
   try {
-    const r = await sample.json(prompt, { modelTier: "default" });
+    const r = await sample(`Should I apply for the ${fullName(x)}? How does it fit my wallet and travel, does the fee pay for itself for me, and which issuer rules apply to me?${x.notes ? " My notes: " + x.notes : ""}`);
     const cur = S.research.find(y => y.id === x.id); if (!cur) return;
-    cur.claude = { ...r, date: fmtD(TODAY) };
-    if (r.annualFee != null) cur.annualFee = num(r.annualFee);
-    if (r.typicalBonus && !cur.bonus) cur.bonus = String(r.typicalBonus);
+    const same = r.suggestions.find(s => (s.name || "").toLowerCase().includes(String(x.name || "").toLowerCase()));
+    cur.claude = { fit: r.summary, annualFee: same ? same.annualFee : cur.annualFee, typicalBonus: same ? same.typicalBonus : "", caveat: same ? same.watchOut : "", date: fmtD(TODAY) };
+    if (same && !cur.bonus && same.typicalBonus) cur.bonus = same.typicalBonus;
     wOpen = x.id; FOLD.set("wl-" + x.id, true); persist();
   } catch (e) { wErr[x.id] = sampleErr(e); }
   wBusy[x.id] = false; if (tab === "research") render();
@@ -954,10 +958,9 @@ async function runResearch() {
   const sample = await getSample(); if (!sample) return;
   research = { ...research, busy: true, error: "", result: null, stream: "", ctl: new AbortController() };
   render();
-  const prompt = `You are a US credit card research assistant. Here is the person's current wallet as JSON:\n${JSON.stringify(walletSummary())}\n\nToday is ${iso(TODAY)}. Their question or goal: ${q || "Suggest the most useful next card for this wallet."} If the JSON includes "travel", it summarizes their real flights, airports, hotel stays and how they booked and paid: weigh airline, airport lounge, hotel brand and booking-portal fit against it, and treat upcoming trips as near-term spend.\n\nSuggest up to 5 cards (not ones they already hold unless the question asks about their own cards). Account for gaps in their multipliers, annual fee value, issuer application rules such as Chase 5/24 and Amex once-per-lifetime bonuses, and their point valuations. Your knowledge may be out of date, so mention in watchOut when an offer changes often.\nReply with only JSON in this shape:\n{"summary":"2-3 sentences of overall advice","suggestions":[{"name":"card name without issuer","issuer":"","annualFee":0,"typicalBonus":"e.g. 60,000 points after $4,000 in 3 months","program":"","multipliers":{"Dining":3},"keyPerks":["..."],"why":"why it fits this wallet, 1-2 sentences","watchOut":"rules or caveats","zeroFeeDowngrade":{"available":true,"options":["$0 annual fee card(s) from the same issuer it can be product-changed to"],"note":""}}]}`;
   try {
-    const res = await sample.json(prompt, { signal: research.ctl.signal, onText: ({ text }) => { if (!research.stream && text) { research.stream = text; const o = $("#askOut"); if (o) o.innerHTML = researchOut(); } } });
-    research = { ...research, busy: false, result: res && typeof res === "object" ? res : { summary: String(res), suggestions: [] } };
+    const res = await sample(q || "What's the most useful next card for my wallet?", { signal: research.ctl.signal });
+    research = { ...research, busy: false, result: res };
   } catch (e) { research = { ...research, busy: false, error: sampleErr(e) }; }
   if (tab === "research") render();
 }
@@ -1113,11 +1116,9 @@ async function askDowngrade(c) {
   const out = $("#dg-" + c.id); const sample = await getSample();
   if (!sample) return;
   out.textContent = "Asking Claude…";
-  const others = S.cards.filter(x => x.owner === c.owner && x.id !== c.id && !isGone(x)).map(x => `${x.issuer} ${x.name} (${x.program})`).join("; ");
   try {
-    const r = await sample.json(`A US cardholder wants to stop paying the annual fee on the ${c.issuer} ${c.name} (fee $${num(c.annualFee)}, earns ${c.program}). Their other open cards: ${others || "none"}.\nRecommend the best product-change (downgrade) target from the same issuer, considering which no-fee card would keep their points usable and fill a gap in their wallet. If no downgrade exists, say cancel. Your knowledge may be dated, so keep it brief.\nReply with only JSON: {"target":"card name or Cancel","reason":"one sentence"}`, { modelTier: "quick" });
-    out.textContent = `${r.target}: ${r.reason}`;
-    if (r.target && !/^cancel/i.test(r.target) && !c.downgradeTo) { c.downgradeTo = String(r.target); persist(); }
+    const r = await sample(`I want to stop paying the annual fee on my ${fullName(c)}. What's the best no-fee card from the same issuer to product change it to, keeping my points usable and filling a gap in my wallet? If there's none, say to cancel.`);
+    out.textContent = r.summary;
   } catch (e) { out.textContent = sampleErr(e); }
 }
 

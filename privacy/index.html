@@ -81,6 +81,10 @@
     <p>Nothing keeps the emails themselves. What's saved to your account is only what was found (flights, the hotel, dates and confirmation numbers, what the booking cost in money or points, and the names of anyone else on the booking, so a shared trip shows who it was with) and, for each email checked, its Gmail message ID and whether it was added, updated or skipped, so it isn't read twice. Card numbers are never kept, not even the last four digits. To tell your bookings from the ones you made for others, Contrail compares the travelers' names with the names you list under “Names on your bookings” in Settings. The sync log in Settings shows the same, with the sender's domain for skipped emails. The Worker counts how many emails you've had read today, to keep within a daily limit, and its log keeps only a short fingerprint of each email's text, the outcome and its size, never the text.</p>
     <p>Disconnect in Settings removes Contrail's access to your Gmail. You can also remove it any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. Trips and stays added from email are deleted along with the rest of your Contrail data (see below).</p>
 
+    <h2 id="wallet-ai">What's in My Wallet?: asking Claude</h2>
+    <p>Members I've switched the AI feature on for can ask Claude about their cards in What's in My Wallet?. Each question goes to the same Cloudflare Worker of mine, which checks you're a member approved for the wallet with AI on, then passes it to Anthropic's Claude along with a summary of your wallet: card names, issuers, annual fees, rewards programs and multipliers, open dates, whose card each is, your 5/24 counts, your point values, your watchlist's card names, a few of your earlier questions and answers, and, if you use Contrail too, a summary of your travel (airlines, airports, hotel brands, how you booked and paid, upcoming trips). It never includes card numbers (not even the last four digits), credit limits or your notes. Anthropic's handling of it is covered by its <a href="https://www.anthropic.com/legal/privacy">privacy policy</a>.</p>
+    <p>The answer comes back to your browser. If you save it, it's stored with the rest of your wallet in your account. The Worker keeps nothing about the question: it counts how many you've asked today, to keep within a daily limit, and its log keeps only a short fingerprint of the question, the outcome and its size.</p>
+
     <h2>Cookies</h2>
     <p>None. Some pages remember small settings, like light or dark mode, in your browser's own storage on your device; those stay on your device and are never sent anywhere. If you sign in, your sign-in is kept there too (see Accounts).</p>
 
@@ -88,7 +92,7 @@
     <p>On your device: clear it in the app (Snow &amp; Surf has a button for it) or clear this site's data in your browser.</p>
     <p>In Snow &amp; Surf: Notifications → “Delete my saved data” removes your setup from your device and your account. In Budget Ledger: Manage → Your data → “Delete my saved budget” removes it from the server straight away. In Contrail: Settings → “Delete my saved Contrail data”, and in What's in My Wallet?: Settings → “Delete my saved wallet”, do the same for your trips, stays and cards. Copies in older nightly backups remain until those are cleared, so to have them removed too, or to delete your account itself, email me using the address on the <a href="/contact/">Contact page</a> and I'll delete it.</p>
 
-    <p class="privacy-updated">Last updated November 12, 2026. See also the <a href="/terms/">Terms</a>.</p>
+    <p class="privacy-updated">Last updated November 21, 2026. See also the <a href="/terms/">Terms</a>.</p>
   </main>
 
   <footer class="wrap">
