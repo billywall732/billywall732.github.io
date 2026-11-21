@@ -96,7 +96,7 @@ async function load() {
   STAYS = sortStays((await store.list('stays')).filter((s) => !s.hidden).map(toStay));
   visits = {};
   TRIPS.forEach((t) => t.legs.forEach((l) => { [l.o, l.d].forEach((c) => { visits[c] ||= { n: 0, trips: new Set() }; visits[c].trips.add(t.id); }); visits[l.o].n++; visits[l.d].n++; }));
-  if (!visits[selApt]) selApt = visits[HOME] ? HOME : Object.keys(visits)[0] || HOME;
+  if (!aptList().includes(selApt)) selApt = HOME;
   recomputeAccess();
 }
 
@@ -582,9 +582,15 @@ $id('addTripBtn').addEventListener('click', () => openTripForm(null));
 
 // ---------- airports ----------
 function renderApts() {
-  const codes = Object.keys(visits).sort((a, b) => visits[b].n - visits[a].n || a.localeCompare(b));
-  $id('apts').innerHTML = codes.length ? codes.map((c) => `<button type="button" class="apt ${c === selApt ? 'on' : ''}" data-c="${c}"><b>${c}</b><span class="nm">${esc(A(c).n)}<small>${esc(A(c).c)}${A(c).cc !== 'United States' && !/,/.test(A(c).c) ? ', ' + esc(A(c).cc) : ''} · ${(LOUNGES[c]?.l || []).length} lounges, ${(LOUNGES[c]?.l || []).filter(canUse).length} yours</small></span><span class="ct num">${visits[c].n}×</span></button>`).join('')
-    : `<p class="empty">Airports show up here once you add flights.</p>`;
+  const mine = myApts(), homes = homeApts();
+  // Home airports first in the order you set them, then trip airports by visits, then the rest A to Z
+  const rank = (c) => (homes.includes(c) ? homes.indexOf(c) - homes.length : mine.includes(c) ? 0 : 1);
+  const codes = aptList().filter((c) => A(c)).sort((a, b) => rank(a) - rank(b) || (visits[b]?.n || 0) - (visits[a]?.n || 0) || a.localeCompare(b));
+  $id('aptsEyebrow').textContent = SHOWALL ? 'All in the guide' : 'Home and trips';
+  $id('aptsTool').innerHTML = showAllToggle();
+  $id('apts').innerHTML = codes.map((c) => { const ls = loungesAt(c);
+    return `<button type="button" class="apt ${c === selApt ? 'on' : ''}" data-c="${c}"><b>${c}</b><span class="nm">${esc(A(c).n)}<small>${esc(A(c).c)}${A(c).cc !== 'United States' && !/,/.test(A(c).c) ? ', ' + esc(A(c).cc) : ''} · ${ls.length} lounge${ls.length === 1 ? '' : 's'}, ${ls.filter(canUse).length} yours</small></span><span class="ct num">${visits[c] ? `${visits[c].n}×` : homes.includes(c) ? 'Home' : ''}</span></button>`; }).join('')
+    + (mine.length <= homes.length && !SHOWALL ? `<p class="empty">Airports from your trips show up here once you add flights.</p>` : '');
   root.querySelectorAll('.apt').forEach((b) => b.addEventListener('click', () => selectApt(b.dataset.c)));
 }
 function localNow(tz) { return new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', weekday: 'short' }).format(new Date()); }
@@ -632,18 +638,51 @@ function otherWay(L) {
 }
 const fmtChecked = (ym) => { if (!ym) return ''; const [y, m] = ym.split('-'); return `${MON[+m - 1]} ${y}`; };
 
+// ---------- which airports and lounges show ----------
+// By default: your home airports and the airports in your trips, and only lounges that have been
+// checked. "Show all" (remembered on this device) adds every airport in the guide and the lounges
+// still waiting to be checked; it also widens the count on the Cards tab.
+let SHOWALL = prefs.get('showall') === '1';
+const homeApts = () => (PROFILE && PROFILE.homeAirports && PROFILE.homeAirports.length ? PROFILE.homeAirports : [HOME]);
+const myApts = () => [...new Set([...homeApts(), ...Object.keys(visits)])];
+const aptList = () => (SHOWALL ? [...new Set([...myApts(), ...Object.keys(LOUNGES)])] : myApts());
+const loungesAt = (c) => (LOUNGES[c]?.l || []).filter((x) => SHOWALL || !x[4].needsReview);
+const OUT_OF_DATE_MONTHS = 6;
+function monthsSince(ym) { const [y, m] = ym.split('-').map(Number), d = new Date(NOW); return (d.getFullYear() - y) * 12 + (d.getMonth() + 1 - m); }
+function checkedHTML(x) {
+  const v = x[4].lastVerified;
+  if (!v) return `<span class="lchk old">Not checked yet: confirm with the lounge</span>`;
+  const old = monthsSince(v) > OUT_OF_DATE_MONTHS;
+  return `<span class="lchk${old ? ' old' : ''}">Last checked ${fmtChecked(v)}${old ? ' · may be out of date' : ''}</span>`;
+}
+const showAllToggle = () => `<label class="only"><input type="checkbox" data-showall ${SHOWALL ? 'checked' : ''}> Show all airports and unchecked lounges</label>`;
+function setShowAll(on) { SHOWALL = on; prefs.set('showall', on ? '1' : '0'); if (!aptList().includes(selApt)) selApt = HOME; refreshAccess(); draw(); }
+// Each network's own lounge finder (checked Nov 2026). Ticket/status and day passes have none.
+const FINDERS = {
+  CS: 'https://www.chase.com/sapphire-cards/lounges',
+  CO: 'https://www.capitalone.com/travel/airport-lounges/',
+  PP: 'https://www.prioritypass.com/airport-lounges',
+  AX: 'https://www.americanexpress.com/en-us/travel/lounges/the-platinum-card',
+  UA: 'https://www.united.com/en/us/fly/travel/airport/united-club-and-lounge-locations.html',
+  AA: 'https://www.aa.com/web/i18n/travel-info/clubs/admirals-club-locations.html',
+  AS: 'https://www.alaskaair.com/content/airport-lounge/location-and-hours',
+  DL: 'https://www.delta.com/us/en/delta-sky-club/locations',
+};
+const finderLink = (t, label = ACCESS[t]) => (FINDERS[t] ? `<a href="${FINDERS[t]}" target="_blank" rel="noopener">${esc(label)}</a>` : esc(label));
+
 function whoChooser({ anyone = true } = {}) {
   const o = owners(); if (!o.length) return '';
   const w = whoNow() === 'Anyone' && !anyone ? o[0] : whoNow(), opts = [...o, ...(o.length > 1 && anyone ? ['Anyone'] : [])];
   return `<div class="accrow"><span class="eyebrow">Cards of</span>${opts.map((x) => `<button type="button" class="acc ${w === x ? 'on' : ''}" data-who="${esc(x)}" aria-pressed="${w === x}">${x === 'Anyone' ? 'Any of us' : esc(x)}</button>`).join('')}</div>`;
 }
 function loungeHTML(c) {
-  const L = LOUNGES[c] || { l: [] }, n = L.l.filter(canUse).length;
-  const rows = L.l.filter((x) => !ONLYMINE || canUse(x)).sort((a, b) => canUse(b) - canUse(a));
+  const L = LOUNGES[c] || { l: [] }, shown = loungesAt(c), n = shown.filter(canUse).length, hidden = L.l.length - shown.length;
+  const rows = shown.filter((x) => !ONLYMINE || canUse(x)).sort((a, b) => canUse(b) - canUse(a));
   const cards = walletFor();
-  const checked = L.needsReview ? 'Not yet checked: confirm with the lounge before relying on this.' : L.lastVerified ? `Last checked ${fmtChecked(L.lastVerified)}. Lounges change, so confirm with the lounge before relying on this.` : 'No lounge details for this airport yet.';
+  const nets = Object.keys(FINDERS).filter((t) => shown.some((x) => x[3].includes(t)) || MYACC.has(t));
+  const checked = L.l.length ? 'Lounges change, so confirm with the lounge before relying on this.' : 'No lounge details for this airport yet.';
   return `<div class="lounges">
-    <div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">Lounges</h3><span class="eyebrow">${L.l.length} listed · ${n} you can use</span></div>
+    <div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">Lounges</h3><span class="eyebrow">${shown.length} listed · ${n} you can use</span></div>
     ${whoChooser()}
     <p class="lw" style="margin:0">${cards.length ? `Using ${cards.map((x) => esc(x.name)).join(', ')}.` : 'No cards added yet.'} <button type="button" class="linkbtn" data-goto="cards">Edit cards</button></p>
     <label class="only"><input type="checkbox" id="onlyMine" ${ONLYMINE ? 'checked' : ''}> Only lounges I can use</label>
@@ -651,10 +690,12 @@ function loungeHTML(c) {
       <div class="lt"><b>${esc(x[0])}</b>${canUse(x) ? `<span class="chip in">Your cards get you in</span>` : `<span class="chip">${otherWay(x)}</span>`}</div>
       <span class="lw">${esc(x[1])}</span>${x[2] ? `<span class="la">${esc(x[2])}</span>` : ''}
       ${canUse(x) ? `<span class="lw">Via ${[...new Set(x[3].filter((t) => MYACC.has(t)).flatMap(tagSources))].map(esc).join(', ')}${x[3].includes('UA') && walletFor().some((k) => k.key === 'uexp') && !walletFor().some((k) => k.key === 'uci') ? ' (uses a one-time pass)' : ''}</span>` : ''}
-      <span class="chips">${x[3].map((t) => `<span class="chip ${MYACC.has(t) ? 'in-soft' : ''}">${esc(ACCESS[t] || t)}</span>`).join('')}</span></li>`).join('')}</ul>`
-      : `<p class="empty">${L.l.length ? 'None of the lounges here match your cards.' : 'No lounges listed at this airport.'}</p>`}
+      <span class="chips">${x[3].map((t) => `<span class="chip ${MYACC.has(t) ? 'in-soft' : ''}">${esc(ACCESS[t] || t)}</span>`).join('')}</span>${checkedHTML(x)}</li>`).join('')}</ul>`
+      : `<p class="empty">${shown.length ? 'None of the lounges here match your cards.' : hidden ? 'No checked lounges here yet.' : 'No lounges listed at this airport.'}</p>`}
+    ${hidden && !SHOWALL ? `<p class="lnote">${hidden} more listed here ${hidden === 1 ? "hasn't" : "haven't"} been checked yet. <button type="button" class="linkbtn" data-showall-on>Show them</button></p>` : ''}
     ${L.note ? `<p class="lnote">${esc(L.note)}</p>` : ''}
     <p class="lnote">${checked}</p>
+    ${nets.length ? `<p class="lnote finders">Official lounge finders: ${nets.map((t) => finderLink(t)).join(' · ')}</p>` : ''}
   </div>`;
 }
 function wireLounges() {
@@ -667,7 +708,7 @@ root.addEventListener('click', (e) => { const b = e.target.closest('#p-settings 
 function refreshAccess() { recomputeAccess(); renderAptDetail(); renderApts(); if (!editing) renderTrips(); renderWallet(); if (TAB === 'settings') renderSettings(); }
 function tripLoungeHTML(t) {
   const deps = [...new Set(t.legs.map((l) => l.o))];
-  const rows = deps.map((c) => { const u = (LOUNGES[c]?.l || []).filter(canUse);
+  const rows = deps.map((c) => { const u = loungesAt(c).filter(canUse);
     return `<li><b class="mono">${c}</b> ${u.length ? u.map((x) => `${esc(x[0])} <span class="lw">(${esc(x[1])})</span>`).join(' · ') : `<span class="lw">None with your cards</span>`}</li>`; }).join('');
   return `<div class="purpose"><span class="eyebrow">Lounges you can use on this trip</span><ul class="tl">${rows}</ul>
     <span class="lw">Based on ${whoNow() === 'Anyone' ? 'everyone’s' : esc(whoNow()) + '’s'} cards. Check your terminal: some lounges are only reachable from certain gates.</span></div>`;
@@ -692,13 +733,15 @@ function renderWallet() {
       </article>`; }).join('')}</div></div>`).join('');
   }
   wl.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => removeCard(b.dataset.del)));
-  const all = Object.keys(LOUNGES).flatMap((k) => LOUNGES[k].l.map((x) => ({ k, x })));
+  const all = aptList().flatMap((k) => loungesAt(k).map((x) => ({ k, x })));
   const usable = all.filter((o) => canUse(o.x));
   const kinds = ['CS', 'CO', 'PP', 'AX', 'UA', 'AA', 'AS', 'DL'].filter((t) => MYACC.has(t));
   const sum = $id('accessSummary');
-  sum.innerHTML = `<div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">Lounge access</h3><span class="eyebrow">${usable.length} of ${all.length} lounges in the guide</span></div>
+  sum.innerHTML = `<div class="colhead"><h3 style="font-size:20px;text-transform:uppercase">Lounge access</h3><span class="eyebrow">${usable.length} of ${all.length} lounges ${SHOWALL ? 'in the guide' : 'at your airports'}</span></div>
     ${whoChooser()}
-    ${kinds.length ? `<ul class="tl">${kinds.map((t) => `<li><b>${esc(ACCESS[t])}</b> <span class="lw">via ${tagSources(t).map(esc).join(', ')}</span></li>`).join('')}</ul>` : `<p class="empty">These cards don't include lounge access.</p>`}`;
+    ${showAllToggle()}
+    ${kinds.length ? `<ul class="tl">${kinds.map((t) => `<li><b>${finderLink(t)}</b> <span class="lw">via ${tagSources(t).map(esc).join(', ')}</span></li>`).join('')}</ul>
+    <p class="lnote">Each network name opens its official lounge finder.</p>` : `<p class="empty">These cards don't include lounge access.</p>`}`;
   sum.querySelectorAll('.acc').forEach((b) => b.addEventListener('click', () => setWho(b.dataset.who)));
 }
 function renderAddForm() {
@@ -1113,8 +1156,10 @@ root.addEventListener('submit', async (e) => {
   await saveProfile({ displayName: f.displayName.value.trim(), bookingNames, homeAirports: [h1, ...(h2 && h2 !== h1 ? [h2] : [])] });
   toast('Settings saved');
 });
+root.addEventListener('click', (e) => { if (e.target.closest('[data-showall-on]')) setShowAll(true); });
 root.addEventListener('change', async (e) => {
   const t = e.target;
+  if (t.dataset.showall !== undefined) { setShowAll(t.checked); return; }
   if (t.dataset.hold && !fromWallet()) {
     const who = whoNow() === 'Anyone' ? (owners()[0] || OWNER) : whoNow(), c = CAT[t.dataset.hold];
     if (t.checked) await addCard({ key: c.k, name: c.short, owner: who, tags: [] });

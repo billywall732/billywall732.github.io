@@ -300,6 +300,10 @@ body.noscroll{overflow:hidden}
 .contrail-app .chip.in{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .contrail-app .chip.in-soft{color:var(--accent);border-color:currentColor}
 .contrail-app .lnote{font-size:12.5px;color:var(--muted);margin:0}
+.contrail-app .lchk{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.contrail-app .lchk.old{color:var(--warn)}
+.contrail-app .finders a, .contrail-app #accessSummary .tl a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.contrail-app #aptsTool{margin:6px 0 4px}
 .contrail-app .empty{color:var(--muted);font-size:13.5px;margin:0}
 .contrail-app ul.tl{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
 .contrail-app ul.tl b{display:inline-block;min-width:38px}
