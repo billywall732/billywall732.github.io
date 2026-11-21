@@ -24,7 +24,7 @@ export function walletDemo(catalog) {
       ? { amount: x.sub.amount, standard: x.sub.standard, promo: x.sub.promo, spendReq: x.sub.spendReq, spent: x.sub.spent, deadline: isoDate(addDays(t0, x.sub.deadlineIn)), received: false, receivedDate: '' }
       : { amount: 0, standard: 0, promo: false, spendReq: 0, spent: 0, deadline: '', received: years > 0, receivedDate: years > 0 ? isoDate(addDays(open, 100)) : '' };
     return {
-      id: id(key, owner), name: c.name, issuer: c.issuer, network: c.network || 'Visa', last4, kind: 'personal', status: 'open', color,
+      id: id(key, owner), catalogKey: key, name: c.name, issuer: c.issuer, network: c.network || 'Visa', last4, kind: 'personal', status: 'open', color,
       openDate: isoDate(open), annualFee: c.annualFee, program: c.program, base: c.base, mult: { ...c.mult },
       sub, credits: c.credits.map((cr, i) => ({ id: `${id(key, owner)}-cr${i}`, name: cr.name, value: cr.value, period: cr.period, used: x.used?.[i] ?? 0, log: [] })),
       perks: c.perks.map((p) => ({ ...p })), perkValue: x.perkValue ?? 0, downgradeTo: c.downgradeTo, reapplyMonths: c.reapplyMonths,

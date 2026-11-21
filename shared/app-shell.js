@@ -3,7 +3,7 @@
 // that have them from home/index.html by tools/make-pages.mjs (Contrail has neither).
 import { nextTheme, setUpPage, themeLabel } from '/js/ui.js?v=3';
 import { config } from '/shared/config.js?v=2';
-import { store } from '/shared/store.js?v=3';
+import { store } from '/shared/store.js?v=4';
 import { loadAuth } from './auth-loader.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);

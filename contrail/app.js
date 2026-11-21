@@ -3,13 +3,14 @@
 // flights and stays, CSV and JSON import, and a Settings tab. Card research (Claude) is gone
 // from this app; What's in My Wallet? covers it.
 /* global d3, topojson */
-import { connectStore, store } from '/shared/store.js?v=3';
+import { connectStore, readAppData, store } from '/shared/store.js?v=4';
 import { airlineName, AIRLINES, airport, deriveTrip, destOf as destFrom, loadAirports, localToUtc, miles, nightsOf, placeName, RENTAL, tzOffsetMin } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=7';
+import { demoBanner, saveFile, setUpApp } from '/shared/app-shell.js?v=8';
 import { nextTheme, themeLabel } from '/js/ui.js?v=3';
 import { addDays, isoDate } from '/shared/seed.js';
 import { contrailDemo } from '/contrail/demo-data.js';
+import { walletDemo } from '/wallet/demo-data.js?v=3';
 import { parseFlightsCsv, CSV_HELP } from '/contrail/csv.js';
 import { BackupError, checkBackup } from '/contrail/backup.js';
 import { setUpGmail } from '/contrail/gmail.js?v=12';
@@ -54,13 +55,41 @@ const money = (v) => '$' + Number(v).toLocaleString(undefined, { minimumFraction
 
 // ---------- state, loaded from the store ----------
 let TRIPS = [], RAW = {}, STAYS = [], PROFILE = null, WALLET = [], HOME = 'LAX', OWNER = '', visits = {};
+// Where the cards come from: 'wallet' (What's in My Wallet?, when the member has open cards there;
+// the demo uses Wallet's sample cards) or 'contrail' (this app's own list in the profile)
+let CARD_SRC = 'contrail', WALLET_DOC = null;
+const WALLET_URL = '/wallet/#cards';
+const fromWallet = () => CARD_SRC === 'wallet';
+const normName = (s) => String(s || '').toLowerCase().replace(/[®™]/g, '').replace(/\b(credit\s+)?card\b/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+function catalogKeyFor(c) {
+  if (c.catalogKey && CAT[c.catalogKey]) return c.catalogKey;
+  const n = normName(c.name), full = normName(`${c.issuer || ''} ${c.name}`);
+  const hit = CDATA.cards.find((x) => normName(x.name) === n && (!c.issuer || normName(x.issuer).split(' ')[0] === normName(c.issuer).split(' ')[0])) || CDATA.cards.find((x) => normName(`${x.issuer} ${x.name}`) === full);
+  return hit ? hit.key : '';
+}
+// Wallet's open cards in Contrail's shape. Closed or product-changed cards don't get anyone into a lounge.
+function cardsFromWallet(doc) {
+  if (!doc || !Array.isArray(doc.cards)) return [];
+  const people = doc.profiles || [], nameOf = Object.fromEntries(people.map((p) => [p.id, p.name]));
+  return doc.cards.filter((c) => c.status !== 'closed' && c.status !== 'changed').map((c) => {
+    const key = catalogKeyFor(c);
+    return { id: `w-${c.id}`, key: key || 'custom', name: key ? CAT[key].short : c.name, owner: people.length > 1 ? (nameOf[c.owner] || OWNER) : OWNER, tags: [] };
+  });
+}
+async function loadWalletDoc() {
+  if (store.mode === 'demo') return walletDemo(CDATA.cards);
+  const d = await readAppData('wallet'); // null when not a Wallet member (or offline): Contrail's own list
+  return d && d.docs.wallet;
+}
 const destOf = (t) => destFrom(t, HOME);
 
 async function load() {
   PROFILE = (await store.getDoc('profile')) || { displayName: '', homeAirports: ['LAX'], cards: [] };
   HOME = (PROFILE.homeAirports || [])[0] || 'LAX';
   OWNER = PROFILE.displayName || 'Me';
-  WALLET = (PROFILE.cards || []).map((c, i) => ({ id: c.id || `c${i}`, ...c }));
+  const wc = cardsFromWallet(WALLET_DOC);
+  CARD_SRC = wc.length ? 'wallet' : 'contrail';
+  WALLET = wc.length ? wc : (PROFILE.cards || []).map((c, i) => ({ id: c.id || `c${i}`, ...c }));
   const recs = (await store.list('trips')).filter((t) => !t.hidden);
   RAW = Object.fromEntries(recs.map((r) => [r.id, r]));
   TRIPS = recs.map(deriveTrip).filter(Boolean).sort((a, b) => b.start - a.start);
@@ -645,7 +674,11 @@ function tripLoungeHTML(t) {
 }
 
 function renderWallet() {
-  $id('walletState').textContent = store.mode === 'demo' ? 'Demo · not saved' : 'Saved to your account';
+  $id('walletState').textContent = fromWallet() ? 'From What’s in My Wallet?' : store.mode === 'demo' ? 'Demo · not saved' : 'Saved to your account';
+  $id('cardsLead').classList.toggle('keep', fromWallet());
+  $id('cardsLead').innerHTML = fromWallet()
+    ? `Cards come from <a href="${WALLET_URL}">What's in My Wallet?</a> Add, remove or close a card there and lounge access here follows it.`
+    : 'Add the cards you carry. Lounge lists across the page mark the lounges these cards get you into.';
   const wl = $id('wallet');
   if (!WALLET.length) {
     wl.innerHTML = `<div class="panel empty-card"><b>No cards yet.</b><span class="lw">Add the cards you carry below. Lounge access across the page updates as soon as you add one.</span></div>`;
@@ -653,7 +686,7 @@ function renderWallet() {
     wl.innerHTML = owners().map((o) => `<div class="wgroup"><span class="eyebrow">${esc(o)}'s cards</span><div class="wgrid">${WALLET.filter((c) => (c.owner || OWNER) === o).map((c) => {
       const tags = cardTags(c);
       return `<article class="wcard ${tags.length ? 'has' : ''}">
-        <div class="wtop"><b>${esc(c.name)}</b><button type="button" class="linkbtn" data-del="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">Remove</button></div>
+        <div class="wtop"><b>${esc(c.name)}</b>${fromWallet() ? '' : `<button type="button" class="linkbtn" data-del="${esc(c.id)}" aria-label="Remove ${esc(c.name)}">Remove</button>`}</div>
         <span class="lw">${esc(cardBenefit(c))}</span>
         <span class="chips">${tags.map((t) => `<span class="chip in-soft">${esc(ACCESS[t])}</span>`).join('') || `<span class="chip">No lounge access</span>`}</span>
       </article>`; }).join('')}</div></div>`).join('');
@@ -670,6 +703,7 @@ function renderWallet() {
 }
 function renderAddForm() {
   const p = $id('addCardPanel');
+  if (fromWallet()) { p.innerHTML = `<p class="lw" style="margin:0">Cards come from What's in My Wallet? <a class="btn" href="${WALLET_URL}">Edit cards in What's in My Wallet?</a></p>`; return; }
   const ownersList = [...new Set([...owners(), OWNER])];
   const withAccess = CARD_CATALOG.filter((c) => c.t.length), others = CARD_CATALOG.filter((c) => !c.t.length);
   p.innerHTML = `<form id="addCardForm" class="addform">
@@ -707,8 +741,8 @@ function renderAddForm() {
   });
 }
 async function saveProfile(patch) { await store.setDoc('profile', { ...PROFILE, ...patch }); }
-async function addCard(c) { await saveProfile({ cards: [...WALLET, { ...c, id: 'c' + Date.now().toString(36), addedAt: new Date().toISOString() }] }); }
-async function removeCard(id) { const c = WALLET.find((x) => x.id === id); if (!c) return; await saveProfile({ cards: WALLET.filter((x) => x.id !== id) }); toast(`${c.name} removed`); }
+async function addCard(c) { if (fromWallet()) return; await saveProfile({ cards: [...WALLET, { ...c, id: 'c' + Date.now().toString(36), addedAt: new Date().toISOString() }] }); }
+async function removeCard(id) { if (fromWallet()) return; const c = WALLET.find((x) => x.id === id); if (!c) return; await saveProfile({ cards: WALLET.filter((x) => x.id !== id) }); toast(`${c.name} removed`); }
 
 // The name is changed in Settings ("Name on the log")
 function renderOwner() { $id('ownerName').textContent = OWNER; }
@@ -1026,9 +1060,10 @@ function renderSettings() {
     </div>
     <div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Cards I hold</h3>
+      ${fromWallet() ? `<p class="lw" style="margin:0">Cards come from <a href="${WALLET_URL}">What's in My Wallet?</a> Lounge access across Contrail follows the open cards there. See them on <button type="button" class="linkbtn" data-goto="cards">My cards</button>.</p>` : `
       ${owners().length > 1 ? whoChooser({ anyone: false }) : ''}
       <p class="lw" style="margin:0">Tick the cards ${esc(who)} carries. Lounge access across Contrail follows these. More options on <button type="button" class="linkbtn" data-goto="cards">My cards</button>.</p>
-      <div class="checks cardchecks">${CARD_CATALOG.map((c) => `<label><input type="checkbox" data-hold="${c.k}" ${held.has(c.k) ? 'checked' : ''}> ${esc(c.n)}${c.t.length ? '' : ' <span class="lw">(no lounges)</span>'}</label>`).join('')}</div>
+      <div class="checks cardchecks">${CARD_CATALOG.map((c) => `<label><input type="checkbox" data-hold="${c.k}" ${held.has(c.k) ? 'checked' : ''}> ${esc(c.n)}${c.t.length ? '' : ' <span class="lw">(no lounges)</span>'}</label>`).join('')}</div>`}
     </div>
     <div class="panel">
       <h3 style="font-size:20px;text-transform:uppercase">Color mode</h3>
@@ -1080,7 +1115,7 @@ root.addEventListener('submit', async (e) => {
 });
 root.addEventListener('change', async (e) => {
   const t = e.target;
-  if (t.dataset.hold) {
+  if (t.dataset.hold && !fromWallet()) {
     const who = whoNow() === 'Anyone' ? (owners()[0] || OWNER) : whoNow(), c = CAT[t.dataset.hold];
     if (t.checked) await addCard({ key: c.k, name: c.short, owner: who, tags: [] });
     else await saveProfile({ cards: WALLET.filter((x) => !(x.key === c.k && (x.owner || OWNER) === who)) });
@@ -1198,6 +1233,7 @@ demoBanner($id('demoBanner'), 'Contrail', await connectStore('contrail'), {
 // With the menu, phones can drop the Cover and Copy pills (contrail/app.css)
 root.classList.toggle('has-profile', !!$id('profileSlot').firstElementChild);
 if (store.mode === 'demo') await store.reset(contrailDemo(airport));
+WALLET_DOC = await loadWalletDoc();
 await load();
 let t0 = prefs.get('tab') || 'overview'; try { const h = location.hash.slice(1); if (TABS.includes(h)) t0 = h; } catch { /* ignore */ }
 TAB = t0;
@@ -1207,6 +1243,12 @@ showTab(t0);
 // import's own bookkeeping (which emails were checked, the sync log) doesn't change the log.
 store.subscribe(async (what) => { if (what === 'processed_emails' || what === 'gmail') return; const keep = selTrip?.id; await load(); selTrip = keep ? TRIPS.find((t) => t.id === keep) || null : null; renderAll(); });
 setInterval(renderAptDetail, 60000);
+// Cards edited in What's in My Wallet? (another tab) show up when you come back to this one
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible' || store.mode === 'demo') return;
+  const d = await loadWalletDoc(); if (JSON.stringify(d) === JSON.stringify(WALLET_DOC)) return;
+  WALLET_DOC = d; await load(); renderAll();
+});
 // Members with Gmail import: the panel in Settings, and a sync now if this tab still has Google's access
 GMAIL = await setUpGmail({ store, airport, placeName, home: () => HOME, geocode, toast, rerender: () => { if (TAB === 'settings') renderSettings(); } });
 if (GMAIL) { if (TAB === 'settings') renderSettings(); GMAIL.sync(); }

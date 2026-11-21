@@ -365,6 +365,7 @@ body.noscroll{overflow:hidden}
   .contrail-app header{flex-wrap:wrap;align-items:center;gap:8px 12px}
   .contrail-app header .head-l{flex:1 1 0;gap:2px}
   .contrail-app header .head-l .eyebrow, .contrail-app .tab-lead{display:none}
+  .contrail-app .tab-lead.keep{display:block;font-size:15px} /* "Cards come from What's in My Wallet?" stays */
   .contrail-app h1{font-size:30px}
   .contrail-app .owner{font-size:14px}
   .contrail-app header .actions{flex-basis:100%}

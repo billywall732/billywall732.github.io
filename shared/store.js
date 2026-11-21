@@ -148,15 +148,21 @@ export async function connectStore(app) {
 
 // Another app's data for the same member (Wallet reads Contrail's trips for its travel
 // profile). null unless the signed-in person is approved for that app too.
+// What another app may read of a member's data: Wallet reads Contrail's trips and stays (its
+// travel profile); Contrail reads Wallet's cards (lounge access).
+const APP_DATA = { contrail: { collections: ['trips', 'stays'], docs: ['profile'] }, wallet: { collections: [], docs: ['wallet'] } };
 export async function readAppData(app) {
   if (access.state !== 'member') return null;
   try {
     const auth = await loadAuth();
     if (!(await must(auth.db.rpc('is_app_member', { p_app: app })))) return null;
     const other = accountBackend(app, auth.db, access.user.id);
+    const want = APP_DATA[app] || { collections: [], docs: [] };
     // Hidden records (cancelled, or an undone email import) aren't part of the travel history
-    const shown = (rows) => rows.filter((r) => !r.hidden);
-    return { collections: { trips: shown(await other.list('trips')), stays: shown(await other.list('stays')) }, docs: { profile: await other.getDoc('profile') } };
+    const collections = {}, docs = {};
+    for (const c of want.collections) collections[c] = (await other.list(c)).filter((r) => !r.hidden);
+    for (const d of want.docs) docs[d] = await other.getDoc(d);
+    return { collections, docs };
   } catch {
     return null;
   }

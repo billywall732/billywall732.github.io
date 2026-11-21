@@ -2,13 +2,13 @@
 // feature works as before; storage goes through shared/store.js, the travel profile comes
 // straight from Contrail's trips and stays, and members ask Claude through the AI Worker
 // (shared/ai.js); the demo shows a sample conversation instead.
-import { connectStore, readAppData, store } from "/shared/store.js?v=3";
-import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=7";
+import { connectStore, readAppData, store } from "/shared/store.js?v=4";
+import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=8";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
 import { askWallet } from "/shared/ai.js?v=1";
 import { contrailDemo } from "/contrail/demo-data.js";
-import { walletDemo } from "/wallet/demo-data.js?v=2";
+import { walletDemo } from "/wallet/demo-data.js?v=3";
 
 setUpApp();
 let CATALOG = [];
@@ -103,6 +103,8 @@ function normalize(st) {
   if (st.activeProfile !== "all" && !st.profiles.some(p => p.id === st.activeProfile)) st.activeProfile = "all";
   const first = st.profiles[0].id, ok = id => st.profiles.some(p => p.id === id);
   st.cards ||= []; st.pulls ||= []; st.research ||= [];
+  // Cards added before catalogKey existed: find their catalog entry by issuer and name
+  for (const c of st.cards) if (!c.catalogKey) { const m = catalogMatch(c.issuer, c.name); if (m) c.catalogKey = m.key; }
   // Saved cards (was the watchlist): status considering / applied / got / passed, a one-line why.
   // Old Claude research and notes become the why; the old chat (never usable) is dropped. Before
   // that, a one-time copy of both as they were goes in migrationBackup (kept, never sent to Claude).
@@ -1040,7 +1042,7 @@ function fillFromCatalog(key) {
   const r = CATALOG.find(c => c.key === key); if (!r || !draft) return;
   readForm();
   const kept = [];
-  draft.name = r.name; draft.issuer = r.issuer;
+  draft.name = r.name; draft.issuer = r.issuer; draft.catalogKey = r.key; // Contrail reads lounge access from it
   if (["Visa", "Mastercard", "Amex", "Discover"].includes(r.network)) draft.network = r.network;
   draft.annualFee = num(r.annualFee);
   if (PROGRAMS[r.program] != null) draft.program = r.program;
