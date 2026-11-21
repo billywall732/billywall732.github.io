@@ -41,10 +41,17 @@ export function walletDemo(catalog) {
       { id: 'demo-pull-2', date: isoDate(addDays(t0, -205)), bureau: 'TransUnion', issuer: 'Wells Fargo', note: 'Bilt Mastercard application', owner: 'alex' },
     ],
     research: [
-      { id: 'demo-watch-1', name: 'Alaska Airlines Visa Signature', issuer: 'Bank of America', annualFee: 95, bonus: '', status: 'considering', notes: 'We fly Alaska to Seattle and Hawaii. The companion fare could pay for itself.' },
-      { id: 'demo-watch-2', name: 'World of Hyatt', issuer: 'Chase', annualFee: 95, bonus: '', status: 'considering', notes: 'Most of our hotel points go to Hyatt.' },
+      { id: 'demo-watch-1', name: 'Alaska Airlines Visa Signature', issuer: 'Bank of America', annualFee: 95, bonus: '', status: 'considering', why: 'We fly Alaska to Seattle and Hawaii. The companion fare could pay for itself.' },
+      { id: 'demo-watch-2', name: 'World of Hyatt', issuer: 'Chase', annualFee: 95, bonus: '', status: 'applied', why: 'Most of our hotel points go to Hyatt.' },
     ],
-    chat: [],
+    // A sample conversation for the Research tab (members see their own)
+    thread: [{ id: 'demo-turn-1', q: 'What card should we look at next?', date: isoDate(t0), result: {
+      summary: 'Dining, groceries and general travel are already well covered by the Gold Card, Sapphire Reserve and Venture X. The gaps are airline and hotel loyalty: an Alaska card can pay for itself with its yearly companion fare if you fly Alaska at least once a year, and a Hyatt card adds a free night each year. Check Chase 5/24 before the Hyatt card.',
+      suggestions: [
+        { name: 'Alaska Airlines Visa Signature', issuer: 'Bank of America', annualFee: 95, typicalBonus: '', why: 'Alaska is your main airline, and the companion fare alone can cover the fee.', watchOut: 'The card and program have been renamed recently; check the current offer on the issuer site.' },
+        { name: 'World of Hyatt', issuer: 'Chase', annualFee: 95, typicalBonus: '', why: 'Most of your hotel points go to Hyatt, and the yearly free night usually beats the fee.', watchOut: 'Chase usually declines applicants with 5 or more new cards in 24 months.' },
+        { name: 'Strata Premier', issuer: 'Citi', annualFee: 95, typicalBonus: '', why: 'Earns 3x on flights, hotels, dining, groceries and gas, and its points transfer to airline partners.', watchOut: 'Citi limits bonuses on the same card family; check the current terms.', catalogKey: 'strata' },
+      ] } }],
     updatedAt: Date.now(),
   };
 }

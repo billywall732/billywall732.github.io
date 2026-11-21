@@ -1,20 +1,16 @@
 // What's in My Wallet?: a credit card tracker. Ported from the claude.ai version: every card
 // feature works as before; storage goes through shared/store.js, the travel profile comes
-// straight from Contrail's trips and stays, and the Claude features are hidden until
-// shared/ai.js exists ("Pick from the catalog" fills in a card instead).
+// straight from Contrail's trips and stays, and members ask Claude through the AI Worker
+// (shared/ai.js); the demo shows a sample conversation instead.
 import { connectStore, readAppData, store } from "/shared/store.js?v=3";
 import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=7";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
 import { askWallet } from "/shared/ai.js?v=1";
 import { contrailDemo } from "/contrail/demo-data.js";
-import { walletDemo } from "/wallet/demo-data.js";
+import { walletDemo } from "/wallet/demo-data.js?v=2";
 
 setUpApp();
-// Claude features (research, chat, downgrade advice) go through the AI Worker (shared/ai.js).
-// Their controls stay hidden until the Worker's /v1/wallet/ask is deployed and the new Research
-// tab is in; getSample() already works for members.
-const AI_READY = false;
 let CATALOG = [];
 document.addEventListener("change", e => { if (e.target.id === "f_catalog" && e.target.value) fillFromCatalog(e.target.value); });
 // ---------- constants ----------
@@ -106,7 +102,20 @@ function normalize(st) {
   if (!Array.isArray(st.profiles) || !st.profiles.length) st.profiles = [{ id: "me", name: "Me" }];
   if (st.activeProfile !== "all" && !st.profiles.some(p => p.id === st.activeProfile)) st.activeProfile = "all";
   const first = st.profiles[0].id, ok = id => st.profiles.some(p => p.id === id);
-  st.cards ||= []; st.pulls ||= []; st.research ||= []; if (!Array.isArray(st.chat)) st.chat = [];
+  st.cards ||= []; st.pulls ||= []; st.research ||= [];
+  // Saved cards (was the watchlist): status considering / applied / got / passed, a one-line why.
+  // Old Claude research and notes become the why; the old chat (never usable) is dropped. Before
+  // that, a one-time copy of both as they were goes in migrationBackup (kept, never sent to Claude).
+  const oldShape = (Array.isArray(st.chat) && st.chat.length) || st.research.some(r => r.claude || !("why" in r) || r.status === "approved");
+  if (oldShape && !st.migrationBackup) st.migrationBackup = { what: "Research watchlist and chat before the Research tab redesign (Nov 2026)", at: new Date().toISOString(),
+    research: JSON.parse(JSON.stringify(st.research)), chat: Array.isArray(st.chat) ? JSON.parse(JSON.stringify(st.chat)) : [] };
+  for (const r of st.research) {
+    r.status = { approved: "got", got: "got", applied: "applied", passed: "passed" }[r.status] || "considering";
+    if (!r.why) r.why = String((r.claude && r.claude.fit) || r.notes || "").replace(/\s+/g, " ").trim().slice(0, 300);
+    if (r.claude) { if (!r.bonus && r.claude.typicalBonus) r.bonus = String(r.claude.typicalBonus); delete r.claude; }
+  }
+  delete st.chat;
+  if (!Array.isArray(st.thread)) st.thread = [];
   for (const c of st.cards) {
     c.role ||= "keeper"; if (!ok(c.owner)) c.owner = first;
     if (c.status === "downgraded") { c.status = "open"; c.origin ||= "productChange"; }
@@ -151,7 +160,8 @@ async function initStorage() {
   const catalog = (await (await fetch("/shared/data/cards.json")).json()).cards;
   CATALOG = catalog;
   // Approved members get their own wallet; everyone else gets the sample one
-  demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?", await connectStore("wallet"));
+  ACCESS = await connectStore("wallet");
+  demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?", ACCESS);
   if (store.mode === "demo") await store.reset({ docs: { wallet: walletDemo(catalog) } });
   S = normalize((await store.getDoc("wallet")) || {});
   render(); setSaveState(...saveLabel());
@@ -215,7 +225,7 @@ function vTravel() {
   </div>
   ${fit.length ? `<div style="margin-bottom:16px">${fold("tv-fit", `<h2>How your wallet fits your travel</h2><span class="sumr">${fit.filter(f => f.tone === "good").length ? `<span class="pill good">${fit.filter(f => f.tone === "good").length} covered</span>` : ""}${fit.filter(f => f.tone === "warn").length ? `<span class="pill warn">${fit.filter(f => f.tone === "warn").length} gaps</span>` : ""}</span>`,
     `${fit.map(f => `<div class="advice ${f.tone}" style="margin-top:8px"><b>${esc(f.title)}.</b> ${esc(f.text)}</div>`).join("")}
-    ${AI_READY ? `<div class="row" style="margin-top:12px"><button class="btn sm primary" data-act="travel-ask">Ask Claude what card fits how I travel</button></div>` : ""}`, { cls: "panel" })}</div>` : ""}
+    ${canAsk() ? `<div class="row" style="margin-top:12px"><button class="btn sm primary" data-act="travel-ask">Ask Claude what card fits how I travel</button></div>` : ""}`, { cls: "panel" })}</div>` : ""}
   <div class="travelgrid">
     ${rankList("Airlines", t.airlines, "name", "flights", "Flights")}
     ${rankList("Departure airports", t.departureAirports, "code", "flights", "Departures")}
@@ -581,7 +591,7 @@ function rotationCard(c) {
       <div>If the offer is weak: “What cards can I product change to without a new credit check?${plan.dg ? ` I'm interested in the ${esc(plan.dg)}.` : ""}”</div>
       <div>Before agreeing, confirm: the account number and history stay the same, there's no hard pull, your points carry over, and whether the fee (if already posted) will be refunded.</div>
       <div>Then log the result in this card's notes, including any retention offer, so you have it next year.</div></div></details>
-    ${AI_READY ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="ask-downgrade" data-id="${c.id}">Ask Claude for the best downgrade</button><span class="note" id="dg-${c.id}"></span></div>` : ""}
+    ${canAsk() ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="ask-downgrade" data-id="${c.id}">Ask Claude for the best downgrade</button></div>` : ""}
   </details>`;
 }
 // Card picked in the Timeline filter (null = all cards); kept for this visit only.
@@ -663,7 +673,7 @@ let tlWasCompact = tlCompact();
 let mxWasNarrow = mxNarrow();
 window.addEventListener("resize", () => {
   const c = tlCompact(); if (c !== tlWasCompact) { tlWasCompact = c; if (tab === "timeline") render(); }
-  const n = mxNarrow(); if (n !== mxWasNarrow) { mxWasNarrow = n; if (tab === "matrix") render(); }
+  const n = mxNarrow(); if (n !== mxWasNarrow) { mxWasNarrow = n; if (tab === "matrix" || tab === "research") render(); }
 });
 // Phone layout: each card gets its own row with the name on top, a bar sized to the screen and its next dates in words.
 function timelineCompact(cards, hidden) {
@@ -770,113 +780,129 @@ function timelineSvg() {
   <div class="legend"><span><i style="background:var(--surface);border:2px solid var(--warn)"></i>Annual fee</span><span><i style="background:var(--bad)"></i>Bonus deadline (open)</span><span><i style="background:var(--good)"></i>Bonus earned</span><span><i style="background:var(--accent);border-radius:1px;transform:rotate(45deg)"></i>Bonus clock resets</span><span><i style="background:var(--ink);width:3px;border-radius:0"></i>Product change</span><span><i style="background:var(--warn)"></i>Fee hits (rotating)</span><span><i style="background:var(--accent);border-radius:0;clip-path:polygon(0 0,100% 0,50% 100%)"></i>Call for retention or downgrade</span><span><i style="background:var(--ink);border-radius:0"></i>Downgrade by</span></div>`;
 }
 
-// research
-let research = { busy: false, ctl: null, result: null, error: "", stream: "", question: "" };
-// Research has two modes: one-shot card recommendations, or a back-and-forth chat (saved with your data).
-let rxMode = (() => { try { return localStorage.getItem("hub-rx-mode") === "chat" ? "chat" : "recs"; } catch { return "recs"; } })();
-let chat = { busy: false, ctl: null, draft: "", err: "" };
-const CHAT_MAX = 40;
-function setRxMode(m) { rxMode = m; try { localStorage.setItem("hub-rx-mode", m); } catch {} render(); if (m === "chat") setTimeout(() => { const q = $("#chatQ"); if (q) q.focus(); const box = $("#chatMsgs"); if (box) box.scrollTop = box.scrollHeight; }, 0); }
-function mdLite(t) {
-  const lines = esc(t).split(/\n/); let html = "", inList = false;
-  for (const raw of lines) {
-    const l = raw.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
-    const li = l.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)/);
-    if (li) { if (!inList) { html += "<ul>"; inList = true; } html += `<li>${li[1]}</li>`; continue; }
-    if (inList) { html += "</ul>"; inList = false; }
-    const h = l.match(/^#{1,4}\s+(.*)/); if (h) { html += `<h4>${h[1]}</h4>`; continue; }
-    if (l.trim()) html += `<p>${l}</p>`;
-  }
-  if (inList) html += "</ul>";
-  return html;
+// ---------- research: ask Claude, save cards worth a look ----------
+// One thread of questions and answers (S.thread, saved with the wallet, last 20 kept) and a list
+// of saved cards (S.research). Members ask through the AI Worker; the demo shows a sample thread.
+const THREAD_MAX = 20;
+const SAVED_STATUS = [["considering", "Considering", ""], ["applied", "Applied", "warn"], ["got", "Got it", "good"], ["passed", "Passed", "muted"]];
+const statusOf = k => SAVED_STATUS.find(s => s[0] === k) || SAVED_STATUS[0];
+let rx = { busy: false, ctl: null, err: "", draft: "", pending: "" };
+let ACCESS = { state: "signed-out" };
+const canAsk = () => store.mode === "account";
+// Why the ask box is off, in the visitor's own terms (never "approved users" to someone who is)
+function askOffNote() {
+  const s = ACCESS.state;
+  if (s === "signed-out") return "Sign in to ask Claude about your own cards. The conversation below is a sample.";
+  if (s === "requested") return "You've asked for access. Once it's approved you can ask Claude about your own cards. The conversation below is a sample.";
+  if (s === "paused" || s === "declined") return "Asking Claude needs access to What's in My Wallet. The conversation below is a sample.";
+  if (s === "error") return "Couldn't check your access just now. Reload the page to ask Claude.";
+  return "Asking Claude comes with access to What's in My Wallet. Request it above. The conversation below is a sample.";
 }
-function chatMsgsHTML() {
-  const m = S.chat || [];
-  if (!m.length) return `<div class="hint empty" style="padding:18px;text-align:left"><b>Talk cards through with Claude.</b><br><span class="note">Ask anything, then follow up: "what about the annual fee?", "compare it with my Venture X", "what if I only fly United twice a year?" Claude sees your wallet${TRAVEL ? " and travel profile" : ""}.</span></div>`;
-  return m.map(x => `<div class="cmsg ${x.role}">${x.role === "user" ? `<p>${esc(x.content)}</p>` : x.content ? mdLite(x.content) : `<p class="note">Thinking…</p>`}</div>`).join("") + (chat.err ? `<div class="cmsg err">${esc(chat.err)}</div>` : "");
+
+// Catalog card for a name and issuer, matched loosely ("Gold Card" = "Gold"), or null
+const normName = s => String(s || "").toLowerCase().replace(/[®™]/g, "").replace(/\b(credit\s+)?card\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+function catalogMatch(issuer, name) {
+  const n = normName(name), i = normName(issuer); if (!n) return null;
+  return CATALOG.find(c => {
+    const ci = normName(c.issuer), cn = normName(c.name), full = normName(fullName(c));
+    const sameIssuer = !i || !ci || ci.split(" ")[0] === i.split(" ")[0] || full.startsWith(i.split(" ")[0]);
+    return sameIssuer && (cn === n || full === n || full === normName(`${issuer} ${name}`));
+  }) || null;
 }
-function paintChat() { const box = $("#chatMsgs"); if (!box) return; const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 80; box.innerHTML = chatMsgsHTML(); if (atEnd || chat.busy) box.scrollTop = box.scrollHeight; }
-const CHAT_PRESETS = ["Should I keep my Sapphire Reserve after this year?", "Is the Amex Gold worth it for how I spend?", "What should my next card be, and why?", "Which of my cards should I use abroad?"];
-function vChat() {
-  const has = (S.chat || []).length;
-  return `<div class="panel chatp"><div class="spread"><div><h2>Chat with Claude</h2><div class="muted">Go back and forth on card questions. Claude sees your wallet${TRAVEL ? " and travel profile" : ""}; the conversation is saved with your data.</div></div>
-      ${has ? `<div class="row"><button class="btn sm" data-act="chat-to-recs" ${chat.busy ? "disabled" : ""}>Get card picks for this</button><button class="btn sm ghost" data-act="chat-new" ${chat.busy ? "disabled" : ""}>New conversation</button></div>` : ""}</div>
-    <div class="cmsgs" id="chatMsgs" aria-live="polite">${chatMsgsHTML()}</div>
-    ${has ? "" : `<div class="presets">${[...travelPresets(), ...CHAT_PRESETS].slice(0, 6).map(p => `<button data-chatpreset="${esc(p)}">${esc(p)}</button>`).join("")}</div>`}
-    <form class="chatform" id="chatForm"><label class="sr" for="chatQ" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Message</label>
-      <textarea id="chatQ" rows="2" maxlength="2000" placeholder="${has ? "Ask a follow-up…" : "Ask about a card, your wallet, a trip…"}">${esc(chat.draft)}</textarea>
-      <div class="row"><span class="note" id="chatAvail" style="margin-right:auto">${matchMedia("(pointer: fine)").matches ? "Enter to send · Shift+Enter for a new line" : ""}</span>${chat.busy ? `<button type="button" class="btn" data-act="chat-stop">Stop</button>` : ""}<button type="submit" class="btn primary" ${chat.busy ? "disabled" : ""}>Send</button></div></form>
+const sameCard = (a, b) => normName(fullName(a)) === normName(fullName(b));
+const savedFor = s => S.research.find(r => sameCard(r, s));
+const heldCard = s => openCards().find(c => sameCard(c, s) || (s.catalogKey && c.catalogKey === s.catalogKey));
+
+// Three starter questions, the first from the travel profile when there is one
+function starters() {
+  const t = travelPresets()[1] || travelPresets()[0];
+  return [t || "What card fills my weakest category?", "Best next card while I'm under 5/24", "Which of my cards should I downgrade, and to what?"];
+}
+function turnHTML(t) {
+  const r = t.result || { summary: "", suggestions: [] };
+  return `<div class="turn"><div class="cmsg user"><p>${esc(t.q)}</p></div>
+    <div class="cmsg assistant"><p>${esc(r.summary)}</p></div>
+    ${(r.suggestions || []).length ? `<div class="sugg">${r.suggestions.map((s, i) => {
+      const saved = savedFor(s), held = heldCard(s);
+      return `<div class="sg"><div class="spread"><h3>${esc(s.issuer ? s.issuer + " " : "")}${esc(s.name)}</h3><span class="pill">${money(num(s.annualFee))} fee</span></div>
+        ${s.typicalBonus ? `<div class="note">Typical bonus: ${esc(s.typicalBonus)}</div>` : ""}
+        <div style="font-size:.92rem">${esc(s.why)}</div>
+        ${s.watchOut ? `<div class="note">Watch out: ${esc(s.watchOut)}</div>` : ""}
+        <div class="row">${held ? `<span class="pill good">In your wallet</span>` : saved ? `<span class="pill good">Saved</span>` : `<button class="btn sm" data-act="save-sugg" data-turn="${esc(t.id)}" data-i="${i}">Save</button>`}</div></div>`; }).join("")}</div>` : ""}</div>`;
+}
+function threadHTML() {
+  const turns = S.thread || [];
+  let html = turns.map(turnHTML).join("");
+  if (rx.busy) html += `<div class="turn"><div class="cmsg user"><p>${esc(rx.pending)}</p></div><div class="cmsg assistant thinking"><p>Thinking…</p></div></div>`;
+  if (rx.err) html += `<div class="cmsg err" role="alert">${esc(rx.err)}</div>`;
+  return html || `<p class="muted" style="margin:0">Ask about your next card, a card you're eyeing, or what to do with one you hold. Claude sees your cards, fees, multipliers and 5/24 count${TRAVEL ? ", plus how you travel" : ""}.</p>`;
+}
+function savedRow(x) {
+  const [, label, tone] = statusOf(x.status), held = heldCard(x);
+  return `<div class="saved"><div class="spread"><b>${esc(fullName(x))}</b><span class="num note">${num(x.annualFee) ? money(x.annualFee) + "/yr" : "No fee"}</span></div>
+    ${x.why ? `<div class="why note" title="${esc(x.why)}">${esc(x.why)}</div>` : ""}
+    <div class="row"><button class="pill status ${tone}" data-act="saved-status" data-id="${esc(x.id)}" aria-label="Status: ${label}. Tap to change">${label}</button>
+      ${canAsk() ? `<button class="btn sm ghost" data-act="saved-ask" data-id="${esc(x.id)}">Ask</button>` : ""}
+      <button class="btn sm ghost danger" data-act="saved-remove" data-id="${esc(x.id)}">Remove</button>
+      ${x.status === "got" ? (held ? `<span class="pill good">In your wallet</span>` : `<button class="btn sm primary" data-act="saved-to-wallet" data-id="${esc(x.id)}">Add to cards</button>`) : ""}${x.example ? `<span class="pill">Example</span>` : ""}</div></div>`;
+}
+function savedPanel(narrow) {
+  const list = S.research;
+  const body = `<div id="resForm"></div>${list.length ? `<div class="savedlist">${list.map(savedRow).join("")}</div>` : `<p class="muted" style="margin:0">Save a card from an answer, or add one you're thinking about.</p>`}`;
+  const add = `<button class="btn sm" data-act="add-research">+ Add</button>`;
+  if (narrow) return fold("rx-saved", `<h2>Saved cards</h2><span class="sumr"><span class="pill">${list.length}</span></span>`, `<div class="row" style="margin-bottom:8px">${add}</div>${body}`, { cls: "panel" });
+  return `<div class="panel"><div class="spread" style="margin-bottom:10px"><h2>Saved cards</h2>${add}</div>${body}</div>`;
+}
+function vResearch() {
+  const on = canAsk(), narrow = mxNarrow(), turns = (S.thread || []).length;
+  const ask = `<div class="panel ask">
+    <div class="spread"><h2>Ask Claude</h2>${turns && on ? `<button class="btn sm ghost" data-act="thread-new" ${rx.busy ? "disabled" : ""}>New conversation</button>` : ""}</div>
+    <div class="thread" id="thread" aria-live="polite">${threadHTML()}</div>
+    ${on && !turns && !rx.busy ? `<div class="presets">${starters().map(p => `<button type="button" data-ask="${esc(p)}">${esc(p)}</button>`).join("")}</div>` : ""}
+    ${on ? `<form class="chatform" id="askForm"><label class="sr" for="askQ">Your question</label>
+      <textarea id="askQ" rows="2" maxlength="600" placeholder="${turns ? "Ask a follow-up…" : "e.g. I spend about $800 a month on groceries. What should I get next?"}">${esc(rx.draft)}</textarea>
+      <div class="row"><span class="note" style="margin-right:auto">${aiRemaining != null ? `${aiRemaining} question${aiRemaining === 1 ? "" : "s"} left today` : ""}</span>${rx.busy ? `<button type="button" class="btn" data-act="ask-stop">Stop</button>` : ""}<button type="submit" class="btn primary" ${rx.busy ? "disabled" : ""}>Ask</button></div></form>`
+      : `<p class="note askoff" style="margin:0">${esc(askOffNote())}</p>`}
     <p class="note" style="margin:0">General information, not financial advice. Claude can't browse live offers, so check current terms with the issuer.</p></div>`;
+  return narrow ? `<div class="stack">${ask}${savedPanel(true)}</div>` : `<div class="two">${ask}${savedPanel(false)}</div>`;
 }
-async function sendChat(text) {
-  const q = String(text || "").trim(); if (!q || chat.busy) return;
-  const sample = await getSample();
-  if (!sample) return;
-  S.chat ||= []; chat.err = ""; chat.draft = "";
-  S.chat.push({ role: "user", content: q }); S.chat.push({ role: "assistant", content: "" });
-  chat.busy = true; chat.ctl = new AbortController(); render();
-  // Earlier turns as question and answer pairs (the Worker uses the last 4)
-  const thread = [];
-  for (let i = 0; i + 1 < S.chat.length - 2; i += 2) if (S.chat[i].role === "user") thread.push({ q: S.chat[i].content, a: S.chat[i + 1].content });
-  const cur = S.chat[S.chat.length - 1];
+async function askClaude(text) {
+  const q = String(text || "").trim(); if (!q || rx.busy) return;
+  const sample = await getSample(); if (!sample) return;
+  rx = { busy: true, err: "", draft: "", pending: q, ctl: new AbortController() };
+  if (tab === "research") { render(); scrollThread(); }
+  const thread = (S.thread || []).slice(-4).map(t => ({ q: t.q, a: t.result.summary }));
   try {
-    const r = await sample(q, { thread, signal: chat.ctl.signal });
-    cur.content = [r.summary, ...r.suggestions.map(x => `- **${x.issuer ? x.issuer + " " : ""}${x.name}** (${money(x.annualFee)} fee): ${x.why}`)].join("\n");
+    const result = await sample(q, { thread, signal: rx.ctl.signal });
+    for (const s of result.suggestions) { const m = catalogMatch(s.issuer, s.name); if (m) s.catalogKey = m.key; }
+    S.thread = [...(S.thread || []), { id: uid(), q, date: iso(TODAY), result }].slice(-THREAD_MAX);
+    persist();
   } catch (e) {
-    if (!cur.content) S.chat.pop();
-    chat.err = sampleErr(e);
+    rx.err = sampleErr(e);
+    if (e && e.code !== "cancelled") rx.draft = q; // keep the question to try again
   }
-  if (S.chat.length > CHAT_MAX) S.chat = S.chat.slice(-CHAT_MAX);
-  chat.busy = false; chat.ctl = null; persist();
-  if (tab === "research") { render(); setTimeout(() => { const q = $("#chatQ"); if (q) q.focus(); const box = $("#chatMsgs"); if (box) box.scrollTop = box.scrollHeight; }, 0); }
+  rx.busy = false; rx.ctl = null; rx.pending = "";
+  if (tab === "research") { render(); scrollThread(); }
 }
+// Ask from elsewhere (Travel, a rotation plan, a saved card): go to Research and send it
+function askFromElsewhere(q) { setTab("research"); askClaude(q); }
+function scrollThread() {
+  const box = $("#thread"); if (!box) return;
+  const last = box.lastElementChild; if (last && last.getBoundingClientRect().bottom > innerHeight) last.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
 // What Claude sees: names, fees, dates and multipliers. Never card numbers (not even the last 4),
 // credit limits or notes. Multipliers list only categories above the card's base rate.
 function walletSummary({ closed = true, travel = true } = {}) {
   const cards = VC().filter(c => closed || !isGone(c)).map(c => ({ name: fullName(c), holder: profName(c.owner), role: c.role, status: c.status, type: c.kind, opened: c.openDate, annualFee: num(c.annualFee), program: c.program,
     base: num(c.base) || 1, multipliers: Object.fromEntries(CATS.filter(([k]) => multOf(c, k) > (num(c.base) || 1)).map(([k]) => [k, multOf(c, k)])), bonusReceived: c.sub && c.sub.received ? c.sub.receivedDate || true : false }));
   return { people: viewPeople().map(p => ({ name: p.name, fiveTwentyFour: fiveTwentyFour(p.id).count })), cards,
-    watchlist: S.research.map(r => fullName(r)), pointValuesCents: S.settings.pointValues, ...(travel ? { travel: travelBrief() } : {}) };
+    watchlist: S.research.filter(r => r.status !== "passed").map(r => fullName(r)), pointValuesCents: S.settings.pointValues, ...(travel ? { travel: travelBrief() } : {}) };
 }
 // Trimmed to fit the Worker's limit: without travel first, then without closed cards
 function walletForAi() {
   for (const o of [{}, { travel: false }, { travel: false, closed: false }]) { const w = walletSummary(o); if (JSON.stringify(w).length < 8800) return w; }
   const w = walletSummary({ travel: false, closed: false }); w.cards = w.cards.slice(0, 25); return w;
-}
-function vResearch() {
-  const r = research;
-  if (!AI_READY) return `<div class="two"><div class="stack"><div class="panel"><div class="spread" style="margin-bottom:6px"><h2>Card recommendations</h2><span class="pill">Coming soon</span></div>
-    <p class="muted" style="margin:0">Soon you'll be able to ask Claude which card to get next, or talk a card through in a chat. It will weigh your wallet${TRAVEL ? " and travel profile" : ""}. For now, keep cards you're considering on the watchlist.</p></div></div>
-  ${watchlistPanel()}</div>`;
-  const sw = `<div class="modesw" role="group" aria-label="Research mode"><button type="button" data-rxmode="recs" aria-pressed="${rxMode === "recs"}">Get recommendations<small>Card picks for one question</small></button><button type="button" data-rxmode="chat" aria-pressed="${rxMode === "chat"}">Chat<small>Back-and-forth with Claude</small></button></div>`;
-  if (rxMode === "chat") return `<div class="two"><div class="stack"><div>${sw}</div>${vChat()}</div>${watchlistPanel()}</div>`;
-  return `<div class="two">
-  <div class="stack">
-    <div>${sw}</div>
-    <div class="panel ask"><div><h2>Get card recommendations</h2><div class="muted">Claude sees your wallet (names, fees, multipliers, open dates, 5/24)${TRAVEL ? " and your travel profile (airlines, airports, hotels, how you book and pay)" : ""} and suggests cards to look at.</div></div>
-      <div class="presets">${[...travelPresets(), "What card fills my weakest category?", "Best next card while I'm under 5/24", "A premium travel card that pays for itself for me", "No-fee cards to keep long-term", "Which of my cards should I downgrade, and to what?"].map(p => `<button data-preset="${esc(p)}">${esc(p)}</button>`).join("")}</div>
-      <label class="f" for="askQ">Your question or goal</label>
-      <textarea id="askQ" placeholder="e.g. I spend about $800/mo on groceries and fly United twice a year. What should I get next?">${esc(r.question)}</textarea>
-      <div class="row"><button class="btn primary" id="askBtn" ${r.busy ? "disabled" : ""}>Research cards</button>${r.busy ? `<button class="btn" id="stopBtn">Stop</button>` : ""}<span class="note" id="askAvail"></span></div>
-      <p class="note" style="margin:0">Claude works from what it already knows and can't browse live offers, so bonuses and fees may have changed. Check the issuer's site before applying.</p>
-    </div>
-    <div id="askOut">${researchOut()}</div>
-  </div>
-  ${watchlistPanel()}</div>`;
-}
-function watchlistPanel() {
-  return `<div class="panel"><div class="spread" style="margin-bottom:10px"><h2>Watchlist</h2><button class="btn sm" data-act="add-research">+ Add</button></div>
-    <div id="resForm"></div>
-    ${S.research.length ? `<div class="fold-list">${S.research.map(x => fold("wl-" + x.id,
-      `<b>${esc(x.issuer)} ${esc(x.name)}</b><span class="sumr"><span class="note num">${money(x.annualFee)}</span>${x.claude && x.claude.verdict ? `<span class="pill ${VERDICT_TONE[x.claude.verdict] || ""}">${esc(x.claude.verdict)}</span>` : ""}${zeroAFPill(x.claude)}${x.example ? `<span class="pill">Example</span>` : ""}</span>`,
-      `<div style="display:grid;gap:6px">
-      <div class="note">${money(x.annualFee)} fee${x.bonus ? " · bonus " + esc(x.bonus) : ""} · ${esc(x.status || "considering")}</div>
-      ${x.notes ? clampText(esc(x.notes), "font-size:.88rem") : ""}
-      ${watchResearch(x)}
-      ${AI_READY ? `<div class="row"><button class="btn sm ${x.claude && !x.claude.partial ? "" : "primary"}" data-act="watch-research" data-id="${x.id}" ${wBusy[x.id] ? "disabled" : ""}>${wBusy[x.id] ? "Researching…" : x.claude && !x.claude.partial ? "Refresh research" : "Research with Claude"}</button><span class="note" id="wr-${x.id}">${esc(wErr[x.id] || "")}</span></div>` : ""}
-      <div class="row"><select data-rstatus="${x.id}" style="width:auto" aria-label="Status">${["considering", "applied", "approved", "passed"].map(s => `<option ${x.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>
-      <button class="btn sm" data-act="research-to-wallet" data-id="${x.id}">Move to my cards</button><button class="btn sm ghost danger" data-act="del-research" data-id="${x.id}">Remove</button></div></div>`)).join("")}</div>` : `<p class="muted">Cards you're considering land here.</p>`}
-  </div>`;
 }
 // "a" or "an" by how the word sounds: an IHG card, an American card, a United card, a Hilton card
 function aOrAn(word) {
@@ -890,79 +916,6 @@ function travelPresets() {
   const t = TRAVEL; if (!t) return [];
   const a = (t.airlines || [])[0], h = (t.hotelBrands || []).find(x => !/independent|airbnb|vrbo|vacation|other/i.test(x.brand));
   return ["Best card for how I fly and where I stay", a ? `Is ${aOrAn(a.name)} ${a.name} card worth it for me?` : "", h ? `Would ${aOrAn(h.brand)} ${h.brand} card pay off for my stays?` : ""].filter(Boolean);
-}
-// Per-entry Claude research on the watchlist.
-const wBusy = {}, wErr = {};
-const VERDICT_TONE = { "Apply now": "good", "Wait": "warn", "Skip": "bad" };
-function watchResearch(x) {
-  const r = x.claude; if (!r) return "";
-  if (r.partial) return zeroAF(r.zeroFeeDowngrade, r.annualFee);
-  const mult = Object.entries(r.multipliers || {}).filter(([k, v]) => CAT_LABEL[k] && num(v) > 0).sort((a, b) => b[1] - a[1]);
-  const list = (title, arr) => arr && arr.length ? `<div><div class="eyebrow">${title}</div><ul style="margin:2px 0 0;padding-left:18px;font-size:.86rem">${arr.map(i => `<li>${esc(i)}</li>`).join("")}</ul></div>` : "";
-  return `<details ${wOpen === x.id ? "open" : ""} style="background:var(--surface-2);border-radius:10px;padding:8px 10px"><summary style="cursor:pointer;display:flex;flex-wrap:wrap;gap:6px;align-items:center"><b style="font-size:.88rem">Claude's research</b>${r.verdict ? `<span class="pill ${VERDICT_TONE[r.verdict] || ""}">${esc(r.verdict)}</span>` : ""}<span class="note">${esc(r.date || "")}</span></summary>
-    <div style="display:grid;gap:8px;margin-top:8px;font-size:.88rem">
-      ${r.fit ? `<div>${esc(r.fit)}</div>` : ""}
-      <div class="note">${money(r.annualFee)} fee${r.typicalBonus ? " · " + esc(r.typicalBonus) : ""}${r.program ? " · " + esc(r.program) : ""}</div>
-      ${mult.length ? `<div class="multis">${mult.map(([k, v]) => `<span class="pill accent">${v}× ${esc(CAT_LABEL[k])}</span>`).join("")}<span class="pill">${num(r.base) || 1}× else</span></div>` : ""}
-      ${(r.credits || []).length ? `<div class="note">Credits: ${r.credits.map(c => `${esc(c.name)} (${money(c.value)}/yr)`).join(", ")}</div>` : ""}
-      ${(r.perks || []).length ? `<div class="note">Perks: ${r.perks.map(p => esc(p.label || p)).join(", ")}</div>` : ""}
-      ${zeroAF(r.zeroFeeDowngrade, r.annualFee)}
-      ${list("Pros for you", r.pros)}${list("Cons for you", r.cons)}
-      ${r.rules ? `<div class="note"><b>Approval rules:</b> ${esc(r.rules)}</div>` : ""}
-      ${r.caveat ? `<div class="note">${esc(r.caveat)}</div>` : ""}
-    </div></details>`;
-}
-// "$0 AF exit" line: can this card be product-changed to a no-fee card later?
-function zeroAF(z, fee) {
-  if (num(fee) === 0) return `<div class="note"><span class="pill good">No annual fee</span></div>`;
-  if (!z) return "";
-  const opts = (z.options || []).filter(Boolean);
-  return z.available && opts.length
-    ? `<div><span class="pill good">$0 AF downgrade</span> <span style="font-size:.86rem">${opts.map(esc).join(" or ")}</span>${z.note ? `<div class="note">${esc(z.note)}</div>` : ""}</div>`
-    : `<div><span class="pill bad">No $0 AF downgrade</span>${z.note ? ` <span class="note">${esc(z.note)}</span>` : ""}</div>`;
-}
-const zeroAFPill = r => !r || num(r.annualFee) === 0 ? "" : r.zeroFeeDowngrade ? (r.zeroFeeDowngrade.available && (r.zeroFeeDowngrade.options || []).length ? `<span class="pill good">$0 AF exit</span>` : `<span class="pill bad">No $0 AF exit</span>`) : "";
-let wOpen = null;
-async function researchWatch(x) {
-  const sample = await getSample();
-  if (!sample) return;
-  wBusy[x.id] = true; wErr[x.id] = ""; render();
-  try {
-    const r = await sample(`Should I apply for the ${fullName(x)}? How does it fit my wallet and travel, does the fee pay for itself for me, and which issuer rules apply to me?${x.notes ? " My notes: " + x.notes : ""}`);
-    const cur = S.research.find(y => y.id === x.id); if (!cur) return;
-    const same = r.suggestions.find(s => (s.name || "").toLowerCase().includes(String(x.name || "").toLowerCase()));
-    cur.claude = { fit: r.summary, annualFee: same ? same.annualFee : cur.annualFee, typicalBonus: same ? same.typicalBonus : "", caveat: same ? same.watchOut : "", date: fmtD(TODAY) };
-    if (same && !cur.bonus && same.typicalBonus) cur.bonus = same.typicalBonus;
-    wOpen = x.id; FOLD.set("wl-" + x.id, true); persist();
-  } catch (e) { wErr[x.id] = sampleErr(e); }
-  wBusy[x.id] = false; if (tab === "research") render();
-}
-function researchOut() {
-  const r = research;
-  if (r.busy) return `<div class="panel thinking">${r.stream ? "Writing suggestions…" : "Thinking…"}</div>`;
-  if (r.error) return `<div class="panel advice bad">${esc(r.error)}</div>`;
-  if (!r.result) return "";
-  const res = r.result;
-  return `<div class="sugg">${res.summary ? `<div class="panel">${esc(res.summary)}<div class="row" style="margin-top:10px"><button class="btn sm" data-act="recs-to-chat">Ask follow-ups in chat</button></div></div>` : `<div class="row"><button class="btn sm" data-act="recs-to-chat">Ask follow-ups in chat</button></div>`}${(res.suggestions || []).map((s, i) => `<div class="sg">
-    <div class="spread"><h3>${esc(s.issuer)} ${esc(s.name)}</h3><span class="pill">${money(num(s.annualFee))} fee</span></div>
-    ${s.typicalBonus ? `<div class="note">Typical bonus: ${esc(s.typicalBonus)}</div>` : ""}
-    <div class="multis">${Object.entries(s.multipliers || {}).slice(0, 6).map(([k, v]) => `<span class="pill accent">${esc(v)}× ${esc(k)}</span>`).join("")}</div>
-    <div style="font-size:.92rem">${esc(s.why)}</div>
-    ${(s.keyPerks || []).length ? `<div class="note">Perks: ${esc(s.keyPerks.join(", "))}</div>` : ""}
-    ${zeroAF(s.zeroFeeDowngrade, s.annualFee)}
-    ${s.watchOut ? `<div class="note">Watch out: ${esc(s.watchOut)}</div>` : ""}
-    <div class="row"><button class="btn sm" data-act="sugg-add" data-i="${i}">Add to watchlist</button></div></div>`).join("")}</div>`;
-}
-async function runResearch() {
-  const q = ($("#askQ").value || "").trim(); research.question = q;
-  const sample = await getSample(); if (!sample) return;
-  research = { ...research, busy: true, error: "", result: null, stream: "", ctl: new AbortController() };
-  render();
-  try {
-    const res = await sample(q || "What's the most useful next card for my wallet?", { signal: research.ctl.signal });
-    research = { ...research, busy: false, result: res };
-  } catch (e) { research = { ...research, busy: false, error: sampleErr(e) }; }
-  if (tab === "research") render();
 }
 
 function vData() {
@@ -1011,7 +964,6 @@ function renderEditor() {
         <label class="f">Account opened<input type="date" id="f_open" value="${esc(d.openDate)}"></label>
         ${multiPeople() ? `<label class="f">Whose card<select id="f_owner">${S.profiles.map(p => `<option value="${esc(p.id)}" ${d.owner === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : `<input type="hidden" id="f_owner" value="${esc(d.owner)}">`}
       </div>
-      ${AI_READY ? `<div class="row"><button type="button" class="btn sm" data-act="fill-claude" id="fillBtn">Research with Claude</button></div>` : ""}
     </div>
     <details class="fold" id="edMore" ${edMore ? "open" : ""}><summary><h3>More details</h3><span class="sumr note">Fee, role, status, rewards, bonus, credits, perks, strategy</span></summary><div class="fold-body" style="display:grid;gap:14px">
     <div class="fs"><h3>Basics</h3>
@@ -1112,15 +1064,6 @@ function showProfileForm() {
     <div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary">Add person</button></div></form></div>`;
   draft = {}; $("#prof_name").focus();
 }
-async function askDowngrade(c) {
-  const out = $("#dg-" + c.id); const sample = await getSample();
-  if (!sample) return;
-  out.textContent = "Asking Claude…";
-  try {
-    const r = await sample(`I want to stop paying the annual fee on my ${fullName(c)}. What's the best no-fee card from the same issuer to product change it to, keeping my points usable and filling a gap in my wallet? If there's none, say to cancel.`);
-    out.textContent = r.summary;
-  } catch (e) { out.textContent = sampleErr(e); }
-}
 
 // ---------- events ----------
 let toastT;
@@ -1136,20 +1079,19 @@ function twoStep(btn, key, label) {
 function download(filename, data) { saveFile(filename, data); }
 function importState(obj) {
   if (!obj || !Array.isArray(obj.cards)) { toast("That doesn't look like a What's in My Wallet backup."); return; }
-  S = normalize({ settings: obj.settings, profiles: obj.profiles, activeProfile: obj.activeProfile, cards: obj.cards, pulls: obj.pulls || [], research: obj.research || [] });
+  S = normalize({ settings: obj.settings, profiles: obj.profiles, activeProfile: obj.activeProfile, cards: obj.cards, pulls: obj.pulls || [], research: obj.research || [],
+    thread: obj.thread, chat: obj.chat, migrationBackup: obj.migrationBackup });
   persist(); render(); toast("Restored " + S.cards.length + " cards");
 }
 
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-tab],[data-goto],[data-act],[data-preset],[data-color],[data-profile],[data-tlcard],[data-tlzoom],[data-rxmode],[data-chatpreset]"); if (!t) return;
-  if (t.dataset.rxmode) { setRxMode(t.dataset.rxmode); return; }
-  if (t.dataset.chatpreset) { sendChat(t.dataset.chatpreset); return; }
+  const t = e.target.closest("[data-tab],[data-goto],[data-act],[data-ask],[data-color],[data-profile],[data-tlcard],[data-tlzoom]"); if (!t) return;
+  if (t.dataset.ask) { askClaude(t.dataset.ask); return; }
   if (t.dataset.tlzoom) { tlZoom = t.dataset.tlzoom; render(); return; }
   if (t.dataset.tlcard !== undefined) { tlCard = t.dataset.tlcard || null; render(); return; }
   if (t.dataset.profile) { S.activeProfile = t.dataset.profile; persist(); render(); return; }
   if (t.dataset.tab) return setTab(t.dataset.tab);
   if (t.dataset.goto) return setTab(t.dataset.goto);
-  if (t.dataset.preset) { $("#askQ").value = t.dataset.preset; research.question = t.dataset.preset; return; }
   if (t.dataset.color) { readForm(); draft.color = t.dataset.color; renderEditor(); return; }
   const a = t.dataset.act, id = t.dataset.id;
   const card = id && S.cards.find(c => c.id === id);
@@ -1172,13 +1114,9 @@ document.addEventListener("click", e => {
     case "toggle-log": openLog = openLog === id ? null : id; render(); break;
     case "del-log": { const c = S.cards.find(x => x.id === t.dataset.card), cr = c.credits.find(x => x.id === t.dataset.credit), l = cr.log.find(x => x.id === id);
       cr.log = cr.log.filter(x => x.id !== id); cr.used = Math.max(0, num(cr.used) - num(l && l.amount)); persist(); render(); break; }
-    case "ask-downgrade": askDowngrade(card); break;
-    case "chat-new": S.chat = []; chat.err = ""; persist(); render(); setTimeout(() => { const q = $("#chatQ"); if (q) q.focus(); }, 0); break;
-    case "chat-stop": if (chat.ctl) chat.ctl.abort(); break;
-    case "chat-to-recs": { const last = [...(S.chat || [])].reverse().find(m => m.role === "user"); research.question = last ? last.content : ""; setRxMode("recs"); if (research.question) runResearch(); break; }
-    case "recs-to-chat": { const res = research.result || {}; const picks = (res.suggestions || []).map(x => `- **${x.issuer ? x.issuer + " " : ""}${x.name}** (${money(num(x.annualFee))} fee): ${x.why || ""}`).join("\n");
-      S.chat = [{ role: "user", content: research.question || "Suggest the most useful next card for my wallet." }, { role: "assistant", content: `${res.summary || "Here are the cards I'd look at:"}\n${picks}\n\nWhat would you like to dig into?` }];
-      chat.err = ""; persist(); setRxMode("chat"); break; }
+    case "ask-downgrade": askFromElsewhere(`I want to stop paying the annual fee on my ${fullName(card)}. What's the best no-fee card from the same issuer to product change it to, keeping my points usable? If there's none, should I cancel?`); break;
+    case "thread-new": S.thread = []; rx.err = ""; persist(); render(); setTimeout(() => { const q = $("#askQ"); if (q) q.focus(); }, 0); break;
+    case "ask-stop": if (rx.ctl) rx.ctl.abort(); break;
     case "clamp": { const el = t.previousElementSibling; if (el) { const on = el.classList.toggle("unclamped"); t.textContent = on ? "Show less" : "Show more"; } break; }
     case "step-done": { const ren = t.dataset.ren, k = t.dataset.step; card.planDone ||= {}; const l = card.planDone[ren] ||= []; const i = l.indexOf(k); if (i >= 0) l.splice(i, 1); else l.push(k);
       // Drop records for old renewals so the saved card stays small.
@@ -1186,7 +1124,7 @@ document.addEventListener("click", e => {
       persist(); render(); toast(i >= 0 ? "Marked not done" : `Done: ${k === "call" ? "call" : k.replace(/\s*\(.*$/, "")}`); break; }
     case "fee-posted": card.feePosted = card.feePosted === t.dataset.ren ? "" : t.dataset.ren; persist(); render(); toast(card.feePosted ? "Fee marked as posted" : "Fee marked as not posted"); break;
     case "renewal-done": card.renewalDone = t.dataset.ren; persist(); render(); toast(`${card.name}: renewal handled. Plan moved to next year.`); break;
-    case "travel-ask": research.question = "Based on my travel profile and current wallet, which card would add the most value for how I fly and stay? Consider my main airline, home airport lounges, hotel brands and the booking portals I use."; setTab("research"); runResearch(); break;
+    case "travel-ask": askFromElsewhere("Based on how I travel and my current wallet, which card would add the most value? Consider my main airline, home airport lounges, hotel brands and the booking portals I use."); break;
     case "add-profile": showProfileForm(); break;
     case "rename-profile": { const p = S.profiles.find(x => x.id === id), inp = $("#pn-" + id); if (p && inp.value.trim()) { p.name = inp.value.trim(); persist(); render(); toast("Saved"); } break; }
     case "del-profile": if (S.profiles.length > 1 && twoStep(t, "dp" + id, "Tap again: deletes their cards too")) { S.profiles = S.profiles.filter(p => p.id !== id); S.cards = S.cards.filter(c => c.owner !== id); S.pulls = S.pulls.filter(p => p.owner !== id); S.activeProfile = "all"; persist(); render(); toast("Person removed"); } break;
@@ -1196,20 +1134,18 @@ document.addEventListener("click", e => {
     case "reset-credits": if (twoStep(t, "reset", "Tap again to reset every credit to $0 used")) { S.cards.forEach(c => (c.credits || []).forEach(x => x.used = 0)); persist(); render(); toast("Credit usage reset"); } break;
     case "add-pull": $("#pullForm").innerHTML = `<form id="pf" class="grid2" style="margin-bottom:10px"><label class="f">Date<input type="date" id="p_date" value="${iso(TODAY)}"></label><label class="f">Bureau<select id="p_bureau"><option>Experian</option><option>Equifax</option><option>TransUnion</option></select></label><label class="f">Issuer<input type="text" id="p_issuer" required></label><label class="f">Note<input type="text" id="p_note"></label>${multiPeople() ? `<label class="f">Person<select id="p_owner">${S.profiles.map(p => `<option value="${esc(p.id)}" ${S.activeProfile === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}<div class="row"><button class="btn sm primary" type="submit">Save pull</button></div></form>`; break;
     case "del-pull": S.pulls = S.pulls.filter(p => p.id !== id); persist(); render(); break;
-    case "add-research": $("#resForm").innerHTML = `<form id="rf" class="grid2" style="margin-bottom:10px"><label class="f">Card<input type="text" id="r_name" required></label><label class="f">Issuer<input type="text" id="r_issuer"></label><label class="f">Annual fee<input type="number" id="r_fee" min="0"></label><label class="f">Bonus<input type="text" id="r_bonus"></label><label class="f" style="grid-column:1/-1">Notes<input type="text" id="r_notes"></label><div class="row"><button class="btn sm primary" type="submit">Add</button></div></form>`; break;
-    case "del-research": S.research = S.research.filter(r => r.id !== id); persist(); render(); break;
-    case "research-to-wallet": { const r = S.research.find(x => x.id === id); const c = blankCard(); Object.assign(c, { name: r.name, issuer: r.issuer, annualFee: num(r.annualFee), notes: r.notes || "" });
-      const cr = r.claude; if (cr) {
-        if (PROGRAMS[cr.program] != null) c.program = cr.program; if (cr.base) c.base = num(cr.base);
-        if (cr.multipliers) for (const [k, v] of Object.entries(cr.multipliers)) if (CAT_LABEL[k] && num(v) > 0) c.mult[k] = num(v);
-        if (Array.isArray(cr.credits)) c.credits = cr.credits.map(z => ({ id: uid(), name: String(z.name || ""), value: num(z.value), period: PERIODS[z.period] ? z.period : "annual", used: 0, log: [] }));
-        if (Array.isArray(cr.perks)) c.perks = cr.perks.map(p => ({ label: String(p.label || p || ""), kind: PERK_KINDS.includes(p.kind) ? p.kind : "Other" }));
-        const z = cr.zeroFeeDowngrade; c.downgradeTo = (z && z.available && (z.options || [])[0]) || cr.downgradeTo || ""; c.reapplyMonths = num(cr.reapplyMonths); c.sub.standard = num(cr.standardBonusPoints);
-        if (cr.fit) c.strategy = String(cr.fit);
-      }
-      r.status = "approved"; openEditor(c, true); break; }
-    case "watch-research": { const x = S.research.find(y => y.id === id); if (x && !wBusy[id]) researchWatch(x); break; }
-    case "sugg-add": { const s = research.result.suggestions[+t.dataset.i]; S.research.push({ id: uid(), name: s.name, issuer: s.issuer, annualFee: num(s.annualFee), bonus: s.typicalBonus || "", status: "considering", notes: s.why || "", claude: s.zeroFeeDowngrade ? { annualFee: num(s.annualFee), zeroFeeDowngrade: s.zeroFeeDowngrade, partial: true } : undefined }); persist(); render(); toast("Added to watchlist"); break; }
+    case "add-research": FOLD.set("rx-saved", true); { const f = $("#resForm"); if (!f) break; f.innerHTML = `<form id="rf" class="grid2" style="margin-bottom:10px"><label class="f" style="grid-column:1/-1">From the catalog<select id="r_catalog"><option value="">Or type it below…</option>${CATALOG.map(c => `<option value="${esc(c.key)}">${esc(fullName(c))}</option>`).join("")}</select></label><label class="f">Card<input type="text" id="r_name"></label><label class="f">Issuer<input type="text" id="r_issuer"></label><label class="f">Annual fee<input type="number" id="r_fee" min="0"></label><label class="f">Why (one line)<input type="text" id="r_why" maxlength="200"></label><div class="row"><button class="btn sm primary" type="submit">Save card</button><button class="btn sm ghost" type="button" data-act="close-rf">Cancel</button></div></form>`; $("#r_catalog").focus(); } break;
+    case "close-rf": { const f = $("#resForm"); if (f) f.innerHTML = ""; } break;
+    case "saved-remove": if (twoStep(t, "rm" + id, "Tap again to remove")) { S.research = S.research.filter(r => r.id !== id); persist(); render(); toast("Removed"); } break;
+    case "saved-status": { const r = S.research.find(x => x.id === id); const i = SAVED_STATUS.findIndex(x => x[0] === r.status); r.status = SAVED_STATUS[(i + 1) % SAVED_STATUS.length][0]; persist(); render();
+      const b = document.querySelector(`[data-act="saved-status"][data-id="${CSS.escape(id)}"]`); if (b) b.focus(); break; }
+    case "saved-ask": { const r = S.research.find(x => x.id === id); rx.draft = `Is the ${fullName(r)} worth it for me?`; if (tab !== "research") setTab("research"); else render(); const q = $("#askQ"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); q.scrollIntoView({ block: "center" }); } break; }
+    case "save-sugg": { const turn = (S.thread || []).find(x => x.id === t.dataset.turn), sg = turn && turn.result.suggestions[+t.dataset.i]; if (!sg || savedFor(sg)) break;
+      S.research.push({ id: uid(), name: sg.name, issuer: sg.issuer, annualFee: num(sg.annualFee), why: sg.why || "", bonus: sg.typicalBonus || "", status: "considering", ...(sg.catalogKey ? { catalogKey: sg.catalogKey } : {}) });
+      persist(); render(); toast(`Saved ${sg.name}`); break; }
+    case "saved-to-wallet": { const r = S.research.find(x => x.id === id); const key = r.catalogKey || (catalogMatch(r.issuer, r.name) || {}).key;
+      const c = blankCard(); Object.assign(c, { name: r.name, issuer: r.issuer, annualFee: num(r.annualFee), notes: r.why || "" });
+      openEditor(c, true); if (key) fillFromCatalog(key); break; }
     case "export": download(`whats-in-my-wallet-backup-${iso(TODAY)}.json`, JSON.stringify(S, null, 2)); break;
     case "copy-json": { const txt = JSON.stringify(S, null, 2); navigator.clipboard.writeText(txt).then(() => toast("Copied"), () => { const ta = $("#importText"); ta.value = txt; ta.select(); toast("Selected below; copy it with your keyboard"); }); break; }
     case "import-text": try { importState(JSON.parse($("#importText").value)); } catch { toast("That text isn't valid backup JSON."); } break;
@@ -1264,18 +1200,21 @@ document.addEventListener("submit", e => {
     const id = uid(); S.profiles.push({ id, name: n }); S.activeProfile = id; closeEditor(); persist(); render(); toast(`Added ${n}. Add their cards with + Add card.`);
   } else if (e.target.id === "pf") {
     S.pulls.push({ id: uid(), date: $("#p_date").value, bureau: $("#p_bureau").value, issuer: $("#p_issuer").value.trim(), note: $("#p_note").value.trim(), owner: $("#p_owner") ? $("#p_owner").value : (S.activeProfile !== "all" ? S.activeProfile : S.profiles[0].id) }); persist(); render();
-  } else if (e.target.id === "chatForm") {
-    sendChat($("#chatQ").value);
+  } else if (e.target.id === "askForm") {
+    askClaude($("#askQ").value);
   } else if (e.target.id === "rf") {
-    S.research.push({ id: uid(), name: $("#r_name").value.trim(), issuer: $("#r_issuer").value.trim(), annualFee: num($("#r_fee").value), bonus: $("#r_bonus").value.trim(), status: "considering", notes: $("#r_notes").value.trim() }); persist(); render();
+    const cat = CATALOG.find(c => c.key === $("#r_catalog").value), name = $("#r_name").value.trim() || (cat ? cat.name : "");
+    if (!name) { $("#r_name").focus(); return; }
+    const r = { id: uid(), name, issuer: $("#r_issuer").value.trim() || (cat ? cat.issuer : ""), annualFee: $("#r_fee").value !== "" ? num($("#r_fee").value) : num(cat && cat.annualFee), why: $("#r_why").value.trim() || (cat && cat.summary) || "", status: "considering" };
+    if (cat) r.catalogKey = cat.key;
+    S.research.push(r); persist(); render(); toast(`Saved ${r.name}`);
   }
 });
 let inputT;
 document.addEventListener("input", e => {
   const t = e.target;
-  if (t.id === "askQ") { research.question = t.value; return; }
+  if (t.id === "askQ") { rx.draft = t.value; return; }
   if (t.id === "f_last4") { checkLast4(t); return; }
-  if (t.id === "chatQ") { chat.draft = t.value; return; }
   if (t.dataset.mx) { const c = S.cards.find(x => x.id === t.dataset.mx); c.mult ||= {}; if (t.value === "") delete c.mult[t.dataset.cat]; else c.mult[t.dataset.cat] = num(t.value); clearTimeout(inputT); inputT = setTimeout(persist, 500); }
   if (t.dataset.credit) { const c = S.cards.find(x => x.id === t.dataset.card); const cr = c.credits.find(x => x.id === t.dataset.credit); cr.used = num(t.value); clearTimeout(inputT); inputT = setTimeout(persist, 500); }
   if (t.dataset.pv) { S.settings.pointValues[t.dataset.pv] = num(t.value); clearTimeout(inputT); inputT = setTimeout(persist, 500); }
@@ -1287,10 +1226,9 @@ document.addEventListener("change", e => {
   if (t.id === "f_origin") document.querySelectorAll("[data-pc]").forEach(el => el.hidden = t.value !== "productChange");
   if (t.id === "tlSelect") { tlCard = t.value || null; render(); return; }
   if (t.dataset.tlclosed !== undefined) { tlShowClosed = t.checked; render(); return; }
-  if (t.dataset.rstatus) { S.research.find(x => x.id === t.dataset.rstatus).status = t.value; persist(); }
   if (t.id === "importFile" && t.files[0]) { const r = new FileReader(); r.onload = () => { try { importState(JSON.parse(r.result)); } catch { toast("That file isn't a valid backup."); } }; r.readAsText(t.files[0]); }
 });
-document.addEventListener("keydown", e => { if (e.target && e.target.id === "chatQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); sendChat(e.target.value); return; } if (e.key === "Escape" && draft) closeEditor(); if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("ag")) { e.preventDefault(); e.target.click(); } });
+document.addEventListener("keydown", e => { if (e.target && e.target.id === "askQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); askClaude(e.target.value); return; } if (e.key === "Escape" && draft) closeEditor(); if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("ag")) { e.preventDefault(); e.target.click(); } });
 document.addEventListener("click", e => {
   if (e.target.closest("[data-act]")) return;
   const j = e.target.closest("[data-jump]"); if (!j) return;
@@ -1309,6 +1247,5 @@ document.addEventListener("click", e => { if (e.target.id === "ovl") closeEditor
 document.addEventListener("invalid", e => { const d = e.target.closest && e.target.closest("details:not([open])"); if (d) d.open = true; }, true);
 $("#addCardTop").addEventListener("click", () => openEditor(blankCard(), true));
 document.addEventListener("click", e => { const td = !matrixEdit && e.target.closest(".matrix td.c[title]"); if (td) toast(td.title); });
-document.addEventListener("click", e => { if (e.target.id === "askBtn") runResearch(); if (e.target.id === "stopBtn" && research.ctl) research.ctl.abort(); });
 
 initStorage();
