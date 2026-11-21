@@ -4,7 +4,7 @@
 import { connectStore, store } from '/shared/store.js?v=3';
 import { airlineName, airport, deriveTrip, loadAirports, nightsOf, RENTAL } from '/shared/trips.js';
 import { PAY_LABEL } from '/shared/travel.js';
-import { demoBanner, setUpApp } from '/shared/app-shell.js?v=6';
+import { demoBanner, setUpApp } from '/shared/app-shell.js?v=7';
 import { contrailDemo } from '/contrail/demo-data.js';
 
 setUpApp();

@@ -24,6 +24,19 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 // since it asks the person to do something.
 export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts = {}) {
   if (!slot) return;
+  // Back from Google after tapping "Request access" while signed out: send the request now, so
+  // it's one tap. Any other outcome (already a member, already asked) just drops the intent.
+  const intent = takeRequestIntent(access.app);
+  if (intent && access.state === 'not-approved') {
+    access.state = 'requested';
+    access.justRequested = true;
+    sendRequest(access.app).catch((err) => {
+      console.error(err);
+      access.state = 'not-approved';
+      access.justRequested = false;
+      demoBanner(slot, appName, access, opts);
+    });
+  }
   if (opts.compact && opts.profileSlot && store.mode !== 'demo') {
     slot.hidden = true;
     slot.innerHTML = '';
@@ -35,7 +48,10 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts
   const who = access.user?.email ? esc(access.user.email) : '';
   const signOut = '<button type="button" class="demo-access demo-link" data-auth="out">Sign out</button>';
   let html;
-  if (store.mode !== 'demo') {
+  if (access.justRequested && store.mode === 'demo') {
+    html = `<div class="demo-banner" role="note">
+      <p><b>Requested.</b> You're signed in as ${who}. Once it's approved, your own data saves here; until then this is the demo. Want it sooner? <a href="${mail}">Email Billy</a>.</p>${signOut}</div>`;
+  } else if (store.mode !== 'demo') {
     html = `<div class="demo-banner member-banner" role="note">
       <p>Signed in as <b>${who}</b>. Everything you change saves to your account.</p>${signOut}</div>`;
   } else if (access.state === 'not-approved') {
@@ -58,7 +74,7 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts
     html = `<div class="demo-banner" role="note">
       <p><b>You're looking at a demo with sample data.</b> Changes aren't saved. Approved? Sign in to use your own.</p>
       <button type="button" class="demo-access" data-auth="in">Sign in</button>
-      <button type="button" class="demo-access demo-link" data-auth="in">Request access</button></div>`;
+      <button type="button" class="demo-access demo-link" data-auth="in-request">Request access</button></div>`;
   }
   slot.innerHTML = html;
   slot.onclick = async (e) => {
@@ -67,15 +83,15 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts
     b.disabled = true;
     try {
       const auth = await loadAuth();
-      if (b.dataset.auth === 'in') {
+      if (b.dataset.auth === 'in' || b.dataset.auth === 'in-request') {
+        if (b.dataset.auth === 'in-request') saveRequestIntent(access.app);
         const res = await auth.signIn();
         if (res?.error) throw res.error;
       } else if (b.dataset.auth === 'out') {
         await auth.signOut();
         location.reload();
       } else if (b.dataset.auth === 'request') {
-        const { error } = await auth.db.from('access_requests').insert({ app: access.app });
-        if (error && error.code !== '23505') throw error;
+        await sendRequest(access.app);
         slot.querySelector('p').innerHTML = `<b>Requested.</b> Once it's approved, your own data saves here. Want it sooner? <a href="${mail}">Email Billy</a>.`;
         b.remove();
       }
@@ -85,6 +101,28 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts
       b.textContent = 'Try again';
     }
   };
+}
+
+// "Request access" while signed out: remember it across the Google round trip (this tab only,
+// for 15 minutes, so a cancelled sign-in doesn't send a request on some later visit).
+const INTENT_KEY = 'otw-request-access';
+function saveRequestIntent(app) {
+  try { sessionStorage.setItem(INTENT_KEY, JSON.stringify({ app, at: Date.now() })); } catch { /* storage blocked */ }
+}
+function takeRequestIntent(app) {
+  try {
+    const raw = sessionStorage.getItem(INTENT_KEY);
+    if (!raw) return false;
+    const { app: want, at } = JSON.parse(raw);
+    sessionStorage.removeItem(INTENT_KEY);
+    return !!app && want === app && Date.now() - at < 15 * 60 * 1000;
+  } catch { return false; }
+}
+// The access_requests row (23505 = already asked, which is fine)
+async function sendRequest(app) {
+  const auth = await loadAuth();
+  const { error } = await auth.db.from('access_requests').insert({ app });
+  if (error && error.code !== '23505') throw error;
 }
 
 // The signed-in member's photo (or first initial) and its menu. A plain disclosure: the button

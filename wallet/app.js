@@ -1,22 +1,19 @@
 // What's in My Wallet?: a credit card tracker. Ported from the claude.ai version: every card
 // feature works as before; storage goes through shared/store.js, the travel profile comes
-// straight from Contrail's trips and stays, and the Claude features are off in the demo
-// ("Pick from the catalog" fills in a card instead).
+// straight from Contrail's trips and stays, and the Claude features are hidden until
+// shared/ai.js exists ("Pick from the catalog" fills in a card instead).
 import { connectStore, readAppData, store } from "/shared/store.js?v=3";
-import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=6";
+import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=7";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
 import { contrailDemo } from "/contrail/demo-data.js";
 import { walletDemo } from "/wallet/demo-data.js";
 
 setUpApp();
-const AI_OFF = "Claude features are available to approved users.";
+// Claude features (research, chat, downgrade advice) wait for shared/ai.js: getSample() returns
+// null until then, so their controls aren't shown at all. Turn this on when it returns a sampler.
+const AI_READY = false;
 let CATALOG = [];
-// Claude-only controls are disabled in the demo, with the reason on hover and beside them
-function aiOff() {
-  document.querySelectorAll('.wallet-app [data-act="watch-research"], .wallet-app [data-act="travel-ask"], .wallet-app [data-act="ask-downgrade"], .wallet-app #askBtn, .wallet-app #chatForm [type=submit], .wallet-app [data-chatpreset], .wallet-app [data-act="chat-to-recs"], .wallet-app [data-act="recs-to-chat"]')
-    .forEach(b => { b.disabled = true; b.title = AI_OFF; });
-}
 document.addEventListener("change", e => { if (e.target.id === "f_catalog" && e.target.value) fillFromCatalog(e.target.value); });
 // ---------- constants ----------
 const CATS = [
@@ -94,38 +91,6 @@ function shortName(c) {
 const CAT_SHORT = { travel: "Travel", transit: "Transit", rotating: "Rotating 5%", rent: "Rent", online: "Online", drugstore: "Drugstores", other: "Everything else" };
 
 // ---------- state ----------
-function exampleState() {
-  return {
-    version: 2, examples: true,
-    settings: { pointValues: { ...PROGRAMS } },
-    profiles: [{ id: "me", name: "Me" }], activeProfile: "all",
-    cards: [
-      { id: uid(), example: true, name: "Sapphire Preferred", issuer: "Chase", network: "Visa", last4: "4417", kind: "personal", status: "open",
-        color: "#1e3a5f", openDate: "2023-11-05", annualFee: 95, program: "Chase Ultimate Rewards", base: 1,
-        mult: { dining: 3, travel: 2, streaming: 3, groceries: 3, online: 1 },
-        sub: { amount: 75000, standard: 60000, promo: true, spendReq: 4000, spent: 4000, deadline: "2024-02-05", received: true, receivedDate: "2024-01-20" },
-        credits: [{ id: uid(), name: "Hotel credit (Chase Travel)", value: 50, period: "annual", used: 50 }],
-        perks: [{ label: "Primary rental car coverage", kind: "Travel protection" }, { label: "Trip delay reimbursement", kind: "Travel protection" }, { label: "No foreign transaction fees", kind: "Foreign transaction" }],
-        perkValue: 30, downgradeTo: "Freedom Unlimited", reapplyMonths: 48, role: "rotating", strategy: "Example: bonus earned, so rotate. Ask for a retention offer; if under $50, product change to Freedom Unlimited to keep the points and the account age.", creditLimit: 15000, notes: "Example card. Verify current terms." },
-      { id: uid(), example: true, name: "Gold Card", issuer: "American Express", network: "Amex", last4: "1009", kind: "personal", status: "open",
-        color: "#7a5a1a", openDate: "2026-08-20", annualFee: 325, program: "Amex Membership Rewards", base: 1,
-        mult: { dining: 4, groceries: 4, flights: 3 },
-        sub: { amount: 100000, standard: 60000, promo: true, spendReq: 6000, spent: 3400, deadline: "2027-02-20", received: false, receivedDate: "" },
-        credits: [{ id: uid(), name: "Dining credit", value: 120, period: "monthly", used: 20, log: [{ id: uid(), date: "2026-09-12", amount: 10, place: "Shake Shack", note: "Example entry" }, { id: uid(), date: "2026-10-03", amount: 10, place: "Grubhub order", note: "" }] },
-          { id: uid(), name: "Uber Cash", value: 120, period: "monthly", used: 20, log: [] }, { id: uid(), name: "Resy credit", value: 100, period: "semiannual", used: 0, log: [] }],
-        perks: [{ label: "Purchase protection", kind: "Purchase & return protection" }, { label: "No foreign transaction fees", kind: "Foreign transaction" }],
-        perkValue: 0, downgradeTo: "Green or Everyday", reapplyMonths: 0, creditLimit: 0, notes: "Example card. Amex bonuses are typically once per lifetime." },
-      { id: uid(), example: true, name: "Double Cash", issuer: "Citi", network: "Mastercard", last4: "7782", kind: "personal", status: "open",
-        color: "#174f8a", openDate: "2019-06-01", annualFee: 0, program: "Cash back", base: 2, mult: {},
-        sub: { amount: 0, standard: 0, promo: false, spendReq: 0, spent: 0, deadline: "", received: false, receivedDate: "" },
-        credits: [], perks: [{ label: "Citi Entertainment presales", kind: "Other" }],
-        perkValue: 0, downgradeTo: "", reapplyMonths: 0, creditLimit: 9000, notes: "Example card." }
-    ],
-    pulls: [{ id: uid(), example: true, date: "2026-08-18", bureau: "Experian", issuer: "American Express", note: "Gold Card application" }],
-    research: [{ id: uid(), example: true, name: "Venture X", issuer: "Capital One", annualFee: 395, bonus: "75,000 miles", status: "considering", notes: "Example. Lounge access and a yearly travel credit could offset most of the fee." }],
-    updatedAt: Date.now()
-  };
-}
 function blankCard() {
   return { id: uid(), name: "", issuer: "", network: "Visa", last4: "", kind: "personal", status: "open", color: COLORS[0], openDate: iso(TODAY),
     annualFee: 0, program: "Cash back", base: 1, mult: {}, sub: { amount: 0, standard: 0, promo: false, spendReq: 0, spent: 0, deadline: "", received: false, receivedDate: "" },
@@ -248,7 +213,7 @@ function vTravel() {
   </div>
   ${fit.length ? `<div style="margin-bottom:16px">${fold("tv-fit", `<h2>How your wallet fits your travel</h2><span class="sumr">${fit.filter(f => f.tone === "good").length ? `<span class="pill good">${fit.filter(f => f.tone === "good").length} covered</span>` : ""}${fit.filter(f => f.tone === "warn").length ? `<span class="pill warn">${fit.filter(f => f.tone === "warn").length} gaps</span>` : ""}</span>`,
     `${fit.map(f => `<div class="advice ${f.tone}" style="margin-top:8px"><b>${esc(f.title)}.</b> ${esc(f.text)}</div>`).join("")}
-    <div class="row" style="margin-top:12px"><button class="btn sm primary" data-act="travel-ask">Ask Claude what card fits how I travel</button></div>`, { cls: "panel" })}</div>` : ""}
+    ${AI_READY ? `<div class="row" style="margin-top:12px"><button class="btn sm primary" data-act="travel-ask">Ask Claude what card fits how I travel</button></div>` : ""}`, { cls: "panel" })}</div>` : ""}
   <div class="travelgrid">
     ${rankList("Airlines", t.airlines, "name", "flights", "Flights")}
     ${rankList("Departure airports", t.departureAirports, "code", "flights", "Departures")}
@@ -376,7 +341,11 @@ function events() {
     if (c.role === "rotating" && monthsBetween(parseD(c.openDate), r || TODAY) >= 12) {
       const plan = rotationPlan(c);
       if (plan) for (const s of plan.steps) if (s.date <= horizon && s.title !== "Bonus clock resets" && !stepDone(c, plan.ren, s.title)) ev.push({ date: s.date, ren: iso(plan.ren), step: s.title, kind: "rotate", card: c, text: `${c.name}: ${s.title}${tag(c)}`, tone: "accent", act: s.title });
-    } else if (r && num(c.annualFee) > 0) { const call = addMonths(r, -1); if (call <= horizon && !stepDone(c, r, "call") && (call >= TODAY || r >= addMonths(TODAY, -2))) ev.push({ date: call, ren: iso(r), step: "call", kind: "call", card: c, text: `Decide on ${c.name}: ${advise(c).verdict.toLowerCase()}${tag(c)}`, tone: "", act: `Call and decide: ${advise(c).verdict.toLowerCase()}` }); }
+    } else if (r && num(c.annualFee) > 0) {
+      // A card worth keeping needs no call; its fee still shows above
+      const v = advise(c).verdict, call = addMonths(r, -1);
+      if (v !== "Keep" && call <= horizon && !stepDone(c, r, "call") && (call >= TODAY || r >= addMonths(TODAY, -2))) ev.push({ date: call, ren: iso(r), step: "call", kind: "call", card: c, text: `Decide on ${c.name}: ${v.toLowerCase()}${tag(c)}`, tone: "", act: `Call and decide: ${v.toLowerCase()}` });
+    }
     const sd = parseD(c.sub && c.sub.deadline);
     if (sd && !c.sub.received && sd >= TODAY) ev.push({ date: sd, kind: "sub", card: c, text: `${c.name} bonus spend deadline (${money(Math.max(0, num(c.sub.spendReq) - num(c.sub.spent)))} left)${tag(c)}`, tone: "bad", act: `Bonus spend deadline · ${money(Math.max(0, num(c.sub.spendReq) - num(c.sub.spent)))} left` });
     if (c.sub && c.sub.received && c.sub.receivedDate && num(c.reapplyMonths)) { const e = addMonths(parseD(c.sub.receivedDate), num(c.reapplyMonths)); if (e >= TODAY && e <= horizon) ev.push({ date: e, kind: "elig", card: c, text: `${c.name} bonus clock resets${tag(c)}`, tone: "good", act: "Bonus clock resets" }); }
@@ -405,8 +374,6 @@ function render() {
   renderTabs();
   const v = $("#view");
   v.innerHTML = ({ overview: vOverview, cards: vCards, matrix: vMatrix, perks: vPerks, timeline: vTimeline, travel: vTravel, research: vResearch, data: vData })[tab]();
-  if (tab === "research") wireResearch();
-  aiOff();
   try { document.documentElement.style.setProperty("--tabs-h", $("nav.tabs").offsetHeight + "px"); document.body.classList.toggle("on-tl", tab === "timeline"); } catch {}
   if (tab === "timeline") { const w = $(".tl-wrap"), svg = w && w.querySelector("svg[data-today]"); if (svg && svg.scrollWidth > w.clientWidth) w.scrollLeft = Math.max(0, +svg.dataset.today - w.clientWidth / 2); }
 }
@@ -417,6 +384,10 @@ function exampleBanner() {
     <div class="row"><button class="btn sm" data-act="add">+ Add my first card</button><button class="btn sm" data-act="clear-examples">Clear examples</button></div></div>`;
 }
 function vOverview() {
+  if (!VC().length) return `<div class="panel firstrun">
+    <h2>Add your first card</h2>
+    <p class="muted">Pick it from the catalog and its fee, multipliers, credits and perks fill in for you. Then this page shows what's coming up, sign-up bonus progress and the best card for each category.</p>
+    <div class="row"><button class="btn primary" data-act="add">Add your first card</button><button class="btn ghost" data-goto="data">Restore a backup</button></div></div>`;
   const oc = openCards(), fees = oc.reduce((a, c) => a + num(c.annualFee), 0);
   const ct = oc.reduce((a, c) => { const t = creditTotals(c); return { v: a.v + t.value, u: a.u + t.used }; }, { v: 0, u: 0 });
   const ppl = viewPeople().map(p => ({ p, f: fiveTwentyFour(p.id) })), evAll = events().slice(0, 10), ev = evAll.slice(0, 5), evMore = evAll.slice(5);
@@ -450,10 +421,12 @@ function subProgress(c) {
   const s = c.sub, pct = s.spendReq ? Math.min(100, num(s.spent) / num(s.spendReq) * 100) : 0;
   const d = parseD(s.deadline), left = d ? daysBetween(TODAY, d) : null, need = Math.max(0, num(s.spendReq) - num(s.spent));
   const perDay = left > 0 ? need / left : 0;
+  // Close to the deadline a daily pace is easier to act on than a monthly one
+  const pace = left < 60 ? `about ${money(perDay)}/day` : `about ${money(perDay * 30)}/mo`;
   return `<div style="display:grid;gap:6px;margin-bottom:14px">
     <div class="spread"><b>${esc(c.name)}</b><span class="num">${pts(s.amount)} pts ${s.promo ? `<span class="pill accent">promo</span>` : ""}</span></div>
     <div class="bar ${pct >= 100 ? "good" : ""}"><i style="width:${pct}%"></i></div>
-    <div class="spread note"><span class="num">${money(s.spent)} / ${money(s.spendReq)}</span><span>${left == null ? "No deadline set" : left < 0 ? "Deadline passed" : `${money(need)} to go · ${left} days · about ${money(perDay * 30)}/mo`}</span></div>
+    <div class="spread note"><span class="num">${money(s.spent)} / ${money(s.spendReq)}</span><span>${left == null ? "No deadline set" : left < 0 ? "Deadline passed" : `${money(need)} to go · ${left} days${need > 0 ? " · " + pace : ""}`}</span></div>
     <div class="row"><input type="number" class="used-in" placeholder="+ $" id="spend-${c.id}" aria-label="Add spend to ${esc(c.name)}"><button class="btn sm" data-act="add-spend" data-id="${c.id}">Log spend</button>${pct >= 100 ? `<button class="btn sm" data-act="sub-received" data-id="${c.id}">Mark bonus received</button>` : ""}</div></div>`;
 }
 function bestList() {
@@ -494,6 +467,7 @@ function cardTile(c) {
   </article>`;
 }
 let matrixEdit = false, matrixMode = "pct";
+const mxNarrow = () => window.innerWidth < 640;
 function vMatrix() {
   const oc = openCards();
   if (!oc.length) return `<div class="empty">Add a card to build your multiplier matrix.</div>`;
@@ -505,11 +479,14 @@ function vMatrix() {
       ? `<input type="number" step="0.5" min="0" value="${c_val(v.c, k)}" placeholder="${blankRate(v.c, k)}" data-mx="${v.c.id}" data-cat="${k}" aria-label="${esc(v.c.name)} ${l}">`
       : v.m === 0 ? "—" : (matrixMode === "pct" ? `${v.r.toFixed(1)}%` : `${v.m}×`)}</td>`).join("")}</tr>`;
   }).join("");
-  return `<div class="section-head"><div><h2>Multipliers</h2><div class="muted">Outlined = best card for that category. ${matrixMode === "pct" ? "Return % = multiplier × your point value." : "Points per dollar."} Hover a cell for both.</div></div>
-    <div class="row"><button class="btn sm ${matrixMode === "pct" ? "primary" : ""}" data-act="mx-mode" data-mode="pct">Return %</button><button class="btn sm ${matrixMode === "x" ? "primary" : ""}" data-act="mx-mode" data-mode="x">Multiplier</button><button class="btn sm" data-act="mx-edit">${matrixEdit ? "Done editing" : "Edit values"}</button></div></div>
-  <div class="tscroll"><table class="matrix mx-fit"><thead><tr><th class="cat">Category</th>${oc.map(c => `<th class="cardh" title="${esc(fullName(c))} · ${esc(c.program)} · ${cpp(c)}¢ per point"><span class="swatch" style="background:${esc(c.color)}"></span>${esc(shortName(c))}${showOwner ? `<div class="own">${esc(profName(c.owner))}</div>` : ""}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-  ${matrixEdit ? `<p class="note">Leave a cell blank to use the card's base rate. Changes save as you type.</p>` : ""}
-  <div style="margin-top:14px">${fold("mx-quick", `<h2>Quick reference</h2><span class="muted" style="font-size:.88rem">Which card to use for each category</span>`, quickRef(oc), { cls: "panel" })}</div>`;
+  const narrow = mxNarrow();
+  const head = `<div class="section-head"><div><h2>Multipliers</h2><div class="muted">Outlined = best card for that category. ${matrixMode === "pct" ? "Return % = multiplier × your point value." : "Points per dollar."} Tap or hover a cell for both.</div></div>
+    <div class="row"><button class="btn sm ${matrixMode === "pct" ? "primary" : ""}" data-act="mx-mode" data-mode="pct">Return %</button><button class="btn sm ${matrixMode === "x" ? "primary" : ""}" data-act="mx-mode" data-mode="x">Multiplier</button><button class="btn sm" data-act="mx-edit">${matrixEdit ? "Done editing" : "Edit values"}</button></div></div>`;
+  const table = `<div class="tscroll"><table class="matrix mx-fit"><thead><tr><th class="cat">Category</th>${oc.map(c => `<th class="cardh" title="${esc(fullName(c))} · ${esc(c.program)} · ${cpp(c)}¢ per point"><span class="swatch" style="background:${esc(c.color)}"></span>${esc(shortName(c))}${showOwner ? `<div class="own">${esc(profName(c.owner))}</div>` : ""}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+  ${matrixEdit ? `<p class="note">Leave a cell blank to use the card's base rate. Changes save as you type.</p>` : ""}`;
+  const quick = fold("mx-quick", `<h2>Quick reference</h2><span class="muted" style="font-size:.88rem">Which card to use for each category</span>`, quickRef(oc), { cls: "panel", open: narrow });
+  if (!narrow) return head + table + `<div style="margin-top:14px">${quick}</div>`;
+  return head + `<div style="margin-bottom:14px">${quick}</div>` + fold("mx-matrix", `<h2>Full matrix</h2><span class="muted" style="font-size:.88rem">Every card and category</span>`, table, { cls: "panel" });
 }
 // Quick reference: each category with the card(s) tied for the best return.
 function quickRef(oc) {
@@ -599,7 +576,7 @@ function rotationCard(c) {
       <div>If the offer is weak: “What cards can I product change to without a new credit check?${plan.dg ? ` I'm interested in the ${esc(plan.dg)}.` : ""}”</div>
       <div>Before agreeing, confirm: the account number and history stay the same, there's no hard pull, your points carry over, and whether the fee (if already posted) will be refunded.</div>
       <div>Then log the result in this card's notes, including any retention offer, so you have it next year.</div></div></details>
-    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="ask-downgrade" data-id="${c.id}">Ask Claude for the best downgrade</button><span class="note" id="dg-${c.id}"></span></div>
+    ${AI_READY ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="ask-downgrade" data-id="${c.id}">Ask Claude for the best downgrade</button><span class="note" id="dg-${c.id}"></span></div>` : ""}
   </details>`;
 }
 // Card picked in the Timeline filter (null = all cards); kept for this visit only.
@@ -678,7 +655,11 @@ function vTimeline() {
 let tlShowClosed = false;
 const tlCompact = () => window.innerWidth < 700;
 let tlWasCompact = tlCompact();
-window.addEventListener("resize", () => { const c = tlCompact(); if (c !== tlWasCompact) { tlWasCompact = c; if (tab === "timeline") render(); } });
+let mxWasNarrow = mxNarrow();
+window.addEventListener("resize", () => {
+  const c = tlCompact(); if (c !== tlWasCompact) { tlWasCompact = c; if (tab === "timeline") render(); }
+  const n = mxNarrow(); if (n !== mxWasNarrow) { mxWasNarrow = n; if (tab === "matrix") render(); }
+});
 // Phone layout: each card gets its own row with the name on top, a bar sized to the screen and its next dates in words.
 function timelineCompact(cards, hidden) {
   const R = { "4m": [-1, 4], "1y": [-1, 12], "2y": [-6, 18] }[tlZoom];
@@ -831,7 +812,7 @@ Guidelines: answer the latest message directly and conversationally; refer back 
 async function sendChat(text) {
   const q = String(text || "").trim(); if (!q || chat.busy) return;
   const sample = await getSample();
-  if (!sample) { chat.err = AI_OFF; paintChat(); return; }
+  if (!sample) return;
   S.chat ||= []; chat.err = ""; chat.draft = "";
   S.chat.push({ role: "user", content: q }); S.chat.push({ role: "assistant", content: "" });
   chat.busy = true; chat.ctl = new AbortController(); render();
@@ -857,6 +838,9 @@ function walletSummary() {
 }
 function vResearch() {
   const r = research;
+  if (!AI_READY) return `<div class="two"><div class="stack"><div class="panel"><div class="spread" style="margin-bottom:6px"><h2>Card recommendations</h2><span class="pill">Coming soon</span></div>
+    <p class="muted" style="margin:0">Soon you'll be able to ask Claude which card to get next, or talk a card through in a chat. It will weigh your wallet${TRAVEL ? " and travel profile" : ""}. For now, keep cards you're considering on the watchlist.</p></div></div>
+  ${watchlistPanel()}</div>`;
   const sw = `<div class="modesw" role="group" aria-label="Research mode"><button type="button" data-rxmode="recs" aria-pressed="${rxMode === "recs"}">Get recommendations<small>Card picks for one question</small></button><button type="button" data-rxmode="chat" aria-pressed="${rxMode === "chat"}">Chat<small>Back-and-forth with Claude</small></button></div>`;
   if (rxMode === "chat") return `<div class="two"><div class="stack"><div>${sw}</div>${vChat()}</div>${watchlistPanel()}</div>`;
   return `<div class="two">
@@ -882,15 +866,23 @@ function watchlistPanel() {
       <div class="note">${money(x.annualFee)} fee${x.bonus ? " · bonus " + esc(x.bonus) : ""} · ${esc(x.status || "considering")}</div>
       ${x.notes ? clampText(esc(x.notes), "font-size:.88rem") : ""}
       ${watchResearch(x)}
-      <div class="row"><button class="btn sm ${x.claude && !x.claude.partial ? "" : "primary"}" data-act="watch-research" data-id="${x.id}" ${wBusy[x.id] ? "disabled" : ""}>${wBusy[x.id] ? "Researching…" : x.claude && !x.claude.partial ? "Refresh research" : "Research with Claude"}</button><span class="note" id="wr-${x.id}">${esc(wErr[x.id] || "")}</span></div>
+      ${AI_READY ? `<div class="row"><button class="btn sm ${x.claude && !x.claude.partial ? "" : "primary"}" data-act="watch-research" data-id="${x.id}" ${wBusy[x.id] ? "disabled" : ""}>${wBusy[x.id] ? "Researching…" : x.claude && !x.claude.partial ? "Refresh research" : "Research with Claude"}</button><span class="note" id="wr-${x.id}">${esc(wErr[x.id] || "")}</span></div>` : ""}
       <div class="row"><select data-rstatus="${x.id}" style="width:auto" aria-label="Status">${["considering", "applied", "approved", "passed"].map(s => `<option ${x.status === s ? "selected" : ""}>${s}</option>`).join("")}</select>
       <button class="btn sm" data-act="research-to-wallet" data-id="${x.id}">Move to my cards</button><button class="btn sm ghost danger" data-act="del-research" data-id="${x.id}">Remove</button></div></div>`)).join("")}</div>` : `<p class="muted">Cards you're considering land here.</p>`}
   </div>`;
 }
+// "a" or "an" by how the word sounds: an IHG card, an American card, a United card, a Hilton card
+function aOrAn(word) {
+  const w = String(word || "").trim();
+  if (/^[A-Z]{2,}\b/.test(w)) return /^[AEFHILMNORSX]/.test(w) ? "an" : "a"; // initials, read letter by letter
+  if (/^(uni|use|usu|eu|one\b|once)/i.test(w)) return "a";
+  if (/^(hour|honest|honor|heir)/i.test(w)) return "an";
+  return /^[aeiou]/i.test(w) ? "an" : "a";
+}
 function travelPresets() {
   const t = TRAVEL; if (!t) return [];
   const a = (t.airlines || [])[0], h = (t.hotelBrands || []).find(x => !/independent|airbnb|vrbo|vacation|other/i.test(x.brand));
-  return ["Best card for how I fly and where I stay", a ? `Is a ${a.name} card worth it for me?` : "", h ? `Would a ${h.brand} card pay off for my stays?` : ""].filter(Boolean);
+  return ["Best card for how I fly and where I stay", a ? `Is ${aOrAn(a.name)} ${a.name} card worth it for me?` : "", h ? `Would ${aOrAn(h.brand)} ${h.brand} card pay off for my stays?` : ""].filter(Boolean);
 }
 // Per-entry Claude research on the watchlist.
 const wBusy = {}, wErr = {};
@@ -926,7 +918,7 @@ const zeroAFPill = r => !r || num(r.annualFee) === 0 ? "" : r.zeroFeeDowngrade ?
 let wOpen = null;
 async function researchWatch(x) {
   const sample = await getSample();
-  if (!sample) { wErr[x.id] = AI_OFF; render(); return; }
+  if (!sample) return;
   wBusy[x.id] = true; wErr[x.id] = ""; render();
   const prompt = `Research the US credit card "${x.issuer} ${x.name}" for someone deciding whether to apply. Their wallet and point valuations as JSON:\n${JSON.stringify(walletSummary())}\nToday is ${iso(TODAY)}.${x.notes ? " Their notes: " + x.notes : ""} If the JSON includes "travel", it summarizes their real flights, airports, hotel stays and how they booked and paid: weigh airline, airport lounge, hotel brand and booking-portal fit against it, and treat upcoming trips as near-term spend.
 Give the card's standard terms as you best know them and judge how it fits THIS wallet and travel pattern: which categories it would beat their current best card in, whether the fee pays for itself for them, and issuer approval rules that apply to them (Chase 5/24, Amex lifetime bonus, Capital One limits, Citi 48-month, etc). verdict is "Apply now", "Wait" or "Skip". Multiplier keys only from: ${CATS.map(c => c[0]).join(", ")} (omit base-rate categories). Program one of: ${Object.keys(PROGRAMS).join("; ")}. Credit value is dollars per year. Also say whether the card can later be product-changed to a $0 annual fee card from the same issuer, and to which. Keep text short. Your knowledge may be dated, so note in caveat what to verify.
@@ -957,11 +949,6 @@ function researchOut() {
     ${s.watchOut ? `<div class="note">Watch out: ${esc(s.watchOut)}</div>` : ""}
     <div class="row"><button class="btn sm" data-act="sugg-add" data-i="${i}">Add to watchlist</button></div></div>`).join("")}</div>`;
 }
-async function wireResearch() {
-  const s = await getSample(); const cv = $("#chatAvail"); if (!s && cv) cv.textContent = AI_OFF;
-  const av = $("#askAvail");
-  if (!s && av) { av.textContent = AI_OFF; const b = $("#askBtn"); if (b) b.disabled = true; }
-}
 async function runResearch() {
   const q = ($("#askQ").value || "").trim(); research.question = q;
   const sample = await getSample(); if (!sample) return;
@@ -989,7 +976,7 @@ function vData() {
       <label class="f" for="importFile">From a backup file</label><input type="file" id="importFile" accept="application/json,.json">
       <label class="f" for="importText" style="margin-top:8px">Or paste backup text</label><textarea id="importText" placeholder='{"version":1,...}'></textarea>
       <div class="row" style="margin-top:8px"><button class="btn" data-act="import-text">Restore from text</button></div>
-      <p class="note">Restoring replaces everything currently in the hub.</p></div>
+      <p class="note">Restoring replaces everything currently in your wallet.</p></div>
     <div class="panel"><h2 style="margin-bottom:6px">Start over</h2><p class="note" style="margin-top:0">Removes every card, pull and watchlist entry.</p><button class="btn danger" data-act="wipe">Erase all data</button></div>
     ${store.mode === "account" ? `<div class="panel"><h2 style="margin-bottom:6px">Delete my saved data</h2><p class="note" style="margin-top:0">Your wallet (cards, people, pulls, watchlist and settings) is saved to your account. Deleting it removes it from the server for good, so download a backup first if you might want it back. Copies in older nightly backups remain until those are cleared; to have them removed too, email me from the <a href="/contact/">Contact page</a>.</p><button class="btn danger" data-act="delete-saved">Delete my saved wallet</button></div>` : ""}
   </div></div>`;
@@ -997,35 +984,44 @@ function vData() {
 
 // ---------- card editor ----------
 let draft = null, draftIsNew = false;
-function openEditor(c, isNew) { draft = JSON.parse(JSON.stringify(c)); draftIsNew = isNew; renderEditor(); }
+// "More details" in the editor: folded for a new card, open when editing one
+let edMore = false;
+function openEditor(c, isNew) {
+  draft = JSON.parse(JSON.stringify(c)); draftIsNew = isNew; edMore = !isNew; renderEditor();
+  if (isNew) { const pick = $("#f_catalog"); if (pick) pick.focus(); }
+}
 function closeEditor() { draft = null; $("#modalRoot").innerHTML = ""; document.body.style.overflow = ""; }
+// Last 4: blank, or exactly four digits (never a partial number saved quietly)
+const LAST4_MSG = "Enter all 4 digits, or leave it blank.";
+function checkLast4(i) { if (i) i.setCustomValidity(i.value === "" || /^\d{4}$/.test(i.value) ? "" : LAST4_MSG); }
 function renderEditor() {
   const d = draft; document.body.style.overflow = "hidden";
   $("#modalRoot").innerHTML = `<div class="overlay" id="ovl"><form class="drawer" id="cardForm" aria-label="Card details">
     <div class="spread"><h2>${draftIsNew ? "Add a card" : "Edit " + esc(d.name)}</h2><button type="button" class="btn ghost" data-act="close" aria-label="Close">✕</button></div>
-    <div class="fs" style="border-color:var(--accent);background:var(--accent-soft)"><h3>Pick from the catalog</h3>
-      <label class="f">Fill in a card's terms<select id="f_catalog"><option value="">Choose a card…</option>${CATALOG.map(c => `<option value="${esc(c.key)}">${esc(c.issuer)} ${esc(c.name)}</option>`).join("")}</select></label>
+    <div class="fs" style="border-color:var(--accent);background:var(--accent-soft)">
+      <label class="f">Pick from the catalog<select id="f_catalog"><option value="">Choose a card…</option>${CATALOG.map(c => `<option value="${esc(c.key)}">${esc(fullName(c))}</option>`).join("")}</select></label>
+      <div class="note" id="fillNote" style="color:var(--ink-2)">Picking a card fills in its fee, multipliers, credits, perks and downgrade path. Catalog terms are from 2026 and change often, so check the issuer. Everything stays editable.</div>
       <div class="grid2">
         <label class="f">Card name<input type="text" id="f_name" value="${esc(d.name)}" placeholder="Sapphire Reserve" required></label>
         <label class="f">Issuer<input type="text" id="f_issuer" value="${esc(d.issuer)}" placeholder="Chase"></label>
+        <label class="f">Last 4 digits<input type="text" id="f_last4" maxlength="4" inputmode="numeric" autocomplete="off" pattern="[0-9]{4}" title="${LAST4_MSG}" placeholder="Optional: all 4" value="${esc(d.last4)}"></label>
+        <label class="f">Account opened<input type="date" id="f_open" value="${esc(d.openDate)}"></label>
+        ${multiPeople() ? `<label class="f">Whose card<select id="f_owner">${S.profiles.map(p => `<option value="${esc(p.id)}" ${d.owner === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : `<input type="hidden" id="f_owner" value="${esc(d.owner)}">`}
       </div>
-      <div class="row"><button type="button" class="btn sm" data-act="fill-claude" id="fillBtn" disabled>Research with Claude</button></div>
-      <div class="note" id="fillNote" style="color:var(--ink-2)">Picking a card fills in its fee, multipliers, credits, perks and downgrade path. Catalog terms are from 2026 and change often, so check the issuer. Everything stays editable below. ${AI_OFF}</div>
+      ${AI_READY ? `<div class="row"><button type="button" class="btn sm" data-act="fill-claude" id="fillBtn">Research with Claude</button></div>` : ""}
     </div>
+    <details class="fold" id="edMore" ${edMore ? "open" : ""}><summary><h3>More details</h3><span class="sumr note">Fee, role, status, rewards, bonus, credits, perks, strategy</span></summary><div class="fold-body" style="display:grid;gap:14px">
     <div class="fs"><h3>Basics</h3>
       <div class="grid2">
+        <label class="f">Annual fee ($)<input type="number" min="0" id="f_fee" value="${num(d.annualFee)}"></label>
         <label class="f">Network<select id="f_network">${["Visa", "Mastercard", "Amex", "Discover"].map(n => `<option ${d.network === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
-        <label class="f">Last 4 digits<input type="text" id="f_last4" maxlength="4" inputmode="numeric" value="${esc(d.last4)}"></label>
         <label class="f">Personal or business<select id="f_kind"><option value="personal" ${d.kind === "personal" ? "selected" : ""}>Personal</option><option value="business" ${d.kind === "business" ? "selected" : ""}>Business</option></select></label>
-        <label class="f">Whose card<select id="f_owner">${S.profiles.map(p => `<option value="${esc(p.id)}" ${d.owner === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>
         <label class="f">Role in your wallet<select id="f_role"><option value="keeper" ${d.role !== "rotating" ? "selected" : ""}>Long-term keeper</option><option value="rotating" ${d.role === "rotating" ? "selected" : ""}>Rotating (downgrade or cancel at the fee)</option></select></label>
         <label class="f">Status<select id="f_status">${[["open", "Open"], ["changed", "Product-changed to another card"], ["closed", "Closed"]].map(([v, l]) => `<option value="${v}" ${d.status === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>
         <label class="f" data-ended ${isGone(d) ? "" : "hidden"}>Ended on<input type="date" id="f_closed" value="${esc(d.closedDate || "")}"></label>
         <label class="f">How you got it<select id="f_origin"><option value="new" ${d.origin !== "productChange" ? "selected" : ""}>New application</option><option value="productChange" ${d.origin === "productChange" ? "selected" : ""}>Product change (downgrade or upgrade)</option></select></label>
-        <label class="f">Account opened<input type="date" id="f_open" value="${esc(d.openDate)}"></label>
         <label class="f" data-pc ${d.origin === "productChange" ? "" : "hidden"}>Changed from<input type="text" id="f_from" value="${esc(d.fromCard || "")}" placeholder="Sapphire Reserve"></label>
         <label class="f" data-pc ${d.origin === "productChange" ? "" : "hidden"}>Changed on<input type="date" id="f_changed" value="${esc(d.changeDate || "")}"></label>
-        <label class="f">Annual fee ($)<input type="number" min="0" id="f_fee" value="${num(d.annualFee)}"></label>
         <label class="f">Credit limit ($)<input type="number" min="0" id="f_limit" value="${num(d.creditLimit) || ""}"></label>
       </div>
       <div class="note" data-pc ${d.origin === "productChange" ? "" : "hidden"}>For a product change, keep the original account open date. It's the same account, so it doesn't add a new 5/24 entry and the fee anniversary stays the same.</div>
@@ -1064,11 +1060,13 @@ function renderEditor() {
       <label class="f">Renewal strategy<textarea id="f_strategy" placeholder="e.g. Keep while I use the travel credit and lounges; downgrade to Freedom Unlimited if I stop flying monthly.">${esc(d.strategy || "")}</textarea></label>
       <label class="f">Notes<textarea id="f_notes" placeholder="Retention offers, product changes, anything to remember">${esc(d.notes)}</textarea></label>
     </div>
+    </div></details>
     <div class="spread" style="position:sticky;bottom:0;background:var(--bg);padding-block:10px">
       <div>${draftIsNew ? "" : `<button type="button" class="btn danger" data-act="del-card" id="delBtn">Delete card</button>`}</div>
       <div class="row"><button type="button" class="btn" data-act="close">Cancel</button><button type="submit" class="btn primary">Save card</button></div>
     </div>
   </form></div>`;
+  checkLast4($("#f_last4"));
 }
 function readForm() {
   const v = id => $("#" + id).value;
@@ -1098,7 +1096,8 @@ function fillFromCatalog(key) {
   if (r.downgradeTo) draft.downgradeTo = r.downgradeTo;
   if (r.reapplyMonths) draft.reapplyMonths = num(r.reapplyMonths);
   renderEditor();
-  $("#fillNote").textContent = `Filled from the catalog${kept.length ? `. Kept your existing ${kept.join(" and ")}` : ""}. Check the issuer's current terms, then edit anything below and save.`;
+  const pick = $("#f_catalog"); if (pick) pick.value = "";
+  $("#fillNote").textContent = `Filled from ${fullName(r)} in the catalog${kept.length ? `. Kept your existing ${kept.join(" and ")}` : ""}. Check the issuer's current terms, then edit anything below and save.`;
 }
 function showProfileForm() {
   const renameMe = S.profiles.length === 1 && S.profiles[0].name === "Me";
@@ -1112,7 +1111,7 @@ function showProfileForm() {
 }
 async function askDowngrade(c) {
   const out = $("#dg-" + c.id); const sample = await getSample();
-  if (!sample) { out.textContent = AI_OFF; return; }
+  if (!sample) return;
   out.textContent = "Asking Claude…";
   const others = S.cards.filter(x => x.owner === c.owner && x.id !== c.id && !isGone(x)).map(x => `${x.issuer} ${x.name} (${x.program})`).join("; ");
   try {
@@ -1164,7 +1163,7 @@ document.addEventListener("click", e => {
     case "record-pc": { readForm(); const old = draft; const i = S.cards.findIndex(c => c.id === old.id); if (i >= 0) S.cards[i] = old;
       const n = blankCard(); Object.assign(n, { owner: old.owner, issuer: old.issuer, network: old.network, last4: old.last4, kind: old.kind, color: old.color, creditLimit: old.creditLimit, openDate: old.openDate, program: old.program,
         origin: "productChange", fromId: old.id, fromCard: old.name, changeDate: iso(TODAY), role: "keeper" });
-      openEditor(n, true); $("#fillNote").textContent = `New card for the ${old.name} account. Type its name and research it with Claude, or fill it in. ${old.name} is marked as changed when you save.`; break; }
+      openEditor(n, true); $("#fillNote").textContent = `New card for the ${old.name} account. Pick it from the catalog or type its name. ${old.name} is marked as changed when you save.`; break; }
     case "del-card": if (twoStep(t, "del" + draft.id, "Tap again to delete")) { S.cards = S.cards.filter(c => c.id !== draft.id); closeEditor(); persist(); render(); toast("Card deleted"); } break;
     case "clear-examples": S.cards = S.cards.filter(c => !c.example); S.pulls = S.pulls.filter(p => !p.example); S.research = S.research.filter(r => !r.example); persist(); render(); toast("Examples cleared"); break;
     case "add-spend": { const inp = $("#spend-" + id); const v = num(inp && inp.value); if (v) { card.sub.spent = num(card.sub.spent) + v; persist(); render(); toast(`Logged ${money(v)}`); } break; }
@@ -1192,7 +1191,7 @@ document.addEventListener("click", e => {
     case "del-profile": if (S.profiles.length > 1 && twoStep(t, "dp" + id, "Tap again: deletes their cards too")) { S.profiles = S.profiles.filter(p => p.id !== id); S.cards = S.cards.filter(c => c.owner !== id); S.pulls = S.pulls.filter(p => p.owner !== id); S.activeProfile = "all"; persist(); render(); toast("Person removed"); } break;
     case "cards-all": for (const c of VC()) FOLD.set("card-" + c.id, !!t.dataset.open); render(); break;
     case "mx-mode": matrixMode = t.dataset.mode; render(); break;
-    case "mx-edit": matrixEdit = !matrixEdit; render(); break;
+    case "mx-edit": matrixEdit = !matrixEdit; if (matrixEdit) FOLD.set("mx-matrix", true); render(); break;
     case "reset-credits": if (twoStep(t, "reset", "Tap again to reset every credit to $0 used")) { S.cards.forEach(c => (c.credits || []).forEach(x => x.used = 0)); persist(); render(); toast("Credit usage reset"); } break;
     case "add-pull": $("#pullForm").innerHTML = `<form id="pf" class="grid2" style="margin-bottom:10px"><label class="f">Date<input type="date" id="p_date" value="${iso(TODAY)}"></label><label class="f">Bureau<select id="p_bureau"><option>Experian</option><option>Equifax</option><option>TransUnion</option></select></label><label class="f">Issuer<input type="text" id="p_issuer" required></label><label class="f">Note<input type="text" id="p_note"></label>${multiPeople() ? `<label class="f">Person<select id="p_owner">${S.profiles.map(p => `<option value="${esc(p.id)}" ${S.activeProfile === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>` : ""}<div class="row"><button class="btn sm primary" type="submit">Save pull</button></div></form>`; break;
     case "del-pull": S.pulls = S.pulls.filter(p => p.id !== id); persist(); render(); break;
@@ -1246,6 +1245,7 @@ async function deleteSaved(btn) {
 document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.id === "cardForm") {
+    const l4 = $("#f_last4"); checkLast4(l4); if (!l4.checkValidity()) { l4.reportValidity(); return; }
     readForm(); if (!draft.name) { $("#f_name").focus(); return; }
     delete draft.example;
     if (draft.fromId && draft.origin === "productChange") { const old = S.cards.find(c => c.id === draft.fromId); if (old && old.status !== "changed") { old.status = "changed"; old.changedTo = draft.name; old.closedDate = draft.changeDate || iso(TODAY); } }
@@ -1273,6 +1273,7 @@ let inputT;
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "askQ") { research.question = t.value; return; }
+  if (t.id === "f_last4") { checkLast4(t); return; }
   if (t.id === "chatQ") { chat.draft = t.value; return; }
   if (t.dataset.mx) { const c = S.cards.find(x => x.id === t.dataset.mx); c.mult ||= {}; if (t.value === "") delete c.mult[t.dataset.cat]; else c.mult[t.dataset.cat] = num(t.value); clearTimeout(inputT); inputT = setTimeout(persist, 500); }
   if (t.dataset.credit) { const c = S.cards.find(x => x.id === t.dataset.card); const cr = c.credits.find(x => x.id === t.dataset.credit); cr.used = num(t.value); clearTimeout(inputT); inputT = setTimeout(persist, 500); }
@@ -1298,12 +1299,15 @@ document.addEventListener("click", e => {
   el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1400);
 });
 document.addEventListener("toggle", e => { const d = e.target;
+  if (d.id === "edMore") { edMore = d.open; return; }
   if (d.dataset && d.dataset.keep) { FOLD.set(d.dataset.keep, d.open);
     if (d.dataset.keep === "tl-chart" && d.open) { const w = d.querySelector(".tl-wrap"), svg = w && w.querySelector("svg[data-today]"); if (svg && svg.scrollWidth > w.clientWidth) w.scrollLeft = Math.max(0, +svg.dataset.today - w.clientWidth / 2); }
     return; }
   if (d.dataset && d.dataset.later !== undefined) { tlLaterOpen = d.open; return; } if (!d.dataset || !d.dataset.plan) return; const id = d.dataset.plan; if (d.open) { tlOpen.add(id); tlClosed.delete(id); } else { tlOpen.delete(id); tlClosed.add(id); } }, true);
 document.addEventListener("click", e => { if (e.target.id === "ovl") closeEditor(); });
+document.addEventListener("invalid", e => { const d = e.target.closest && e.target.closest("details:not([open])"); if (d) d.open = true; }, true);
 $("#addCardTop").addEventListener("click", () => openEditor(blankCard(), true));
+document.addEventListener("click", e => { const td = !matrixEdit && e.target.closest(".matrix td.c[title]"); if (td) toast(td.title); });
 document.addEventListener("click", e => { if (e.target.id === "askBtn") runResearch(); if (e.target.id === "stopBtn" && research.ctl) research.ctl.abort(); });
 
 initStorage();
