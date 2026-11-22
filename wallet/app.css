@@ -52,6 +52,16 @@
 .wallet-app .tabtools{display: flex; gap: 6px; flex: none;}
 .wallet-app .utilpill{display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-family: var(--f-body); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;}
 .wallet-app .utilpill:hover{border-color: var(--accent);}
+.wallet-app .utilpill.gear{padding-inline: 9px; font-size: 15px;}
+.wallet-app .utilpill.gear[aria-pressed="true"]{border-color: var(--accent); background: var(--accent-soft);}
+.wallet-app #ov-timeline .tl-nav{position: static; margin: 0 0 12px;}
+.wallet-app .crlist{display: grid; gap: 8px;}
+.wallet-app .cr{display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); font-size: .88rem;}
+.wallet-app .cr-row{display: grid; grid-template-columns: auto minmax(40px, 1fr) auto; gap: 8px; align-items: center;}
+.wallet-app .cr-row label{display: flex; align-items: center; gap: 6px;}
+.wallet-app .cr-row .used-in{width: 76px;}
+.wallet-app .cr .logform{grid-template-columns: minmax(0,1fr) minmax(0,1fr);}
+.wallet-app .perklist{margin: 4px 0 0; padding-left: 18px; font-size: .86rem; display: grid; gap: 2px;}
 /* Narrower screens: the tab row scrolls sideways, with a fade at the edge as the hint */
 @media (max-width: 1200px){.wallet-app nav.tabs .tabgroup{-webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); padding-right: 24px;}}
 @media (max-width: 640px){.wallet-app nav.tabs .tabgroup button{font-size: 14px; padding-inline: 6px; gap: 4px;} .wallet-app nav.tabs .emoji{font-size: 14px;} .wallet-app .utilpill{padding: 4px 9px; font-size: 12px;} .wallet-app .pill-more{display: none;}}
@@ -194,9 +204,7 @@
 .wallet-app .tlc-next .late{color: var(--bad); font-weight: 600;}
 .wallet-app .tlc-next .then{color: var(--ink-2); font-size: .86rem;}
 @media (max-width: 700px){
-body.on-tl nav.tabs{position: static;}
-body.on-tl .tl-nav{top: env(safe-area-inset-top, 0px); margin-top: -12px;}
-body.on-tl [data-tlsec]{scroll-margin-top: 70px;}
+.wallet-app [data-tlsec], .wallet-app #ov-timeline, .wallet-app #ov-coming{scroll-margin-top: calc(var(--tabs-h, 52px) + 12px);}
 .wallet-app .tl-nav button{padding: 8px 12px; font-size: .9rem;}
 .wallet-app #tl-chart .section-head .muted{display: none;}
 .wallet-app .legend{font-size: .82rem; gap: 6px 12px;}
@@ -281,6 +289,7 @@ body.on-tl [data-tlsec]{scroll-margin-top: 70px;}
 .wallet-app .profiles .lbl{font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-right: 4px;}
 .wallet-app .steps{list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0;}
 .wallet-app .steps li{display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line);}
+.wallet-app .steps li::before{content: none;} /* the site's numbered .steps badges sat on top of the dates */
 .wallet-app .steps li.past{opacity: .55;}
 .wallet-app .steps .when{font-family: var(--f-mono); font-size: .8rem; color: var(--ink-2);}
 .wallet-app .script{background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: .88rem; display: grid; gap: 6px;}

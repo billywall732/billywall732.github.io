@@ -28,7 +28,12 @@ const PERK_KINDS = ["Lounge access","Travel protection","Purchase & return prote
 const PERIODS = { monthly: "Monthly", quarterly: "Quarterly", semiannual: "Every 6 months", annual: "Yearly" };
 const COLORS = ["#1e3a5f","#0f4c45","#5b1f2e","#2d2d34","#7a5a1a","#3b2a63","#8a8f98","#b0743a","#174f8a","#0b0b0d"];
 // [key, label, emoji]: short labels so every tab and its emoji fit on one row (the panels keep the full names)
-const TABS = [["overview","Overview","🧭"],["cards","Cards","💳"],["matrix","Multipliers","📈"],["perks","Perks","🎁"],["timeline","Timeline","🗓️"],["travel","Travel","✈️"],["research","Research","🔎"],["data","Settings","⚙️"]];
+const TABS = [["overview","Overview","🧭"],["cards","Cards","💳"],["matrix","Multipliers","📈"],["travel","Travel","✈️"],["research","Research","🔎"]];
+// Settings ("data") opens from the gear button. Perks now live in each card's Details and the
+// timeline in Overview, so their old addresses (#perks, #timeline) still lead there.
+const OLD_TABS = { perks: "cards", timeline: "overview", settings: "data", data: "data" };
+const tabFromHash = h => (TABS.some(t => t[0] === h) ? h : OLD_TABS[h] || null);
+const hashFor = k => (k === "data" ? "settings" : k);
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 // Common no-fee or lower-fee product-change targets, matched on issuer + card name. Suggestions only; issuers change these.
 const DOWNGRADES = [
@@ -167,6 +172,7 @@ async function initStorage() {
   if (store.mode === "demo") await store.reset({ docs: { wallet: walletDemo(catalog) } });
   S = normalize((await store.getDoc("wallet")) || {});
   render(); setSaveState(...saveLabel());
+  if (jumpOnLoad) jumpTo(jumpOnLoad);
   await loadTravel(); render();
 }
 
@@ -373,12 +379,14 @@ function events() {
 
 // ---------- rendering ----------
 let tab = "overview";
-try { const h = location.hash.slice(1); if (TABS.some(t => t[0] === h)) tab = h; } catch {}
+let jumpOnLoad = null;
+try { const h = location.hash.slice(1), k = tabFromHash(h); if (k) { tab = k; if (h === "timeline") { FOLD.set("ov-timeline", true); jumpOnLoad = "ov-timeline"; } if (h !== hashFor(k)) history.replaceState(null, "", "#" + hashFor(k)); } } catch {}
 function renderTabs() {
   $("#tabs").innerHTML = TABS.map(([k, l, e]) => `<button role="tab" aria-selected="${k === tab}" data-tab="${k}"><span class="emoji" aria-hidden="true">${e}</span>${l}</button>`).join("");
   // Keep the active tab in view when the row scrolls sideways, without moving the page
   const bar = $("#tabs"), on = bar.querySelector("[aria-selected=true]");
   if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth - 24)) bar.scrollLeft = on.offsetLeft - 8;
+  const g = $("#gearBtn"); if (g) g.setAttribute("aria-pressed", String(tab === "data"));
 }
 function renderProfiles() {
   const opts = (multiPeople() ? [["all", "Everyone"]] : []).concat(S.profiles.map(p => [p.id, p.name]));
@@ -390,9 +398,9 @@ function render() {
   renderProfiles();
   renderTabs();
   const v = $("#view");
-  v.innerHTML = ({ overview: vOverview, cards: vCards, matrix: vMatrix, perks: vPerks, timeline: vTimeline, travel: vTravel, research: vResearch, data: vData })[tab]();
-  try { document.documentElement.style.setProperty("--tabs-h", $("nav.tabs").offsetHeight + "px"); document.body.classList.toggle("on-tl", tab === "timeline"); } catch {}
-  if (tab === "timeline") { const w = $(".tl-wrap"), svg = w && w.querySelector("svg[data-today]"); if (svg && svg.scrollWidth > w.clientWidth) w.scrollLeft = Math.max(0, +svg.dataset.today - w.clientWidth / 2); }
+  v.innerHTML = ({ overview: vOverview, cards: vCards, matrix: vMatrix, travel: vTravel, research: vResearch, data: vData })[tab]();
+  try { document.documentElement.style.setProperty("--tabs-h", $("nav.tabs").offsetHeight + "px"); } catch {}
+  if (tab === "overview") { const w = $(".tl-wrap"), svg = w && w.querySelector("svg[data-today]"); if (svg && svg.scrollWidth > w.clientWidth) w.scrollLeft = Math.max(0, +svg.dataset.today - w.clientWidth / 2); }
 }
 function exampleBanner() {
   if (!VC().some(c => c.example) && !S.research.some(r => r.example) && !S.pulls.some(p => p.example)) return "";
@@ -407,7 +415,7 @@ function vOverview() {
     <div class="row"><button class="btn primary" data-act="add">Add your first card</button><button class="btn ghost" data-goto="data">Restore a backup</button></div></div>`;
   const oc = openCards(), fees = oc.reduce((a, c) => a + num(c.annualFee), 0);
   const ct = oc.reduce((a, c) => { const t = creditTotals(c); return { v: a.v + t.value, u: a.u + t.used }; }, { v: 0, u: 0 });
-  const ppl = viewPeople().map(p => ({ p, f: fiveTwentyFour(p.id) })), evAll = events().slice(0, 10), ev = evAll.slice(0, 5), evMore = evAll.slice(5);
+  const ppl = viewPeople().map(p => ({ p, f: fiveTwentyFour(p.id) }));
   const subs = oc.filter(c => c.sub && num(c.sub.amount) > 0 && !c.sub.received);
   const limit = oc.reduce((a, c) => a + num(c.creditLimit), 0);
   const nextRen = events().find(e => e.kind === "renew" && e.date >= TODAY);
@@ -420,19 +428,15 @@ function vOverview() {
     <div class="stat"><div class="eyebrow">Total credit line</div><div class="v">${limit ? money(limit) : "—"}</div><div class="s">Across open cards</div></div>
   </div>
   <div class="two">
-    <div class="panel"><div class="section-head"><h2>Coming up</h2><button class="btn sm ghost" data-goto="timeline">Full timeline →</button></div>
-      ${ev.length ? `<div class="list">${ev.map(evRow).join("")}</div>${evMore.length ? fold("ov-more", `${evMore.length} more`, `<div class="list">${evMore.map(evRow).join("")}</div>`, { cls: "mini" }) : ""}` : `<div class="empty">Nothing in the next 12 months.</div>`}</div>
+    <div class="panel" id="ov-coming"><div class="section-head"><div><h2>Coming up</h2><div class="muted">Soonest first. Tap an item for its full plan.</div></div><button class="btn sm ghost" data-jump="ov-timeline">Full timeline ↓</button></div>
+      ${agendaHTML(events())}</div>
     <div class="stack">
       <div class="panel"><h2 style="margin-bottom:12px">Sign-up bonuses in progress</h2>
         ${subs.length ? subs.map(subProgress).join("") : `<p class="muted" style="margin:0">No open bonus spend right now.</p>`}</div>
       ${fold("ov-best", `<h2>Best card by category</h2><span class="sumr note">${CATS.length} categories</span>`, bestList(), { cls: "panel" })}
     </div>
-  </div>`;
-}
-function evRow(e) {
-  const d = daysBetween(TODAY, e.date);
-  const tag = { renew: "Fee", call: "Decide", rotate: "Rotate", sub: "Bonus", elig: "Bonus", "524": "5/24" }[e.kind];
-  return `<div class="li"><div class="when">${esc(fmtD(e.date).replace(/, \d{4}$/, ""))}<br><span class="faint">${esc(relDays(d))}</span></div><div>${esc(e.text)}</div><span class="pill ${e.tone}">${tag}</span></div>`;
+  </div>
+  <div style="margin-top:16px">${fold("ov-timeline", `<h2>Timeline</h2><span class="sumr note">Chart, rotation plans, keepers, 5/24 and credit pulls</span>`, timelineBody(), { cls: "panel", id: "ov-timeline" })}</div>`;
 }
 function subProgress(c) {
   const s = c.sub, pct = s.spendReq ? Math.min(100, num(s.spent) / num(s.spendReq) * 100) : 0;
@@ -456,8 +460,9 @@ function bestList() {
 }
 function vCards() {
   const sorted = [...VC()].sort((a, b) => (isGone(a)) - (isGone(b)) || (parseD(b.openDate) - parseD(a.openDate)));
-  return exampleBanner() + `<div class="section-head"><div><h2>Your cards</h2><div class="muted">${openCards().length} open · open Details for multipliers, credits and strategy</div></div><div class="row"><button class="btn sm" data-act="cards-all" data-open="1">Expand all</button><button class="btn sm" data-act="cards-all" data-open="">Collapse all</button><button class="btn primary" data-act="add">+ Add card</button></div></div>
-  ${sorted.length ? `<div class="wallet">${sorted.map(cardTile).join("")}</div>` : `<div class="empty">No cards yet. <button class="btn sm" data-act="add">Add your first card</button></div>`}`;
+  return exampleBanner() + `<div class="section-head"><div><h2>Your cards</h2><div class="muted">${openCards().length} open · open Details for multipliers, credits, perks and strategy</div></div>${creditsPill()}<div class="row"><button class="btn sm" data-act="cards-all" data-open="1">Expand all</button><button class="btn sm" data-act="cards-all" data-open="">Collapse all</button><button class="btn primary" data-act="add">+ Add card</button></div></div>
+  ${sorted.length ? `<div class="wallet">${sorted.map(cardTile).join("")}</div>` : `<div class="empty">No cards yet. <button class="btn sm" data-act="add">Add your first card</button></div>`}
+  ${openCards().length ? walletPerksHTML() : ""}`;
 }
 function cardTile(c) {
   const a = advise(c), ren = nextRenewal(c), ct = creditTotals(c);
@@ -478,7 +483,8 @@ function cardTile(c) {
       ${ct.value ? `<div class="bar good"><i style="width:${Math.min(100, ct.used / ct.value * 100)}%"></i></div>` : ""}
       ${c.sub && num(c.sub.amount) ? `<div class="note">Sign-up bonus: <span class="num">${pts(c.sub.amount)}</span> pts${c.sub.promo && num(c.sub.standard) ? ` (promo, usually ${pts(c.sub.standard)})` : ""} · ${c.sub.received ? "received" : "in progress"}</div>` : ""}
       <div class="advice ${a.tone}"><b>${esc(a.verdict)}.</b> ${esc(a.text)}</div>
-      ${c.strategy ? `<div>${clampText(`<b>Your strategy:</b> ${esc(c.strategy)}`, "font-size:.86rem;color:var(--ink-2)")}</div>` : ""}`, { cls: "ccmore" })}
+      ${c.strategy ? `<div>${clampText(`<b>Your strategy:</b> ${esc(c.strategy)}`, "font-size:.86rem;color:var(--ink-2)")}</div>` : ""}
+      ${cardPerksHTML(c)}`, { cls: "ccmore" })}
     </div>
     <div class="cc-foot"><button class="btn sm" data-act="edit" data-id="${c.id}">Edit</button></div>
   </article>`;
@@ -518,27 +524,34 @@ function quickRef(oc) {
 }
 const c_val = (c, k) => (c.mult && c.mult[k] != null && c.mult[k] !== "") ? c.mult[k] : "";
 let openLog = null;
-function vPerks() {
-  const oc = openCards();
-  const byKind = {};
+// In a card's Details: its statement credits (amount used, log) and its perks
+function cardPerksHTML(c) {
+  const cr = c.credits || [], pk = (c.perks || []).filter(p => String(p.label || "").trim());
+  if (!cr.length && !pk.length) return "";
+  return `${cr.length ? `<div class="crlist"><div class="eyebrow">Statement credits</div>${cr.map(x => { const pct = num(x.value) ? Math.min(100, num(x.used) / num(x.value) * 100) : 0, n = (x.log || []).length;
+    return `<div class="cr"><div class="spread"><span>${esc(x.name)}</span><span class="note num">${money(x.value)} · ${esc(PERIODS[x.period] || x.period)}</span></div>
+      <div class="cr-row"><label class="note">Used <input class="used-in" type="number" min="0" value="${num(x.used)}" data-credit="${x.id}" data-card="${c.id}" aria-label="Used of ${esc(x.name)}"></label><div class="bar good"><i style="width:${pct}%"></i></div>
+      <button class="btn sm" data-act="toggle-log" data-id="${x.id}" aria-expanded="${openLog === x.id}">${openLog === x.id ? "Close" : n ? `Log (${n})` : "Log use"}</button></div>
+      ${openLog === x.id ? logPanel(c, x) : ""}</div>`; }).join("")}</div>` : ""}
+  ${pk.length ? `<div><div class="eyebrow">Perks</div><ul class="perklist">${pk.map(p => `<li>${esc(p.label)}${p.kind && p.kind !== "Other" ? ` <span class="faint">· ${esc(p.kind)}</span>` : ""}</li>`).join("")}</ul></div>` : ""}`;
+}
+function creditsPill() {
+  const credits = openCards().flatMap(c => c.credits || []); if (!credits.length) return "";
+  const tv = credits.reduce((a, x) => a + num(x.value), 0), tu = credits.reduce((a, x) => a + Math.min(num(x.used), num(x.value)), 0);
+  return `<span class="pill ${tu >= tv * .8 ? "good" : "warn"}" title="Statement credits used this year, across open cards">${money(tu)} of ${money(tv)} credits used</span>`;
+}
+// Under the Cards list: recent credit use, perks across the wallet, and the yearly reset
+function walletPerksHTML() {
+  const oc = openCards(), byKind = {};
   for (const g of mergePerks(oc)) (byKind[g.kind] ||= []).push(g);
   const credits = oc.flatMap(c => (c.credits || []).map(x => ({ c, x })));
-  const tv = credits.reduce((a, r) => a + num(r.x.value), 0), tu = credits.reduce((a, r) => a + Math.min(num(r.x.used), num(r.x.value)), 0);
   const recent = credits.flatMap(({ c, x }) => (x.log || []).map(l => ({ c, x, l }))).sort((a, b) => (b.l.date || "").localeCompare(a.l.date || "")).slice(0, 8);
-  // One folded row per card; open it to edit amounts and log use.
-  const byCard = oc.filter(c => (c.credits || []).length);
-  const creditRows = c => `<div class="tscroll"><table><thead><tr><th>Credit</th><th>Cadence</th><th style="text-align:right">Per year</th><th style="text-align:right">Used</th><th style="min-width:90px">Progress</th><th></th></tr></thead><tbody>
-    ${c.credits.map(x => { const pct = num(x.value) ? Math.min(100, num(x.used) / num(x.value) * 100) : 0; const n = (x.log || []).length; return `<tr><td>${esc(x.name)}</td><td>${esc(PERIODS[x.period] || x.period)}</td><td class="num" style="text-align:right">${money(x.value)}</td>
-      <td style="text-align:right"><input class="used-in" type="number" min="0" value="${num(x.used)}" data-credit="${x.id}" data-card="${c.id}" aria-label="Used of ${esc(x.name)}"></td><td><div class="bar good"><i style="width:${pct}%"></i></div></td>
-      <td><button class="btn sm" data-act="toggle-log" data-id="${x.id}" aria-expanded="${openLog === x.id}">${openLog === x.id ? "Close" : n ? `Log (${n})` : "Log use"}</button></td></tr>
-      ${openLog === x.id ? `<tr class="logrow"><td colspan="6">${logPanel(c, x)}</td></tr>` : ""}`; }).join("")}
-  </tbody></table></div>`;
-  const cardSum = c => { const t = creditTotals(c), pct = t.value ? Math.min(100, t.used / t.value * 100) : 0; return `<b><span class="swatch" style="background:${esc(c.color)}"></span>${esc(shortName(c))}</b>${multiPeople() ? `<span class="faint">${esc(profName(c.owner))}</span>` : ""}<span class="sumr"><span class="note">${c.credits.length} credit${c.credits.length === 1 ? "" : "s"}</span><span class="num" style="font-size:.88rem">${money(t.used)} / ${money(t.value)}</span><div class="bar good mbar"><i style="width:${pct}%"></i></div></span>`; };
-  return `<div class="section-head"><div><h2>Statement credits</h2><div class="muted">Open a card to update amounts or log where you used a credit.</div></div><span class="pill ${tu >= tv * .8 ? "good" : "warn"}">${money(tu)} of ${money(tv)} captured</span></div>
-  ${byCard.length ? `<div class="panel fold-list" style="margin-bottom:16px;padding-block:6px">${byCard.map(c => fold("cr-" + c.id, cardSum(c), creditRows(c))).join("")}</div>` : `<div class="empty" style="margin-bottom:16px">No statement credits on your open cards.</div>`}
-  ${recent.length ? `<div style="margin-bottom:24px">${fold("cr-recent", `<h3>Recent credit use</h3><span class="sumr pill">${recent.length}</span>`, `<div class="loglist">${recent.map(({ c, x, l }) => `<div><span class="num note">${esc(l.date)}</span><span class="num">${money(l.amount)}</span><span>${esc(l.place || "—")} <span class="faint">· ${esc(x.name)}, ${esc(c.name)}</span>${l.note ? `<br><span class="note">${esc(l.note)}</span>` : ""}</span><span></span></div>`).join("")}</div>`, { cls: "panel" })}</div>` : ""}
-  <div class="section-head"><h2>Perks across your wallet</h2><button class="btn sm ghost" data-act="reset-credits">Reset all credit usage for a new year</button></div>
-  ${Object.keys(byKind).length ? `<div class="perkgrid" style="align-items:start">${PERK_KINDS.filter(k => byKind[k]).map(k => fold("pk-" + k, `<span class="eyebrow">${esc(k)}</span><span class="sumr pill">${byKind[k].length}</span>`, `<ul>${byKind[k].map(g => `<li><span>${esc(g.label)}${g.cards.length > 1 ? ` <span class="faint">· ${g.cards.length} cards</span>` : ""}</span><span class="holders">${g.cards.map(c => `<span class="pill"><span class="swatch" style="background:${esc(c.color)}"></span>${esc(shortName(c))}</span>`).join("")}</span></li>`).join("")}</ul>`, { cls: "panel" })).join("")}</div>` : `<div class="empty">Add perks to a card to see them here.</div>`}`;
+  const kinds = PERK_KINDS.filter(k => byKind[k]);
+  return `<div class="stack" style="margin-top:16px">
+    ${recent.length ? fold("cr-recent", `<h2>Recent credit use</h2><span class="sumr pill">${recent.length}</span>`, `<div class="loglist">${recent.map(({ c, x, l }) => `<div><span class="num note">${esc(l.date)}</span><span class="num">${money(l.amount)}</span><span>${esc(l.place || "—")} <span class="faint">· ${esc(x.name)}, ${esc(c.name)}</span>${l.note ? `<br><span class="note">${esc(l.note)}</span>` : ""}</span><span></span></div>`).join("")}</div>`, { cls: "panel" }) : ""}
+    ${kinds.length ? fold("pk-all", `<h2>Perks across your wallet</h2><span class="sumr pill">${kinds.reduce((a, k) => a + byKind[k].length, 0)}</span>`, `<div class="perkgrid" style="align-items:start">${kinds.map(k => `<div><span class="eyebrow">${esc(k)}</span><ul>${byKind[k].map(g => `<li><span>${esc(g.label)}${g.cards.length > 1 ? ` <span class="faint">· ${g.cards.length} cards</span>` : ""}</span><span class="holders">${g.cards.map(c => `<span class="pill"><span class="swatch" style="background:${esc(c.color)}"></span>${esc(shortName(c))}</span>`).join("")}</span></li>`).join("")}</ul></div>`).join("")}</div>`, { cls: "panel" }) : ""}
+    ${credits.length ? `<div class="row"><button class="btn sm ghost" data-act="reset-credits">Reset all credit usage for a new year</button></div>` : ""}
+  </div>`;
 }
 // Merge the same perk listed on several cards ("No foreign transaction fees" vs "No FTF") into one row.
 const PERK_STOP = new Set(["no", "the", "a", "an", "and", "of", "on", "for", "with", "to", "your", "card", "cardholder", "fee", "fees", "benefit", "benefits", "access", "complimentary", "free", "included", "insurance", "reimbursement", "coverage", "protection"]);
@@ -628,7 +641,8 @@ function tlFilter() {
     <select id="tlSelect" style="width:auto;min-width:220px;max-width:100%"><option value="">All cards</option>${cards.map(opt).join("")}</select>
     ${tlCard ? `<button class="btn sm ghost" data-tlcard="">Clear</button>` : ""}</div>`;
 }
-function vTimeline() {
+// The timeline under Overview's Coming up: everything the old Timeline tab had except the action plan
+function timelineBody() {
   if (tlCard && !VC().some(c => c.id === tlCard)) tlCard = null;
   const ev = events().filter(e => tlMatch(e.card));
   const pulls = [...VP()].sort((a, b) => parseD(b.date) - parseD(a.date));
@@ -638,9 +652,8 @@ function vTimeline() {
   const bureauRows = people.flatMap(p => ["Experian", "Equifax", "TransUnion"].map(b => { const mine = S.pulls.filter(x => x.owner === p.id && x.bureau === b); return { who: p.name, b, n12: mine.filter(x => parseD(x.date) > yAgo).length, n24: mine.filter(x => parseD(x.date) > y2).length }; }));
   const rot = openCards().filter(tlMatch).filter(c => c.role === "rotating" && num(c.annualFee) > 0).sort((a, b) => nextRenewal(a) - nextRenewal(b));
   const keepers = focus ? (rot.length ? [] : [focus]) : openCards().filter(c => c.role !== "rotating" && num(c.annualFee) > 0);
-  const nav = [["tl-actions", "Action plan", ev.filter(e => daysBetween(TODAY, e.date) <= 90).length], ["tl-chart", "Chart"], ["tl-plans", "Rotation plans", rot.length], ["tl-keepers", focus ? "Renewal advice" : "Keepers", focus ? 0 : keepers.length], ["tl-524", "5/24"], ["tl-pulls", "Credit pulls"]];
+  const nav = [["tl-chart", "Chart"], ["tl-plans", "Rotation plans", rot.length], ["tl-keepers", focus ? "Renewal advice" : "Keepers", focus ? 0 : keepers.length], ["tl-524", "5/24"], ["tl-pulls", "Credit pulls"]];
   return tlFilter() + `<nav class="tl-nav" aria-label="Timeline sections">${nav.map(([id, l, n]) => `<button type="button" data-jump="${id}">${l}${n ? `<span class="ct">${n}</span>` : ""}</button>`).join("")}</nav>
-  <div class="panel" id="tl-actions" data-tlsec style="margin-bottom:16px"><div class="section-head"><div><h2>Action plan</h2><div class="muted">Soonest first. Tap an item for its full plan.</div></div></div>${agendaHTML(ev)}</div>
   <div style="margin-bottom:16px">${fold("tl-chart", `<h2>Card history chart</h2><span class="sumr note">${VC().filter(tlMatch).filter(c => !isGone(c)).length} open cards</span>`,
     `<div class="spread" style="margin-bottom:10px"><div class="muted" style="font-size:.88rem">Bars run from the open date. Markers show renewals, bonus deadlines and bonus clock resets; hover or tap one for its date.</div>
     <div class="profiles" role="group" aria-label="Timeline zoom"><span class="lbl">Zoom</span>${[["4m", "4 months"], ["1y", "1 year"], ["2y", "2 years"], ["fit", "All history"]].map(([k, l]) => `<button data-tlzoom="${k}" aria-pressed="${tlZoom === k}">${l}</button>`).join("")}</div></div>${timelineSvg()}`, { cls: "panel", id: "tl-chart", attrs: "data-tlsec" })}</div>
@@ -674,7 +687,7 @@ const tlCompact = () => window.innerWidth < 700;
 let tlWasCompact = tlCompact();
 let mxWasNarrow = mxNarrow();
 window.addEventListener("resize", () => {
-  const c = tlCompact(); if (c !== tlWasCompact) { tlWasCompact = c; if (tab === "timeline") render(); }
+  const c = tlCompact(); if (c !== tlWasCompact) { tlWasCompact = c; if (tab === "overview") render(); }
   const n = mxNarrow(); if (n !== mxWasNarrow) { mxWasNarrow = n; if (tab === "matrix" || tab === "research") render(); }
 });
 // Phone layout: each card gets its own row with the name on top, a bar sized to the screen and its next dates in words.
@@ -1070,9 +1083,12 @@ function showProfileForm() {
 // ---------- events ----------
 let toastT;
 function toast(msg) { let t = $("#toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); $(".wallet-app").appendChild(t); } t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
-function setTab(k) { tab = k; try { history.replaceState(null, "", "#" + k); } catch {} render(); window.scrollTo(0, 0); }
+function setTab(k) { k = tabFromHash(k) || "overview"; tab = k; try { history.replaceState(null, "", "#" + hashFor(k)); } catch {} render(); window.scrollTo(0, 0); }
 // Typing or following a #tab address switches tabs too
-addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h !== tab && TABS.some(t => t[0] === h)) { tab = h; render(); } });
+addEventListener("hashchange", () => { const h = location.hash.slice(1), k = tabFromHash(h); if (!k) return;
+  if (h === "timeline") { FOLD.set("ov-timeline", true); setTab(k); jumpTo("ov-timeline"); return; }
+  if (h !== hashFor(k)) try { history.replaceState(null, "", "#" + hashFor(k)); } catch {}
+  if (k !== tab) { tab = k; render(); } });
 const armed = new Set();
 function twoStep(btn, key, label) {
   if (armed.has(key)) { armed.delete(key); return true; }
@@ -1233,12 +1249,15 @@ document.addEventListener("change", e => {
 document.addEventListener("keydown", e => { if (e.target && e.target.id === "askQ" && e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); askClaude(e.target.value); return; } if (e.key === "Escape" && draft) closeEditor(); if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("ag")) { e.preventDefault(); e.target.click(); } });
 document.addEventListener("click", e => {
   if (e.target.closest("[data-act]")) return;
-  const j = e.target.closest("[data-jump]"); if (!j) return;
-  const el = document.getElementById(j.dataset.jump); if (!el) return;
-  if (el.tagName === "DETAILS" && !el.open) el.open = true;
+  const j = e.target.closest("[data-jump]"); if (j) jumpTo(j.dataset.jump);
+});
+// Scroll to a section, opening the folds it sits in (the timeline under Overview, a plan, a fold)
+function jumpTo(id) {
+  const el = document.getElementById(id); if (!el) return;
+  for (let d = el.tagName === "DETAILS" ? el : el.closest("details"); d; d = d.parentElement && d.parentElement.closest("details")) d.open = true;
   el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1400);
-});
+}
 document.addEventListener("toggle", e => { const d = e.target;
   if (d.id === "edMore") { edMore = d.open; return; }
   if (d.dataset && d.dataset.keep) { FOLD.set(d.dataset.keep, d.open);
