@@ -22,6 +22,9 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 // "Saved to your account", color mode, Off the Wall home, the app's own items, Sign out).
 // items: [{ label, href }] or [{ label, onClick }]. Every other state still gets the full banner,
 // since it asks the person to do something.
+// Add { anySignedIn: true } (Wallet) and everyone signed in gets the round icon, approved or not:
+// the banners keep their words but lose their "Sign out" button, which lives in the menu instead.
+// { photo: false } keeps the plain initial instead of the Google photo.
 export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts = {}) {
   if (!slot) return;
   // Back from Google after tapping "Request access" while signed out: send the request now, so
@@ -40,13 +43,15 @@ export function demoBanner(slot, appName, access = { state: 'signed-out' }, opts
   if (opts.compact && opts.profileSlot && store.mode !== 'demo') {
     slot.hidden = true;
     slot.innerHTML = '';
-    profileMenu(opts.profileSlot, access, opts.items ?? []);
+    profileMenu(opts.profileSlot, access, opts.items ?? [], opts.photo !== false);
     return;
   }
+  const iconMenu = opts.anySignedIn && opts.profileSlot && access.user;
+  if (iconMenu) profileMenu(opts.profileSlot, access, opts.items ?? [], opts.photo !== false);
   const to = `${config.contactEmail.user}@${config.contactEmail.host}`;
   const mail = `mailto:${to}?subject=${encodeURIComponent(`Access to ${appName}`)}&amp;body=${encodeURIComponent(`Hi Billy,\n\nI just asked for access to ${appName}.\n\nThanks!`)}`;
   const who = access.user?.email ? esc(access.user.email) : '';
-  const signOut = '<button type="button" class="demo-access demo-link" data-auth="out">Sign out</button>';
+  const signOut = iconMenu ? '' : '<button type="button" class="demo-access demo-link" data-auth="out">Sign out</button>';
   let html;
   if (access.justRequested && store.mode === 'demo') {
     html = `<div class="demo-banner" role="note">
@@ -128,7 +133,7 @@ async function sendRequest(app) {
 // The signed-in member's photo (or first initial) and its menu. A plain disclosure: the button
 // opens a list of links and buttons; a choice, a tap outside or Escape closes it.
 let menuCount = 0;
-function profileMenu(host, access, items) {
+function profileMenu(host, access, items, photo = true) {
   const p = window.otwAuth?.profile?.(access.user) ?? { name: access.user?.email || 'You', email: access.user?.email || '', picture: '' };
   const initial = (String(p.name || p.email || '?').trim()[0] || '?').toUpperCase();
   const id = `profile-menu-${++menuCount}`;
@@ -141,7 +146,7 @@ function profileMenu(host, access, items) {
       <span class="profile-initial" aria-hidden="true">${esc(initial)}</span><span class="sr">Account menu for ${esc(p.email || p.name)}</span>
     </button>
     <div class="profile-menu" id="${id}" hidden>
-      <p class="pm-who"><b>${esc(p.email || p.name)}</b><span>Saved to your account</span></p>
+      <p class="pm-who"><b>${esc(p.email || p.name)}</b><span>${store.mode === 'demo' ? 'Demo: changes aren’t saved' : 'Saved to your account'}</span></p>
       <button type="button" class="pm-row" data-theme-cycle>Color mode: <span class="pm-theme">${esc(themeLabel())}</span></button>
       ${rows.join('')}
       <button type="button" class="pm-row pm-out" data-auth="out">Sign out</button>
@@ -149,7 +154,7 @@ function profileMenu(host, access, items) {
   const btn = host.querySelector('.profile-btn'), menu = host.querySelector('.profile-menu');
   // The photo, once it loads (Google's photo addresses refuse some referrers, so send none); the
   // initial stays if it can't
-  if (p.picture) {
+  if (photo && p.picture) {
     const img = Object.assign(new Image(), { alt: '', referrerPolicy: 'no-referrer', decoding: 'async' });
     img.className = 'profile-photo';
     img.addEventListener('load', () => btn.prepend(img), { once: true });

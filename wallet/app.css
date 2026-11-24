@@ -52,8 +52,6 @@
 .wallet-app .tabtools{display: flex; gap: 6px; flex: none;}
 .wallet-app .utilpill{display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-family: var(--f-body); font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;}
 .wallet-app .utilpill:hover{border-color: var(--accent);}
-.wallet-app .utilpill.gear{padding-inline: 9px; font-size: 15px;}
-.wallet-app .utilpill.gear[aria-pressed="true"]{border-color: var(--accent); background: var(--accent-soft);}
 .wallet-app #ov-timeline .tl-nav{position: static; margin: 0 0 12px;}
 .wallet-app .crlist{display: grid; gap: 8px;}
 .wallet-app .cr{display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid var(--line); font-size: .88rem;}
@@ -367,3 +365,26 @@
 .wallet-app .ag .in .btn{margin-top: 0;}
 }
 .wallet-app .ag .dt{line-height: 1;}
+
+/* ---- Full window (no site header or footer), like Contrail ---- */
+/* The safe-area padding keeps the title clear of a notch when opened from the home screen. */
+.wallet-app{border-block: 0; min-height: 100vh; min-height: 100dvh; padding-top: calc(16px + env(safe-area-inset-top, 0px));}
+.wallet-app .wrap{padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));}
+.wallet-app .foot{margin: 40px 0 0; font-size: .8rem; color: var(--ink-3);}
+.wallet-app .foot a{color: inherit;}
+/* Title row: the title, then the save state, then the signed-in initial at the far right */
+.wallet-app header.top .head-r{margin-left: auto;}
+.wallet-app .headtools{display: none; gap: 6px;}
+.wallet-app header.top .profile-slot:empty{display: none;}
+.wallet-app .profile-btn{background: var(--accent); color: var(--on-accent); border-color: var(--accent); font: 600 15px/1 var(--f-body);}
+/* Phones: the tab row holds only the tabs (it scrolls sideways); Cover and Add card sit in the
+   title row, and the initial stays top right beside the title */
+@media (max-width: 480px){
+.wallet-app header.top{display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px 12px; padding-block: 8px 10px;}
+.wallet-app header.top .brand{min-width: 0;}
+.wallet-app header.top .profile-slot{grid-column: 2; grid-row: 1;}
+.wallet-app header.top .head-r{grid-column: 1 / -1; margin-left: 0; justify-content: space-between;}
+.wallet-app h1{font-size: 1.35rem;}
+.wallet-app .headtools{display: flex;}
+.wallet-app nav.tabs .tabtools{display: none;}
+}

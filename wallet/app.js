@@ -3,7 +3,7 @@
 // straight from Contrail's trips and stays, and members ask Claude through the AI Worker
 // (shared/ai.js); the demo shows a sample conversation instead.
 import { connectStore, readAppData, store } from "/shared/store.js?v=4";
-import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=8";
+import { demoBanner, saveFile, setUpApp } from "/shared/app-shell.js?v=9";
 import { airport, deriveTrip, loadAirports } from "/shared/trips.js";
 import { travelSummary } from "/shared/travel.js";
 import { askWallet } from "/shared/ai.js?v=1";
@@ -28,9 +28,10 @@ const PERK_KINDS = ["Lounge access","Travel protection","Purchase & return prote
 const PERIODS = { monthly: "Monthly", quarterly: "Quarterly", semiannual: "Every 6 months", annual: "Yearly" };
 const COLORS = ["#1e3a5f","#0f4c45","#5b1f2e","#2d2d34","#7a5a1a","#3b2a63","#8a8f98","#b0743a","#174f8a","#0b0b0d"];
 // [key, label, emoji]: short labels so every tab and its emoji fit on one row (the panels keep the full names)
-const TABS = [["overview","Overview","🧭"],["cards","Cards","💳"],["matrix","Multipliers","📈"],["travel","Travel","✈️"],["research","Research","🔎"]];
-// Settings ("data") opens from the gear button. Perks now live in each card's Details and the
-// timeline in Overview, so their old addresses (#perks, #timeline) still lead there.
+// Settings is the last tab, like Contrail's; its key stays "data" and its address is #settings.
+const TABS = [["overview","Overview","🧭"],["cards","Cards","💳"],["matrix","Multipliers","📈"],["travel","Travel","✈️"],["research","Research","🔎"],["data","Settings","⚙️"]];
+// Perks now live in each card's Details and the timeline in Overview, so their old addresses
+// (#perks, #timeline) still lead there.
 const OLD_TABS = { perks: "cards", timeline: "overview", settings: "data", data: "data" };
 const tabFromHash = h => (TABS.some(t => t[0] === h) ? h : OLD_TABS[h] || null);
 const hashFor = k => (k === "data" ? "settings" : k);
@@ -168,7 +169,9 @@ async function initStorage() {
   CATALOG = catalog;
   // Approved members get their own wallet; everyone else gets the sample one
   ACCESS = await connectStore("wallet");
-  demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?", ACCESS);
+  // Anyone signed in (approved or not) gets a round initial at the top right; its menu has their
+  // email and Sign out. Members get no banner; everyone else keeps the demo banner.
+  demoBanner(document.getElementById("demoBanner"), "What's in My Wallet?", ACCESS, { compact: true, anySignedIn: true, photo: false, profileSlot: document.getElementById("profileSlot") });
   if (store.mode === "demo") await store.reset({ docs: { wallet: walletDemo(catalog) } });
   S = normalize((await store.getDoc("wallet")) || {});
   render(); setSaveState(...saveLabel());
@@ -386,7 +389,6 @@ function renderTabs() {
   // Keep the active tab in view when the row scrolls sideways, without moving the page
   const bar = $("#tabs"), on = bar.querySelector("[aria-selected=true]");
   if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth - 24)) bar.scrollLeft = on.offsetLeft - 8;
-  const g = $("#gearBtn"); if (g) g.setAttribute("aria-pressed", String(tab === "data"));
 }
 function renderProfiles() {
   const opts = (multiPeople() ? [["all", "Everyone"]] : []).concat(S.profiles.map(p => [p.id, p.name]));
@@ -1266,7 +1268,8 @@ document.addEventListener("toggle", e => { const d = e.target;
   if (d.dataset && d.dataset.later !== undefined) { tlLaterOpen = d.open; return; } if (!d.dataset || !d.dataset.plan) return; const id = d.dataset.plan; if (d.open) { tlOpen.add(id); tlClosed.delete(id); } else { tlOpen.delete(id); tlClosed.add(id); } }, true);
 document.addEventListener("click", e => { if (e.target.id === "ovl") closeEditor(); });
 document.addEventListener("invalid", e => { const d = e.target.closest && e.target.closest("details:not([open])"); if (d) d.open = true; }, true);
-$("#addCardTop").addEventListener("click", () => openEditor(blankCard(), true));
+// Two "Add card" pills: one in the tab row, one in the title row for phones (wallet/app.css)
+document.querySelectorAll("[data-add-card]").forEach(b => b.addEventListener("click", () => openEditor(blankCard(), true)));
 document.addEventListener("click", e => { const td = !matrixEdit && e.target.closest(".matrix td.c[title]"); if (td) toast(td.title); });
 
 initStorage();
